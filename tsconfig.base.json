@@ -14,7 +14,12 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@prodgenie/apps/ui": ["apps/ui/src"],
+      "@prodgenie/apps/utils": ["apps/utils/src"],
+      "@prodgenie/apps/ui/*": ["apps/ui/src/*"],
+      "@prodgenie/apps/utils/*": ["apps/utils/src/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

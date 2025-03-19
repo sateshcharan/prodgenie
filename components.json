@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tailwind": {
+    "config": "apps/utils/src/tailwind.config.ts",
+    "css": "apps/utils/src/global.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "ui": "@prodgenie/apps/ui",
+    "components": "@prodgenie/apps/ui/components",
+    "utils": "@prodgenie/apps/utils",
+    "hooks": "@prodgenie/apps/ui/hooks"
+  }
+}
