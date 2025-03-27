@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
@@ -16,6 +17,12 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "customConditions": ["development"],
+    "paths": {
+      "@prodgenie/apps/ui": ["apps/ui/src"],
+      "@prodgenie/apps/ui/*": ["apps/ui/src/*"],
+      "@prodgenie/apps/utils": ["apps/utils/src"],
+      "@prodgenie/apps/utils/*": ["apps/utils/src/*"]
+    }
   }
 }

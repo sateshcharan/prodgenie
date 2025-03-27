@@ -6,13 +6,7 @@
       "path": "../utils"
     },
     {
-      "path": "../ui"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
+      "path": "./tsconfig.lib.json"
     }
   ],
   "extends": "../../tsconfig.base.json"

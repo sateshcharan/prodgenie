@@ -1,0 +1,28 @@
+name: Deploy Frontend to Vercel
+
+on:
+  push:
+    branches:
+      - frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: apps/frontend
+
+      - name: Build project
+        run: pnpm run build
+        working-directory: apps/frontend
+
+      - name: Deploy to Vercel
+        run: pnpm dlx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/frontend

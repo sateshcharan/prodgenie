@@ -2,6 +2,8 @@ import NxWelcome from './nx-welcome';
 
 import { Route, Routes, Link } from 'react-router-dom';
 
+import { Button } from '@prodgenie/apps/ui/button';
+
 export function App() {
   return (
     <div>
@@ -27,18 +29,18 @@ export function App() {
         <Route
           path="/"
           element={
-            <div>
+            <Button variant={'destructive'}>
               This is the generated root route.{' '}
               <Link to="/page-2">Click here for page 2.</Link>
-            </div>
+            </Button>
           }
         />
         <Route
           path="/page-2"
           element={
-            <div>
+            <Button>
               <Link to="/">Click here to go back to root page.</Link>
-            </div>
+            </Button>
           }
         />
       </Routes>

@@ -1,6 +1,7 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -18,6 +19,12 @@ export default defineConfig(() => ({
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
+  resolve: {
+    alias: {
+      '@prodgenie/apps/ui': path.resolve(__dirname, '../ui/src'),
+      '@prodgenie/apps/utils': path.resolve(__dirname, '../utils/src'),
+    },
+  },
   build: {
     outDir: './dist',
     emptyOutDir: true,
