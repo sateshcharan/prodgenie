@@ -1,0 +1,15 @@
+{
+    "services": [
+      {
+        "name": "prodgenie-backend",
+        "region": "singapore",
+        "env": "node",
+        "plan": "free",
+        "repository": "https://github.com/sateshcharan/prodgeie",
+        "branch": "main",
+        "buildCommand": "corepack enable && pnpm install && pnpm dlx nx build backend",
+        "startCommand": "node apps/backend/dist/main.js"
+      }
+    ]
+  }
+  
