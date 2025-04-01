@@ -5,7 +5,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleProPlanClick = () => {
-    console.log('Pro plan clicked');
+    navigate('/login');
   };
   const handleFreePlanClick = () => {
     navigate('/signup');
