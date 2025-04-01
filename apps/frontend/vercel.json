@@ -6,7 +6,9 @@
       "config": { "distDir": "apps/frontend/dist" }
     }
   ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "apps/frontend/dist/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "buildCommand": "pnpm install && nx build frontend",
+  "installCommand": "pnpm install",
+  "outputDirectory": "apps/frontend/dist",
+  "devCommand": "nx serve frontend"
 }
