@@ -7,7 +7,6 @@
         "distDir": "apps/frontend/dist",
         "buildCommand": "pnpm install && nx build frontend",
         "installCommand": "pnpm install",
-        "outputDirectory": "apps/frontend/dist",
         "devCommand": "nx serve frontend"
       }
     }
