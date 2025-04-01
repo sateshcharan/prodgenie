@@ -17,12 +17,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: apps/frontend
 
-      - name: Build project
-        run: pnpm run build
-        working-directory: apps/frontend
+      - name: Build frontend with Nx
+        run: pnpm nx build frontend
 
       - name: Deploy to Vercel
-        run: pnpm dlx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/frontend
+        run: pnpm dlx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
