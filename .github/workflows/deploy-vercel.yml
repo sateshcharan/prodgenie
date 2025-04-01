@@ -34,9 +34,9 @@ jobs:
     env:
       PREVIEW: true
     steps:
-      # - name: Deploy to Vercel (via pnpm dlx)
-      #   run: pnpm dlx vercel --preview --yes --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel (via pnpm dlx)
+        run: pnpm dlx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       # Alternatively, if you prefer using `vercel deploy`:
-      - name: Deploy to Vercel
-        run: pnpm dlx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      # - name: Deploy to Vercel
+      #   run: pnpm dlx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
