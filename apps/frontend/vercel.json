@@ -3,15 +3,13 @@
     {
       "src": "apps/frontend/",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "apps/frontend/dist",
-        "buildCommand": "pnpm install && nx build frontend",
-        "installCommand": "pnpm install",
-        "devCommand": "nx serve frontend"
-      }
+      "config": { "distDir": "apps/frontend/dist" }
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/apps/frontend/dist/index.html" }
-  ]
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "buildCommand": "pnpm install && nx build frontend",
+  "installCommand": "pnpm install",
+  "devCommand": "nx serve frontend"
 }
