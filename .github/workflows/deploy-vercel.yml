@@ -26,4 +26,4 @@ jobs:
       #   run: pnpm dlx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel Preview
-        run: pnpm dlx vercel deploy --prebuilt --target=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel deploy --yes --prebuilt --target=preview --token=${{ secrets.VERCEL_TOKEN }}
