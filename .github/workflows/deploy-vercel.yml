@@ -39,4 +39,4 @@ jobs:
 
       # Alternatively, if you prefer using `vercel deploy`:
       - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
