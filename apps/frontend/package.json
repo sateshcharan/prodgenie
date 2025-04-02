@@ -4,5 +4,8 @@
   "private": true,
   "nx": {
     "name": "frontend"
+  },
+  "scripts": {
+    "vercel-build": "nx build frontend --output-path dist"
   }
 }
