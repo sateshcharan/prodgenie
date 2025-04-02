@@ -4,8 +4,5 @@
   "private": true,
   "nx": {
     "name": "frontend"
-  },
-  "scripts": {
-    "vercel-build": "pnpm dlx nx build frontend --configuration=production"
   }
 }

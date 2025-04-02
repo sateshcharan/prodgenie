@@ -2,7 +2,9 @@
   "name": "@prodgenie/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "vercel-build": "pnpm dlx nx build frontend --configuration=production"
+  },
   "private": true,
   "dependencies": {
     "@prisma/client": "^6.5.0",
