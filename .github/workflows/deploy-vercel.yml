@@ -19,9 +19,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # - name: Build frontend with Nx
-      #   run: pnpm nx build frontend
-
       - name: Pull Vercel Project Settings
         run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 

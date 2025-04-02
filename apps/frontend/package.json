@@ -6,6 +6,6 @@
     "name": "frontend"
   },
   "scripts": {
-    "vercel-build": "nx build frontend "
+    "vercel-build": "nx build frontend --configuration=production"
   }
 }
