@@ -6,6 +6,6 @@
     "name": "frontend"
   },
   "scripts": {
-    "vercel-build": "nx build frontend --output-path dist"
+    "vercel-build": "nx build frontend "
   }
 }
