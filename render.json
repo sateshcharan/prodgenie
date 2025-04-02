@@ -1,18 +1,24 @@
 {
   "services": [
     {
+      "type": "web",
       "name": "prodgenie-backend",
       "region": "singapore",
       "env": "node",
       "plan": "free",
       "repository": "https://github.com/sateshcharan/prodgeie",
-      "branch": "main",
+      "branch": "backend",
       "buildCommand": "corepack enable && pnpm install && pnpm dlx nx build backend && pnpm prisma generate && pnpm prisma migrate deploy",
       "startCommand": "node apps/backend/dist/main.js",
+      "rootDir": "apps/backend",
       "envVars": [
         {
           "key": "DATABASE_URL",
-          "fromService": "your-database-service"
+          "sync": false
+        },
+        {
+          "key": "SUPABASE_PASSWORD",
+          "sync": false
         }
       ]
     }
