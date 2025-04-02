@@ -5,6 +5,9 @@
   "scripts": {
     "vercel-build": "pnpm dlx nx build frontend --configuration=production"
   },
+  "prisma": {
+    "schema": "libs/prisma/prisma/schema.prisma"
+  },
   "private": true,
   "dependencies": {
     "@prisma/client": "^6.5.0",
