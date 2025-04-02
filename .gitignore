@@ -47,3 +47,4 @@ test-output
 
 .env
 .prisma
+.vercel

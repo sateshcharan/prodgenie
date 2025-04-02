@@ -1,6 +1,5 @@
 {
   "build": {
-    "command": "pnpm install && nx build frontend",
     "outputDirectory": "apps/frontend/dist"
   },
   "rewrites": [
