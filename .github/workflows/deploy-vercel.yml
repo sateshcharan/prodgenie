@@ -21,12 +21,15 @@ jobs:
 
       - name: Pull Vercel Project Settings
         run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/frontend
 
       - name: Generate Vercel Build Output
         run: pnpm dlx vercel build
+        working-directory: apps/frontend
 
       # - name: Deploy to Vercel (via pnpm dlx)
       #   run: pnpm dlx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel Preview
         run: pnpm dlx vercel deploy --yes --prebuilt --target=preview --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/frontend
