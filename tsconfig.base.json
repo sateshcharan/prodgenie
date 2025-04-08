@@ -22,7 +22,11 @@
       "@prodgenie/apps/ui": ["apps/ui/src"],
       "@prodgenie/apps/ui/*": ["apps/ui/src/*"],
       "@prodgenie/apps/utils": ["apps/utils/src"],
-      "@prodgenie/apps/utils/*": ["apps/utils/src/*"]
+      "@prodgenie/apps/utils/*": ["apps/utils/src/*"],
+      "@prodgenie/supabase": ["libs/supabase/src"],
+      "@prodgenie/supabase/*": ["libs/supabase/src/*"],
+      "@prodgenie/types": ["libs/types/src"],
+      "@prodgenie/types/*": ["libs/types/src/*"]
     }
   }
 }

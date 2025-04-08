@@ -29,15 +29,5 @@
         }
       }
     }
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/passport": "^1.0.17",
-    "@types/passport-jwt": "^4.0.1",
-    "@types/passport-local": "^1.0.38"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express-rate-limit": "^7.5.0"
   }
 }

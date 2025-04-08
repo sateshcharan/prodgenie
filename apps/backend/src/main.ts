@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import authRoutes from './routes/auth.routes';
+import fileRoutes from './routes/file.routes';
+
 import passport from './middlewares/passport.middleware';
 
 const allowedOrigins = [
@@ -26,7 +28,9 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(cors(options));
 app.use(express.json());
 app.use(passport.initialize());
+
 app.use('/api/auth', authRoutes);
+app.use('/api/file', fileRoutes);
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to backend!' });

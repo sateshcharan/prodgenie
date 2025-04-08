@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import { Layout, DashLayout } from './layouts/index';
 import { Home, Login, Signup, Dashboard, Templates } from './pages/index';
+import ProtectedRoute from './components/PrivateRoute';
 
 export function App() {
   return (
@@ -15,7 +16,14 @@ export function App() {
 
       {/* Protected Dashboard Routes with Sidebar */}
       <Route path="/" element={<DashLayout />}>
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="templates" element={<Templates />} />
       </Route>
     </Routes>

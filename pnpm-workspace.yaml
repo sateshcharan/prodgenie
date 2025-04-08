@@ -2,3 +2,4 @@ packages:
   - 'apps/*'
   - 'prisma'
   - 'libs/*'
+  - 'libs'

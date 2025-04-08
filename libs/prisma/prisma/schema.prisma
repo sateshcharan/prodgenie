@@ -21,6 +21,8 @@ model User {
 
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  File File[]
 }
 
 model Organization {
@@ -40,4 +42,13 @@ model ProductTemplate {
   id         String @id @default(uuid())
   jobOrderId String @unique
   data       Json
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  path      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }

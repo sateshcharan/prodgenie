@@ -11,12 +11,23 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
     historyApiFallback: true,
+    // localhost proxy
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   preview: {
     port: 4300,
     host: 'localhost',
   },
   plugins: [react()],
+  optimizeDeps: {
+    include: ['pdfjs-dist/build/pdf.worker.min.js'],
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],

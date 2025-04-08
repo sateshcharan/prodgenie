@@ -11,9 +11,10 @@ export * from './sidebar';
 
 //components
 export * from './components/pricing-card';
-export * from './components/login-form';
-export * from './components/signup-form';
 export * from './components/app-sidebar';
+export * from './components/auth-form';
+
+export * from './components/toast/toast';
 
 export { default as Header } from './components/Header';
 export { default as Footer } from './components/Footer';

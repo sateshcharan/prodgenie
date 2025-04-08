@@ -1,9 +1,29 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
-const { join } = require('path');
+const { join, resolve } = require('path');
+
+const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
 
 module.exports = {
   output: {
     path: join(__dirname, 'dist'),
+  },
+  // module: {
+  //   rules: [
+  //     {
+  //       test: /\.ts$/,
+  //       include: [join(__dirname, 'src'), supabaseLibPath],
+  //       loader: 'ts-loader',
+  //       options: {
+  //         configFile: join(__dirname, 'tsconfig.app.json'),
+  //       },
+  //     },
+  //   ],
+  // },
+  resolve: {
+    alias: {
+      '@prodgenie/supabase': supabaseLibPath,
+    },
+    extensions: ['.ts', '.js'],
   },
   plugins: [
     new NxAppWebpackPlugin({

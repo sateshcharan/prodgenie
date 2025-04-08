@@ -23,6 +23,12 @@
     },
     {
       "path": "./libs/prisma"
+    },
+    {
+      "path": "./libs/types"
+    },
+    {
+      "path": "./libs/supabase"
     }
   ]
 }
