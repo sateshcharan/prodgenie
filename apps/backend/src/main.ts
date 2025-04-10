@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import authRoutes from './routes/auth.routes';
-import fileRoutes from './routes/file.routes';
+import drawingRoutes from './routes/drawing.routes';
 
 import passport from './middlewares/passport.middleware';
 
@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/file', fileRoutes);
+app.use('/api/drawing', drawingRoutes);
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to backend!' });

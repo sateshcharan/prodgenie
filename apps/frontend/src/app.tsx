@@ -14,39 +14,25 @@ import { PrivateRoute } from './routes';
 export function App() {
   return (
     <Routes>
-      {/* Public Routes with Main Layout */}
+      {/* Public Routes */}
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
       </Route>
 
-      {/* Protected Dashboard Routes with Sidebar */}
-      <Route path="/" element={<DashLayout />}>
-        <Route
-          path="dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="drawings"
-          element={
-            <PrivateRoute>
-              <Drawings />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="drawings/:id"
-          element={
-            <PrivateRoute>
-              <DrawingDetails />
-            </PrivateRoute>
-          }
-        />
+      {/* Protected Dashboard Routes */}
+      <Route
+        path="dashboard"
+        element={
+          <PrivateRoute>
+            <DashLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="drawings" element={<Drawings />} />
+        <Route path="drawings/:id" element={<DrawingDetails />} />
       </Route>
     </Routes>
   );

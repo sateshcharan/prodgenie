@@ -28,17 +28,17 @@ const Drawings = () => {
   const [cardData, setCardData] = useState<CardItem[]>([]);
   useEffect(() => {
     axios
-      .get('/api/file/files', {
+      .get('/api/drawing/drawings', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
       .then((res) => {
         console.log(res.data);
-        setCardData(res.data.files);
+        setCardData(res.data.drawings);
       })
       .catch((err) => {
-        console.log('error fetching files', err);
+        console.log('error fetching drawings', err);
       });
   }, []);
 

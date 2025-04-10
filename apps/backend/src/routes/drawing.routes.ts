@@ -6,14 +6,14 @@ import { supabase } from '@prodgenie/supabase';
 const router: Router = express.Router();
 
 router.get(
-  '/files',
+  '/drawings',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     try {
       const userId = (req.user as any).id;
 
       // 1. Fetch file records from Prisma
-      const files = await prisma.file.findMany({
+      const drawings = await prisma.file.findMany({
         where: { userId },
       });
 
@@ -33,12 +33,12 @@ router.get(
       //     })
       //   );
 
-      return res.json({ success: true, files: files });
+      return res.json({ success: true, drawings: drawings });
     } catch (err) {
       console.error(err);
       res
         .status(500)
-        .json({ success: false, message: 'Failed to fetch files.' });
+        .json({ success: false, message: 'Failed to fetch drawings.' });
     }
   }
 );
