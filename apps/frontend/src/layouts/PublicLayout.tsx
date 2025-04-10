@@ -1,16 +1,16 @@
 import { Outlet } from 'react-router-dom';
 import { Footer, Header } from '@prodgenie/apps/ui';
 
-const Layout = () => {
+const PublicLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow p-4">
-        <Outlet /> {/* This will render the current route's component */}
+        <Outlet />
       </main>
       <Footer />
     </div>
   );
 };
 
-export default Layout;
+export default PublicLayout;

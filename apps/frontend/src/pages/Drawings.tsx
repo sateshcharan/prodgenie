@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@prodgenie/apps/ui';
 import axios from 'axios';
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactPDF from '../components/ReactPDF';
 
 interface CardItem {
@@ -14,7 +15,16 @@ interface CardItem {
 
 const cardData: CardItem[] = [];
 
-const Templates = () => {
+const Drawings = () => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (card_id: number, path: string) => {
+    console.log('Card clicked:', card_id);
+    navigate(`/drawings/${card_id}`, {
+      state: { path },
+    });
+  };
+
   const [cardData, setCardData] = useState<CardItem[]>([]);
   useEffect(() => {
     axios
@@ -35,10 +45,14 @@ const Templates = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {cardData.length === 0 ? (
-        <p className="text-center col-span-full">No templates found.</p>
+        <p className="text-center col-span-full">No drawings found.</p>
       ) : (
         cardData.map((card) => (
-          <Card key={card.id} className="shadow-lg rounded-xl">
+          <Card
+            key={card.id}
+            className="shadow-lg rounded-xl"
+            onClick={() => handleCardClick(card.id, card.path)}
+          >
             <CardHeader>
               <CardTitle>{card.name}</CardTitle>
             </CardHeader>
@@ -59,4 +73,4 @@ const Templates = () => {
   );
 };
 
-export default Templates;
+export default Drawings;

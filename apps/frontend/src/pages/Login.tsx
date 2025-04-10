@@ -24,7 +24,7 @@ const Login = () => {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, data);
       localStorage.setItem('token', res.data.token);
-      navigate('/templates');
+      navigate('/dashboard');
       // Store token, redirect, toast, etc.
     } catch (err) {
       console.error('Login failed:', err);

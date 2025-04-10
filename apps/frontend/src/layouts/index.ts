@@ -1,2 +1,2 @@
 export {default as DashLayout} from './DashLayout';
-export {default as Layout} from './Layout';
+export {default as PublicLayout} from './PublicLayout';

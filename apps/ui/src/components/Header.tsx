@@ -13,8 +13,10 @@ import { NavigationMenuDemo } from './NavigationMenuDemo';
 import { Globe } from 'lucide-react';
 
 import logo from '../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <header className="bg-while flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
@@ -35,7 +37,7 @@ const Header = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button>Log in</Button>
+        <Button onClick={() => navigate('/login')}>Log in</Button>
       </div>
     </header>
   );
