@@ -3,8 +3,7 @@ import * as path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-import authRoutes from './routes/auth.routes';
-import drawingRoutes from './routes/drawing.routes';
+import { authRoutes, fileRoutes } from './routes';
 
 import passport from './middlewares/passport.middleware';
 
@@ -30,7 +29,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/drawing', drawingRoutes);
+app.use('/api/files', fileRoutes);
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to backend!' });

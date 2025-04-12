@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { AuthFormProps } from '@prodgenie/types';
+import { AuthFormProps } from '@prodgenie/libs/types';
 import { cn } from '@prodgenie/apps/utils';
 import {
   Button,
@@ -11,6 +11,8 @@ import {
   Input,
   Label,
 } from '..';
+import { userSchema, User } from '@prodgenie/libs/schemas';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const AuthForm = ({
   fields,
@@ -23,7 +25,9 @@ const AuthForm = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<User>({
+    resolver: zodResolver(userSchema),
+  });
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -42,22 +46,8 @@ const AuthForm = ({
               {fields.map(({ name, label, type, validation }) => (
                 <div key={name} className="grid gap-2">
                   <Label htmlFor={name}>{label}</Label>
-                  <Input
-                    id={name}
-                    type={type}
-                    {...register(name, validation)}
-                    required={!!validation?.required}
-                  />
-                  {errors[name] && (
-                    <p className="text-red-500 text-sm">
-                      {errors[name] &&
-                        typeof errors[name]?.message === 'string' && (
-                          <p className="text-red-500 text-sm">
-                            {errors[name]?.message}
-                          </p>
-                        )}
-                    </p>
-                  )}
+                  <Input id={name} type={type} {...register('name')} />
+                  <p>{errors.name?.message}</p>
                 </div>
               ))}
               <Button type="submit" className="w-full">

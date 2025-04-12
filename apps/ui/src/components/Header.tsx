@@ -8,7 +8,7 @@ import {
   Button,
 } from '../';
 
-import { NavigationMenuDemo } from './NavigationMenuDemo';
+// import { NavigationMenuDemo } from './NavigationMenuDemo';
 
 import { Globe } from 'lucide-react';
 
@@ -20,8 +20,13 @@ const Header = () => {
   return (
     <header className="bg-while flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
-        <img src={logo} alt="Website Logo" className="h-8 w-auto" />
-        <NavigationMenuDemo />
+        <img
+          src={logo}
+          alt="Website Logo"
+          className="h-8 w-auto cursor-pointer" 
+          onClick={() => navigate('/')}
+        />
+        {/* <NavigationMenuDemo /> */}
       </div>
       <div className=" flex items-center gap-2">
         <Select defaultValue="english">

@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactPDF from '../components/ReactPDF';
 
+import { apiRoutes } from '@prodgenie/libs/constants';
+
 interface CardItem {
   id: number;
   name: string;
@@ -28,7 +30,7 @@ const Drawings = () => {
   const [cardData, setCardData] = useState<CardItem[]>([]);
   useEffect(() => {
     axios
-      .get('/api/drawing/drawings', {
+      .get(`/api/files${apiRoutes.drawings.url}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

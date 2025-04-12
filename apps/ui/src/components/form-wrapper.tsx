@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
-import { Toast } from './toast/toast';
+import { Toast } from './toast';
 
 interface FormWrapperProps<T extends FieldValues> {
   onSubmit: (data: T) => Promise<void>;

@@ -1,15 +1,17 @@
-import { PricingCard } from '@prodgenie/apps/ui';
+import { PricingCard, Button } from '@prodgenie/apps/ui';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@prodgenie/apps/ui';
 
 const Home = () => {
   const navigate = useNavigate();
 
   const handleProPlanClick = () => {
-    navigate('/login');
+    navigate('/signup');
   };
   const handleFreePlanClick = () => {
     navigate('/signup');
   };
+
   return (
     <div>
       <section>
@@ -26,6 +28,14 @@ const Home = () => {
           />
         </div>
       </section>
+      <Button
+        variant="outline"
+        onClick={() => {
+          toast.success('Job order created successfully!');
+        }}
+      >
+        Show Toast
+      </Button>
     </div>
   );
 };

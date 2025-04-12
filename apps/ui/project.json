@@ -8,5 +8,9 @@
     "add-component": {
       "executor": "@nx-extend/shadcn-ui:add"
     }
-  }
+  },
+  "implicitDependencies": [
+    "libs/constants",
+    "libs/schemas"
+  ]
 }

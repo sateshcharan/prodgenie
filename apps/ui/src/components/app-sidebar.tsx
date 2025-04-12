@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Briefcase, StepForward } from 'lucide-react';
+// import { Calendar, Home, Inbox, Briefcase, StepForward } from 'lucide-react';
 import { sidebarItems } from '@prodgenie/libs/constants';
 
 import {

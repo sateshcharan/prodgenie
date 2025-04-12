@@ -1,8 +1,11 @@
-import { AuthForm } from '@prodgenie/apps/ui';
+import { AuthForm, toast } from '@prodgenie/apps/ui';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
+
+  const navigate = useNavigate();
 
   const signupFields = [
     {
@@ -17,15 +20,25 @@ const Signup = () => {
       type: 'password',
       validation: { required: 'Password is required' },
     },
+    {
+      name: 'orgName',
+      label: 'Organization Name',
+      type: 'text',
+      validation: { required: 'Organization name is required' },
+    }
   ];
 
   const handleSignup = async (data: any) => {
     try {
+      console.log()
       const res = await axios.post(`${API_URL}/auth/signup`, data);
       console.log('Signup response:', res.data);
+      toast.success('Signup successful!');
+      navigate('/dashboard');
       // Store token, redirect, toast, etc.
     } catch (err) {
       console.error('Signup failed:', err);
+      toast.error('Signup failed!');
     }
   };
 

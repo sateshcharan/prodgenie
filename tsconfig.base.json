@@ -23,12 +23,16 @@
       "@prodgenie/apps/ui/*": ["apps/ui/src/*"],
       "@prodgenie/apps/utils": ["apps/utils/src"],
       "@prodgenie/apps/utils/*": ["apps/utils/src/*"],
-      "@prodgenie/constants": ["libs/constants/src"],
-      "@prodgenie/constants/*": ["libs/constants/src/*"],
-      "@prodgenie/supabase": ["libs/supabase/src"],
-      "@prodgenie/supabase/*": ["libs/supabase/src/*"],
-      "@prodgenie/types": ["libs/types/src"],
-      "@prodgenie/types/*": ["libs/types/src/*"]
+      "@prodgenie/libs/constants": ["libs/constants/src"],
+      "@prodgenie/libs/constants/*": ["libs/constants/src/*"],
+      "@prodgenie/libs/schemas": ["libs/schemas/src"],
+      "@prodgenie/libs/schemas/*": ["libs/schemas/src/*"],
+      "@prodgenie/libs/store": ["libs/store/src"],
+      "@prodgenie/libs/store/*": ["libs/store/src/*"],
+      "@prodgenie/libs/supabase": ["libs/supabase/src"],
+      "@prodgenie/libs/supabase/*": ["libs/supabase/src/*"],
+      "@prodgenie/libs/types": ["libs/types/src"],
+      "@prodgenie/libs/types/*": ["libs/types/src/*"]
     }
   }
 }

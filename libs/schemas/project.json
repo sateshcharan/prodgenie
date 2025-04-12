@@ -1,0 +1,8 @@
+{
+  "name": "schemas",
+  "root": "libs/schemas",
+  "sourceRoot": "libs/schemas/src",
+  "projectType": "library",
+  "targets": {},
+  "tags": []
+}

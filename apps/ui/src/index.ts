@@ -13,9 +13,11 @@ export * from './sidebar';
 export * from './components/pricing-card';
 export * from './components/app-sidebar';
 export * from './components/auth-form';
-
-export * from './components/toast/toast';
+export * from './components/toast';
 
 export { default as Header } from './components/Header';
 export { default as Footer } from './components/Footer';
 export { default as DashHeader } from './components/DashHeader';
+
+//hooks
+export { toast } from 'sonner';

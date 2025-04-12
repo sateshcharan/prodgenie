@@ -1,0 +1,8 @@
+{
+  "name": "store",
+  "root": "libs/store",
+  "sourceRoot": "libs/store/src",
+  "projectType": "library",
+  "targets": {},
+  "tags": []
+}

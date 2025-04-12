@@ -21,7 +21,7 @@ module.exports = {
   // },
   resolve: {
     alias: {
-      '@prodgenie/supabase': supabaseLibPath,
+      '@prodgenie/libs/supabase': supabaseLibPath,
     },
     extensions: ['.ts', '.js'],
   },

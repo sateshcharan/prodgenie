@@ -6,6 +6,12 @@
       "path": "../../libs/types"
     },
     {
+      "path": "../../libs/constants"
+    },
+    {
+      "path": "../../libs/schemas"
+    },
+    {
       "path": "../utils"
     },
     {

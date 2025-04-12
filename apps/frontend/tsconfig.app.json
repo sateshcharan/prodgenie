@@ -36,6 +36,12 @@
     },
     {
       "path": "../ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/constants/tsconfig.lib.json"
     }
   ]
 }

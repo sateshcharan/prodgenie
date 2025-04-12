@@ -32,6 +32,12 @@
     },
     {
       "path": "./libs/constants"
+    },
+    {
+      "path": "./libs/schemas"
+    },
+    {
+      "path": "./libs/store"
     }
   ]
 }

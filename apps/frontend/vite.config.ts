@@ -36,7 +36,15 @@ export default defineConfig(() => ({
     alias: {
       '@prodgenie/apps/ui': path.resolve(__dirname, '../ui/src'),
       '@prodgenie/apps/utils': path.resolve(__dirname, '../utils/src'),
-      '@prodgenie/libs/constants': path.resolve(__dirname, '../../libs/constants/src'),
+      '@prodgenie/libs/constants': path.resolve(
+        __dirname,
+        '../../libs/constants/src'
+      ),
+      '@prodgenie/libs/schemas': path.resolve(
+        __dirname,
+        '../../libs/schemas/src'
+      ),
+      '@prodgenie/libs/store': path.resolve(__dirname, '../../libs/store/src'),
     },
   },
   build: {

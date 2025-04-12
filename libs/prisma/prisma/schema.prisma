@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,41 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-
-  File File[]
-}
-
 model Organization {
   id    String @id @default(uuid())
   name  String @unique
   users User[]
 }
 
-model JobOrder {
-  id         String   @id @default(uuid())
-  fileUrl    String
-  parameters Json
-  createdAt  DateTime @default(now())
+enum UserType {
+  ADMIN
+  OWNER
+  USER
 }
 
-model ProductTemplate {
-  id         String @id @default(uuid())
-  jobOrderId String @unique
-  data       Json
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  type UserType
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  File      File[]
+  createdAt DateTime @default(now())
+}
+
+enum FileType {
+  DRAWING
+  TEMPLATE
+  SEQUENCE
+  JOB_CARD
 }
 
 model File {
-  id        String   @id @default(uuid())
-  name      String
-  path      String
+  id   String @id @default(uuid())
+  name String
+  path String
+
+  type      FileType
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())

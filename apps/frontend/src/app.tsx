@@ -10,6 +10,7 @@ import {
   DrawingDetails,
 } from './pages/index';
 import { PrivateRoute } from './routes';
+import { TestAuthStore } from './pages/TestAuthStore';
 
 export function App() {
   return (
@@ -34,6 +35,8 @@ export function App() {
         <Route path="drawings" element={<Drawings />} />
         <Route path="drawings/:id" element={<DrawingDetails />} />
       </Route>
+
+      <Route path='state' element={<TestAuthStore />} />
     </Routes>
   );
 }
