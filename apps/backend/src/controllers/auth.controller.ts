@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import passport from 'passport';
+import { Request, Response } from 'express';
 import { registerUser, generateToken } from '../services/auth.service';
 
 export const signup = async (req: Request, res: Response) => {

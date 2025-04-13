@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
-import { AuthFormProps } from '@prodgenie/libs/types';
-import { cn } from '@prodgenie/apps/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import {
   Button,
   Card,
@@ -11,8 +11,9 @@ import {
   Input,
   Label,
 } from '..';
-import { userSchema, User } from '@prodgenie/libs/schemas';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { cn } from '@prodgenie/apps/utils';
+import { AuthFormProps, User } from '@prodgenie/libs/types';
+import { loginSchema, signupSchema, userSchema } from '@prodgenie/libs/schemas';
 
 const AuthForm = ({
   fields,
@@ -26,7 +27,7 @@ const AuthForm = ({
     handleSubmit,
     formState: { errors },
   } = useForm<User>({
-    resolver: zodResolver(userSchema),
+    resolver: zodResolver(buttonLabel === 'Login' ? loginSchema : signupSchema),
   });
 
   return (
@@ -43,11 +44,17 @@ const AuthForm = ({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
-              {fields.map(({ name, label, type, validation }) => (
+              {fields.map(({ name, label, type }) => (
                 <div key={name} className="grid gap-2">
                   <Label htmlFor={name}>{label}</Label>
-                  <Input id={name} type={type} {...register('name')} />
-                  <p>{errors.name?.message}</p>
+                  <Input
+                    id={name}
+                    type={type}
+                    {...register(name as keyof User)}
+                  />
+                  <p className="text-sm text-red-500">
+                    {errors?.[name as keyof typeof errors]?.message as string}
+                  </p>
                 </div>
               ))}
               <Button type="submit" className="w-full">

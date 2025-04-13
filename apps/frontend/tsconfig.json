@@ -3,22 +3,25 @@
   "include": [],
   "references": [
     {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    },
-    {
       "path": "../utils"
-    },
-    {
-      "path": "../ui"
     },
     {
       "path": "../../libs/store"
     },
     {
+      "path": "../../libs/schemas"
+    },
+    {
       "path": "../../libs/constants"
+    },
+    {
+      "path": "../ui"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
     }
   ],
   "extends": "../../tsconfig.base.json"

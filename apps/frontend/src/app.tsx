@@ -36,7 +36,7 @@ export function App() {
         <Route path="drawings/:id" element={<DrawingDetails />} />
       </Route>
 
-      <Route path='state' element={<TestAuthStore />} />
+      <Route path="state" element={<TestAuthStore />} />
     </Routes>
   );
 }

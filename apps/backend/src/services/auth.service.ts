@@ -8,12 +8,17 @@ const saltRounds = process.env.SALT_ROUNDS || 10;
 export const registerUser = async ({
   email,
   password,
+  organization,
 }: {
   email: string;
   password: string;
+  organization: string;
 }) => {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  return prisma.user.create({ data: { email, password: hashedPassword } });
+  console.log(email, password, organization);
+  return prisma.user.create({
+    data: { email, password: hashedPassword, organization },
+  });
 };
 
 export const generateToken = (user: { id: string; email: string }) => {
