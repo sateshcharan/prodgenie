@@ -1,20 +1,26 @@
 export const apiRoutes = {
+  api: {
+    url: '/api',
+  },
+  fileRoutes: {
+    url: '/files',
+  },
   signup: {
-    url: 'auth/signup',
+    url: '/auth/signup',
   },
   login: {
-    url: 'auth/login',
+    url: '/auth/login',
   },
   drawings: {
-    url: 'files/drawings',
+    url: '/files/drawings',
   },
   templates: {
-    url: 'files/templates',
+    url: '/files/templates',
   },
   sequences: {
-    url: 'files/sequences',
+    url: '/files/sequences',
   },
-  jobOrders: {
-    url: 'files/job-orders',
+  'job_cards': {
+    url: '/files/job_cards',
   },
 };

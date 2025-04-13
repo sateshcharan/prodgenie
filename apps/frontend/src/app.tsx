@@ -1,18 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
+import React from 'react';
 
 import { PublicLayout, DashLayout } from './layouts/index';
-import {
-  Home,
-  Login,
-  Signup,
-  Dashboard,
-  Drawings,
-  DrawingDetails,
-} from './pages/index';
+import { Home, Dashboard } from './pages';
+import { Login, Signup, Files, FileDetails } from './components';
 import { PrivateRoute } from './routes';
 import { TestAuthStore } from './pages/TestAuthStore';
 
 export function App() {
+  const files = ['drawings', 'templates', 'sequences', 'job_cards'];
+
   return (
     <Routes>
       {/* Public Routes */}
@@ -32,8 +29,12 @@ export function App() {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="drawings" element={<Drawings />} />
-        <Route path="drawings/:id" element={<DrawingDetails />} />
+        {files.map((fileType) => (
+          <React.Fragment key={fileType}>
+            <Route path={`${fileType}`} element={<Files />} />
+            <Route path={`${fileType}/:id`} element={<FileDetails />} />
+          </React.Fragment>
+        ))}
       </Route>
 
       <Route path="state" element={<TestAuthStore />} />

@@ -8,7 +8,7 @@ import {
   Button,
 } from '..';
 
-import { Globe, Share2 } from 'lucide-react';
+import { Globe, FolderSync } from 'lucide-react';
 
 import logo from '../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ const Header = () => {
         <img src={logo} alt="Website Logo" className="h-8 w-auto" />
       </div>
       <div className=" flex items-center gap-2">
-        <Share2 className="w-4 h-4" />
+        <FolderSync className="w-6 h-6" />
         <Select defaultValue="english">
           <SelectTrigger className="w-[140px] flex items-center gap-2">
             <Globe className="w-4 h-4" />

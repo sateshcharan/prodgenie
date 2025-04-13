@@ -12,8 +12,8 @@ import {
   Label,
 } from '..';
 import { cn } from '@prodgenie/apps/utils';
-import { AuthFormProps, User } from '@prodgenie/libs/types';
-import { loginSchema, signupSchema, userSchema } from '@prodgenie/libs/schemas';
+import { AuthFormProps } from '@prodgenie/libs/types';
+import { loginSchema, signupSchema, authSchema } from '@prodgenie/libs/schemas';
 
 const AuthForm = ({
   fields,
@@ -26,7 +26,7 @@ const AuthForm = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<User>({
+  } = useForm<authSchema>({
     resolver: zodResolver(buttonLabel === 'Login' ? loginSchema : signupSchema),
   });
 
@@ -50,7 +50,7 @@ const AuthForm = ({
                   <Input
                     id={name}
                     type={type}
-                    {...register(name as keyof User)}
+                    {...register(name as keyof authSchema)}
                   />
                   <p className="text-sm text-red-500">
                     {errors?.[name as keyof typeof errors]?.message as string}

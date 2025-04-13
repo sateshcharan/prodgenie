@@ -2,8 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@prodgenie/apps/ui';
 import axios from 'axios';
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ReactPDF from '../components/ReactPDF';
+import { useNavigate, useLocation } from 'react-router-dom';
+import ReactPDF from './ReactPDF';
 
 import { apiRoutes } from '@prodgenie/libs/constants';
 
@@ -17,37 +17,39 @@ interface CardItem {
 
 const cardData: CardItem[] = [];
 
-const Drawings = () => {
+const Files = () => {
   const navigate = useNavigate();
-
-  const handleCardClick = (card_id: number, path: string) => {
-    console.log('Card clicked:', card_id);
-    navigate(`/drawings/${card_id}`, {
-      state: { path },
-    });
-  };
+  const location = useLocation();
+  const file = location.pathname.split('/').pop();
 
   const [cardData, setCardData] = useState<CardItem[]>([]);
+
   useEffect(() => {
     axios
-      .get(`/api/files${apiRoutes.drawings.url}`, {
+      .get(`${apiRoutes.api.url}${apiRoutes[file].url}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
       .then((res) => {
         console.log(res.data);
-        setCardData(res.data.drawings);
+        setCardData(res.data.files);
       })
       .catch((err) => {
-        console.log('error fetching drawings', err);
+        console.log(`error fetching ${file}`, err);
       });
   }, []);
+
+  const handleCardClick = (card_id: number, path: string) => {
+    navigate(`/dashboard/${file}/${card_id}`, {
+      state: { path },
+    });
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {cardData.length === 0 ? (
-        <p className="text-center col-span-full">No drawings found.</p>
+        <p className="text-center col-span-full">No {file} found.</p>
       ) : (
         cardData.map((card) => (
           <Card
@@ -75,4 +77,4 @@ const Drawings = () => {
   );
 };
 
-export default Drawings;
+export default Files;

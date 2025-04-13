@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import { authRoutes, fileRoutes } from './routes';
+import { apiRoutes } from '@prodgenie/libs/constants';
 
 import passport from './middlewares/passport.middleware';
 
@@ -28,8 +29,8 @@ app.use(cors(options));
 app.use(express.json());
 app.use(passport.initialize());
 
-app.use('/api/auth', authRoutes);
-app.use('/api/files', fileRoutes);
+app.use(apiRoutes.api.url, authRoutes);
+app.use(apiRoutes.api.url, fileRoutes);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

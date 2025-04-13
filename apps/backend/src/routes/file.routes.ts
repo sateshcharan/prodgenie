@@ -7,43 +7,47 @@ import { createOrganizationFolders } from '../lib/storage';
 
 const router: Router = express.Router();
 
-router.get(
-  '/drawings',
-  passport.authenticate('jwt', { session: false }),
-  async (req, res) => {
-    try {
-      const userId = (req.user as any).id;
+const fileTypes = ['drawings', 'templates', 'job_cards', 'sequences'];
 
-      // 1. Fetch file records from Prisma
-      const drawings = await prisma.file.findMany({
-        where: { userId, type: 'drawing' },
-      });
+fileTypes.map((type) => {
+  router.get(
+    `/files/${type}`,
+    passport.authenticate('jwt', { session: false }),
+    async (req, res) => {
+      try {
+        const userId = (req.user as any).id;
 
-      //   // 2. Generate signed URLs from Supabase
-      //   const signedFiles = await Promise.all(
-      //     files.map(async (file) => {
-      //       const { data: urlData, error } = await supabase.storage
-      //         .from('prodgenie')
-      //         .createSignedUrl(file.path, 60 * 60); // 1 hour
+        // 1. Fetch file records from Prisma
+        const files = await prisma.file.findMany({
+          where: { userId, type: type.toUpperCase().slice(0, type.length - 1) },
+        });
 
-      //       if (error) throw new Error(error.message);
+        //   // 2. Generate signed URLs from Supabase
+        //   const signedFiles = await Promise.all(
+        //     files.map(async (file) => {
+        //       const { data: urlData, error } = await supabase.storage
+        //         .from('prodgenie')
+        //         .createSignedUrl(file.path, 60 * 60); // 1 hour
 
-      //       return {
-      //         name: file.name,
-      //         url: urlData?.signedUrl,
-      //       };
-      //     })
-      //   );
+        //       if (error) throw new Error(error.message);
 
-      return res.json({ success: true, drawings: drawings });
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .json({ success: false, message: 'Failed to fetch drawings.' });
+        //       return {
+        //         name: file.name,
+        //         url: urlData?.signedUrl,
+        //       };
+        //     })
+        //   );
+
+        return res.json({ success: true, files: files });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ success: false, message: 'Failed to fetch files.' });
+      }
     }
-  }
-);
+  );
+});
 
 router.post('/create-org', async (req, res) => {
   const { orgName } = req.body;

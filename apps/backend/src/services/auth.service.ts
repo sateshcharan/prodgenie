@@ -1,23 +1,29 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma';
+import { User } from '@prodgenie/libs/types';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
 const saltRounds = process.env.SALT_ROUNDS || 10;
 
 export const registerUser = async ({
+  name,
   email,
   password,
-  organization,
-}: {
-  email: string;
-  password: string;
-  organization: string;
-}) => {
+  type,
+  organizationId,
+}: User) => {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log(email, password, organization);
+  console.log(hashedPassword);
+
   return prisma.user.create({
-    data: { email, password: hashedPassword, organization },
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      type,
+      organizationId: organizationId ?? null,
+    },
   });
 };
 

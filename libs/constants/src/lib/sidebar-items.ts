@@ -22,8 +22,8 @@ export const sidebarItems = [
     icon: StepForward,
   },
   {
-    title: 'Job Orders',
-    url: '/dashboard/job-orders',
+    title: 'Job Cards',
+    url: '/dashboard/job_cards',
     icon: Briefcase,
   },
 ];
