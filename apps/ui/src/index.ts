@@ -16,6 +16,7 @@ export * from './components/app-sidebar';
 export * from './components/auth-form';
 export * from './components/toast';
 export * from './components/utility-bar';
+export * from './components/folder-dropzone';
 
 export { default as Header } from './components/Header';
 export { default as Footer } from './components/Footer';

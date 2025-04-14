@@ -61,16 +61,16 @@ const Files = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">{card.id}</p>
-              {/* <iframe
-                src={card.path}
-                width={300}
-                height={300}
-                className="rounded-lg shadow-md"
-              /> */}
 
               {card.name.endsWith('.pdf') ? (
-                <PDFViewer fileUrl={card.path} />
-              ) : card.name.endsWith('.xlsx') ? (
+                <iframe
+                  src={card.path}
+                  width={300}
+                  height={300}
+                  className="rounded-lg shadow-md"
+                />
+              ) : // <PDFViewer fileUrl={card.path} />
+              card.name.endsWith('.xlsx') ? (
                 <ExcelViewer file={card.path} />
               ) : card.name.endsWith('.json') ? (
                 <JSONViewer data={card.path} />

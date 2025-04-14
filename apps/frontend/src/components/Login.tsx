@@ -10,12 +10,10 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (data: any) => {
-    console.log(data);
     try {
       const res = await axios.post(`${API_URL}/${apiRoutes.login.url}`, data);
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
-      console.log('Login response:', res.data);
     } catch (err) {
       console.error('Login failed:', err);
     }

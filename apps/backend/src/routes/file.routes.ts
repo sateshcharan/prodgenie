@@ -18,18 +18,13 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // read files from supabase
-fileTypes.map((type) => {
+fileTypes.map((fileType) => {
   router.get(
-    `/files/${type}`,
+    `/files/${fileType}`,
     passport.authenticate('jwt', { session: false }),
     async (req, res) => {
       try {
-        const userId = (req.user as any).id;
-
-        // 1. Fetch file records from Prisma
-        const files = await prisma.file.findMany({
-          where: { userId, type: type.toUpperCase().slice(0, type.length - 1) },
-        });
+        const files = await fileService.fetchFiles(fileType);
 
         //   // 2. Generate signed URLs from Supabase
         //   const signedFiles = await Promise.all(

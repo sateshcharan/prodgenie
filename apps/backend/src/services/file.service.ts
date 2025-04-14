@@ -8,10 +8,14 @@ export class FileService {
     this.bucket = bucketName;
   }
 
-  async fetchFiles(folder: string) {
+  async fetchFiles(fileType: string) {
     const files = await prisma.file.findMany({
-      where: { userId, type: type.toUpperCase().slice(0, type.length - 1) },
+      where: {
+        type: fileType.toUpperCase().slice(0, fileType.length - 1),
+      },
     });
+
+    return files;
   }
 
   async uploadFile(folder: string, file: Express.Multer.File) {
