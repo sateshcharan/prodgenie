@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import prisma from '../utils/prisma';
+import { prisma } from '@prodgenie/libs/prisma';
 import { User } from '@prodgenie/libs/types';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';

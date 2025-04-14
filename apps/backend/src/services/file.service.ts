@@ -8,25 +8,10 @@ export class FileService {
     this.bucket = bucketName;
   }
 
-  async getFiles(folder: string) {
-    // const { data, error } = await supabase.storage
-    //   .from(this.bucket)
-    //   .list(folder, {
-    //     limit: 100,
-    //     offset: 0,
-    //     search: '',
-    //   });
-
-    try {
-      const files = await prisma.file.findMany({
-        where: { userId, type: type.toUpperCase().slice(0, type.length - 1) },
-      });
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .json({ success: false, message: 'Failed to fetch files.' });
-    }
+  async fetchFiles(folder: string) {
+    const files = await prisma.file.findMany({
+      where: { userId, type: type.toUpperCase().slice(0, type.length - 1) },
+    });
   }
 
   async uploadFile(folder: string, file: Express.Multer.File) {

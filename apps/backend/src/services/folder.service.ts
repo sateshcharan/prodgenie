@@ -1,4 +1,5 @@
 import { supabase } from '@prodgenie/libs/supabase';
+import { prisma } from '@prodgenie/libs/prisma';
 
 export class FolderService {
   private bucket: string;
@@ -7,11 +8,40 @@ export class FolderService {
     this.bucket = bucketName;
   }
 
-  async scafoldFolder(folder: string) {
+  async fetchFolder(orgName: string): Promise<any> {
+    const { data, error } = await supabase.storage
+      .from(this.bucket)
+      .list(`${orgName}/`, {
+        limit: 100,
+        offset: 0,
+        search: '',
+      });
+
+    if (error) {
+      throw new Error(`Failed to fetch folder: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  async scafoldFolder(orgName: string) {
+    const existingOrg = await prisma.organization.findUnique({
+      where: { name: orgName },
+    });
+
+    if (existingOrg) {
+      return;
+    }
+
+    await prisma.organization.create({
+      data: { name: orgName },
+    });
+
     const paths = [
-      `${folder}/drawings/.init`,
-      `${folder}/templates/.init`,
-      `${folder}/job_cards/.init`,
+      `${orgName}/drawings/.init`,
+      `${orgName}/templates/.init`,
+      `${orgName}/sequences/.init`,
+      `${orgName}/job_cards/.init`,
     ];
 
     for (const path of paths) {
@@ -23,7 +53,9 @@ export class FolderService {
         });
 
       if (error && error.message !== 'The resource already exists') {
-        throw new Error(`Failed to create folder ${path}: ${error.message}`);
+        throw new Error(
+          `Failed to create folder for ${path}: ${error.message}`
+        );
       }
     }
   }

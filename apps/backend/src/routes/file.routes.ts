@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import multer from 'multer';
 
-import prisma from '../utils/prisma';
+import { prisma } from '@prodgenie/libs/prisma';
 import { supabase } from '@prodgenie/libs/supabase';
 import passport from '../middlewares/passport.middleware';
 
@@ -115,12 +115,12 @@ router.delete('/delete-file/:folder/:filename', async (req, res) => {
 
 // create folder scafolding in supabase
 router.post('/create-org', async (req, res) => {
-  const { organization } = req.body;
+  const { orgName } = req.body;
 
   try {
     // Save org to DB here...
 
-    await folderService.scafoldFolder(organization);
+    await folderService.scafoldFolder(orgName);
     res
       .status(200)
       .json({ message: 'Organization created and folders initialized.' });

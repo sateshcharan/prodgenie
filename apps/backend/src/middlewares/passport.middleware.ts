@@ -2,7 +2,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
-import prisma from '../utils/prisma';
+import { prisma } from '@prodgenie/libs/prisma';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
 
