@@ -32,7 +32,6 @@ const Files = () => {
         },
       })
       .then((res) => {
-        console.log(res.data);
         setCardData(res.data.files);
       })
       .catch((err) => {
