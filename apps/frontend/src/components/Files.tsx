@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import ReactPDF from './ReactPDF';
+import { PDFViewer, JSONViewer, ExcelViewer } from '../utils';
 
 import { apiRoutes } from '@prodgenie/libs/constants';
 
@@ -62,13 +62,22 @@ const Files = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">{card.id}</p>
-              <iframe
+              {/* <iframe
                 src={card.path}
                 width={300}
                 height={300}
                 className="rounded-lg shadow-md"
-              />
-              {/* <ReactPDF file={{ url: card.path }} width={300} /> */}
+              /> */}
+
+              {card.name.endsWith('.pdf') ? (
+                <PDFViewer fileUrl={card.path} />
+              ) : card.name.endsWith('.xlsx') ? (
+                <ExcelViewer file={card.path} />
+              ) : card.name.endsWith('.json') ? (
+                <JSONViewer data={card.path} />
+              ) : (
+                <p>Unsupported file format</p>
+              )}
             </CardContent>
           </Card>
         ))

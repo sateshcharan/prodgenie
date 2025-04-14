@@ -1,6 +1,6 @@
 import { Home, Inbox, Calendar, StepForward, Briefcase } from 'lucide-react';
 
-export const sidebarItems = [
+export const appSidebarItems = [
   {
     title: 'Dashboard',
     url: '/dashboard',

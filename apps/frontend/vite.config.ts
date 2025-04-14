@@ -11,6 +11,7 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
     historyApiFallback: true,
+
     // localhost proxy
     proxy: {
       '/api': {
@@ -26,7 +27,7 @@ export default defineConfig(() => ({
   },
   plugins: [react()],
   optimizeDeps: {
-    include: ['pdfjs-dist/build/pdf.worker.min.js'],
+    // include: ['pdfjs-dist/build/pdf.worker.min.js'],
   },
   // Uncomment this if you are using workers.
   // worker: {

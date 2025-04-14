@@ -1,5 +1,5 @@
 // import { Calendar, Home, Inbox, Briefcase, StepForward } from 'lucide-react';
-import { sidebarItems } from '@prodgenie/libs/constants';
+import { appSidebarItems } from '@prodgenie/libs/constants';
 
 import {
   Sidebar,
@@ -13,7 +13,7 @@ import {
 } from '../';
 
 // Menu items.
-const items = sidebarItems;
+const items = appSidebarItems;
 
 export function AppSidebar() {
   return (

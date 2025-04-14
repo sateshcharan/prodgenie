@@ -1,8 +1,7 @@
-// apps/backend/src/lib/storage.ts
 import { supabase } from '@prodgenie/libs/supabase';
 
 export const createOrganizationFolders = async (orgName: string) => {
-  const bucket = 'project-files';
+  const bucket = 'prodgenie';
   const paths = [
     `${orgName}/drawings/.init`,
     `${orgName}/templates/.init`,
