@@ -5,9 +5,12 @@ import prisma from '../utils/prisma';
 import { supabase } from '@prodgenie/libs/supabase';
 import passport from '../middlewares/passport.middleware';
 
-import { createOrganizationFolders } from '../lib/storage';
+import { FileService, FolderService } from '../services';
 
 const router: Router = express.Router();
+
+const fileService = new FileService('prodgenie');
+const folderService = new FolderService('prodgenie');
 
 const fileTypes = ['drawings', 'templates', 'job_cards', 'sequences'];
 
@@ -117,8 +120,7 @@ router.post('/create-org', async (req, res) => {
   try {
     // Save org to DB here...
 
-    await createOrganizationFolders(organization);
-
+    await folderService.scafoldFolder(organization);
     res
       .status(200)
       .json({ message: 'Organization created and folders initialized.' });

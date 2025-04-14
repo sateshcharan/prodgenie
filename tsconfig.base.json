@@ -29,6 +29,8 @@
       "@prodgenie/libs/schemas/*": ["libs/schemas/src/*"],
       "@prodgenie/libs/store": ["libs/store/src"],
       "@prodgenie/libs/store/*": ["libs/store/src/*"],
+      "@prodgenie/libs/prisma": ["libs/prisma/src"],
+      "@prodgenie/libs/prisma/*": ["libs/prisma/src/*"],
       "@prodgenie/libs/supabase": ["libs/supabase/src"],
       "@prodgenie/libs/supabase/*": ["libs/supabase/src/*"],
       "@prodgenie/libs/types": ["libs/types/src"],

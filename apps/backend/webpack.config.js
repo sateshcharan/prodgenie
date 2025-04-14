@@ -2,6 +2,7 @@ const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join, resolve } = require('path');
 
 const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
+const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
 const constantsLibPath = resolve(__dirname, '../../libs/constants/src');
 const typesLibPath = resolve(__dirname, '../../libs/types/src');
 
@@ -24,6 +25,7 @@ module.exports = {
   resolve: {
     alias: {
       '@prodgenie/libs/supabase': supabaseLibPath,
+      '@prodgenie/libs/prisma': prismaLibPath,
       '@prodgenie/libs/constants': constantsLibPath,
       '@prodgenie/libs/types': typesLibPath,
     },
