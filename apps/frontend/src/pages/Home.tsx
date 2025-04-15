@@ -1,6 +1,6 @@
-import { PricingCard, Button } from '@prodgenie/apps/ui';
+import { PricingCard, Button } from '@prodgenie/libs/ui';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@prodgenie/apps/ui';
+import { toast } from '@prodgenie/libs/ui';
 
 const Home = () => {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthForm, toast } from '@prodgenie/apps/ui';
-import { apiRoutes, signupFields } from '@prodgenie/libs/constants';
-import { signupSchema } from '@prodgenie/libs/schemas';
+import { AuthForm, toast } from '@prodgenie/libs/ui';
+import { apiRoutes, signupFields } from '@prodgenie/libs/constant';
+import { signupSchema } from '@prodgenie/libs/schema';
 
 const Signup = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;

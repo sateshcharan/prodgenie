@@ -3,15 +3,15 @@
   "style": "default",
   "rsc": false,
   "tailwind": {
-    "config": "apps/utils/src/tailwind.config.ts",
-    "css": "apps/utils/src/global.css",
+    "config": "libs/utils/src/tailwind.config.ts",
+    "css": "libs/utils/src/global.css",
     "baseColor": "neutral",
     "cssVariables": true
   },
   "aliases": {
-    "ui": "@prodgenie/apps/ui",
-    "components": "@prodgenie/apps/ui/components",
-    "utils": "@prodgenie/apps/utils",
-    "hooks": "@prodgenie/apps/ui/hooks"
+    "ui": "@prodgenie/libs/ui",
+    "components": "@prodgenie/libs/ui/components",
+    "utils": "@prodgenie/libs/utils",
+    "hooks": "@prodgenie/libs/ui/hooks"
   }
 }

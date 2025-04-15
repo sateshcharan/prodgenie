@@ -1,0 +1,13 @@
+{
+  "name": "@prodgenie/ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "add-component": {
+      "executor": "@nx-extend/shadcn-ui:add"
+    }
+  },
+  "implicitDependencies": ["libs/constant", "libs/schema", "libs/utils"]
+}

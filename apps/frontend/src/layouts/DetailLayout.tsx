@@ -1,8 +1,8 @@
 import { Outlet } from 'react-router-dom';
-import { Footer, DashHeader } from '@prodgenie/apps/ui';
+import { Footer, DashHeader } from '@prodgenie/libs/ui';
 
-import { SidebarProvider, SidebarTrigger } from '@prodgenie/apps/ui';
-import { AppSidebar } from '@prodgenie/apps/ui';
+import { SidebarProvider, SidebarTrigger } from '@prodgenie/libs/ui';
+import { AppSidebar } from '@prodgenie/libs/ui';
 
 const Layout = () => {
   return (

@@ -1,4 +1,3 @@
-// libs/store/src/auth.ts
 import { create } from 'zustand';
 
 type User = { id: string; email: string } | null;

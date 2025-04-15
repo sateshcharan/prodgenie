@@ -1,5 +1,6 @@
 packages:
-  - 'apps/*'
-  - 'prisma'
-  - 'libs/*'
-  - 'libs'
+  - "apps/*"
+  - "prisma"
+  - "libs/*"
+  - "libs"
+  - "libs/libs/*"

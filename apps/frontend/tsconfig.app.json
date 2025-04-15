@@ -29,22 +29,28 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../ui/src/components/FolderDropZone.tsx"
+  ],
   "references": [
     {
-      "path": "../utils/tsconfig.lib.json"
+      "path": "../../libs/utils/tsconfig.lib.json"
     },
     {
       "path": "../../libs/store/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/schemas/tsconfig.lib.json"
+      "path": "../../libs/schema/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/constants/tsconfig.lib.json"
+      "path": "../../libs/constant/tsconfig.lib.json"
     },
     {
-      "path": "../ui/tsconfig.lib.json"
+      "path": "../../libs/ui/tsconfig.lib.json"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Footer, Header } from '@prodgenie/apps/ui';
+import { Footer, Header } from '@prodgenie/libs/ui';
 
 const PublicLayout = () => {
   return (

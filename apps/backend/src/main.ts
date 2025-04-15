@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import { authRoutes, fileRoutes } from './routes';
-import { apiRoutes } from '@prodgenie/libs/constants';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 import passport from './middlewares/passport.middleware';
 

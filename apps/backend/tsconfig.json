@@ -4,13 +4,13 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/prisma"
-    },
-    {
       "path": "../../libs/types"
     },
     {
-      "path": "../../libs/constants"
+      "path": "../../libs/prisma"
+    },
+    {
+      "path": "../../libs/constant"
     },
     {
       "path": "../../libs/supabase"

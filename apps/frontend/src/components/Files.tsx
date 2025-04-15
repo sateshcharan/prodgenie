@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@prodgenie/apps/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@prodgenie/libs/ui';
 import axios from 'axios';
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PDFViewer, JSONViewer, ExcelViewer } from '../utils';
 
-import { apiRoutes } from '@prodgenie/libs/constants';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 interface CardItem {
   id: number;
@@ -63,14 +63,8 @@ const Files = () => {
               <p className="text-gray-600">{card.id}</p>
 
               {card.name.endsWith('.pdf') ? (
-                <iframe
-                  src={card.path}
-                  width={300}
-                  height={300}
-                  className="rounded-lg shadow-md"
-                />
-              ) : // <PDFViewer fileUrl={card.path} />
-              card.name.endsWith('.xlsx') ? (
+                <PDFViewer fileUrl={card.path} />
+              ) : card.name.endsWith('.xlsx') ? (
                 <ExcelViewer file={card.path} />
               ) : card.name.endsWith('.json') ? (
                 <JSONViewer data={card.path} />

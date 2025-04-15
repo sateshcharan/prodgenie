@@ -16,10 +16,10 @@
       "path": "./apps/backend"
     },
     {
-      "path": "./apps/ui"
+      "path": "./libs/ui"
     },
     {
-      "path": "./apps/utils"
+      "path": "./libs/utils"
     },
     {
       "path": "./libs/prisma"
@@ -31,13 +31,13 @@
       "path": "./libs/supabase"
     },
     {
-      "path": "./libs/constants"
-    },
-    {
-      "path": "./libs/schemas"
-    },
-    {
       "path": "./libs/store"
+    },
+    {
+      "path": "./libs/constant"
+    },
+    {
+      "path": "./libs/schema"
     }
   ]
 }

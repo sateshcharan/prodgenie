@@ -3,19 +3,19 @@
   "include": [],
   "references": [
     {
-      "path": "../utils"
+      "path": "../../libs/utils"
     },
     {
       "path": "../../libs/store"
     },
     {
-      "path": "../../libs/schemas"
+      "path": "../../libs/schema"
     },
     {
-      "path": "../../libs/constants"
+      "path": "../../libs/constant"
     },
     {
-      "path": "../ui"
+      "path": "../../libs/ui"
     },
     {
       "path": "./tsconfig.app.json"

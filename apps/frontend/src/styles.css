@@ -3,4 +3,5 @@
 @tailwind utilities;
 You can add global styles to this file, and also import other style files */
 
-@import '@prodgenie/apps/utils/global.css';
+@import '../../../libs/utils/src/global.css';
+

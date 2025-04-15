@@ -16,6 +16,7 @@ export const login = (req: Request, res: Response, next: any) => {
     'local',
     { session: false },
     (err: any, user: any, info: any) => {
+      console.log(req.body);
       if (err || !user) {
         return res.status(401).json({
           success: false,

@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import { login, signup } from '../controllers/auth.controller';
-import { apiRoutes } from '@prodgenie/libs/constants';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 const router: Router = express.Router();
 

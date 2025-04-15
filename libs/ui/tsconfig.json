@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../schema"
+    },
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../constant"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

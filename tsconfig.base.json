@@ -19,22 +19,22 @@
     "target": "es2022",
     "customConditions": ["development"],
     "paths": {
-      "@prodgenie/apps/ui": ["apps/ui/src"],
-      "@prodgenie/apps/ui/*": ["apps/ui/src/*"],
-      "@prodgenie/apps/utils": ["apps/utils/src"],
-      "@prodgenie/apps/utils/*": ["apps/utils/src/*"],
-      "@prodgenie/libs/constants": ["libs/constants/src"],
-      "@prodgenie/libs/constants/*": ["libs/constants/src/*"],
-      "@prodgenie/libs/prisma": ["libs/prisma/src"],
+      "@prodgenie/libs/constant": ["libs/constant/src/index.ts"],
+      "@prodgenie/libs/constant/*": ["libs/constant/src/*"],
+      "@prodgenie/libs/prisma": ["libs/prisma/src/index.ts"],
       "@prodgenie/libs/prisma/*": ["libs/prisma/src/*"],
-      "@prodgenie/libs/schemas": ["libs/schemas/src"],
-      "@prodgenie/libs/schemas/*": ["libs/schemas/src/*"],
-      "@prodgenie/libs/store": ["libs/store/src"],
+      "@prodgenie/libs/schema": ["libs/schema/src/index.ts"],
+      "@prodgenie/libs/schema/*": ["libs/schema/src/*"],
+      "@prodgenie/libs/store": ["libs/store/src/index.ts"],
       "@prodgenie/libs/store/*": ["libs/store/src/*"],
-      "@prodgenie/libs/supabase": ["libs/supabase/src"],
+      "@prodgenie/libs/supabase": ["libs/supabase/src/index.ts"],
       "@prodgenie/libs/supabase/*": ["libs/supabase/src/*"],
-      "@prodgenie/libs/types": ["libs/types/src"],
-      "@prodgenie/libs/types/*": ["libs/types/src/*"]
+      "@prodgenie/libs/types": ["libs/types/src/index.ts"],
+      "@prodgenie/libs/types/*": ["libs/types/src/*"],
+      "@prodgenie/libs/ui": ["libs/ui/src"],
+      "@prodgenie/libs/ui/*": ["libs/ui/src/*"],
+      "@prodgenie/libs/utils": ["libs/utils/src"],
+      "@prodgenie/libs/utils/*": ["libs/utils/src/*"]
     }
   }
 }

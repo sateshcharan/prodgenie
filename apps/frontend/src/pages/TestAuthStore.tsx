@@ -1,6 +1,6 @@
 
 import { useAuthStore } from '@prodgenie/libs/store'; 
-import { Button } from '@prodgenie/apps/ui';
+import { Button } from '@prodgenie/libs/ui';
 
 export function TestAuthStore() {
   const user = useAuthStore((state) => state.user);

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthForm } from '@prodgenie/apps/ui';
-import { apiRoutes, loginFields } from '@prodgenie/libs/constants';
-import { loginSchema } from '@prodgenie/libs/schemas';
+import { AuthForm } from '@prodgenie/libs/ui';
+import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
+import { loginSchema } from '@prodgenie/libs/schema';
 
 const Login = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
@@ -11,7 +11,7 @@ const Login = () => {
 
   const handleLogin = async (data: any) => {
     try {
-      const res = await axios.post(`${API_URL}/${apiRoutes.login.url}`, data);
+      const res = await axios.post(`${API_URL}${apiRoutes.login.url}`, data);
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err) {
