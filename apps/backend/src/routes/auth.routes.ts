@@ -1,10 +1,10 @@
 import express, { Router } from 'express';
-import { login, signup } from '../controllers/auth.controller';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { AuthController } from '../controllers/auth.controller';
 
 const router: Router = express.Router();
 
-router.post(apiRoutes.signup.url, signup);
-router.post(apiRoutes.login.url, login);
+router.post(apiRoutes.signup.url, AuthController.signup);
+router.post(apiRoutes.login.url, AuthController.login);
 
 export default router;

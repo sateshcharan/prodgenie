@@ -1,5 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 import { PublicLayout, DashLayout } from './layouts/index';
 import { Home, Dashboard } from './pages';

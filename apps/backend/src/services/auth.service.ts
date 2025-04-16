@@ -1,34 +1,35 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+
 import { prisma } from '@prodgenie/libs/prisma';
-import { User } from '@prodgenie/libs/types';
+import { signupSchema } from '@prodgenie/libs/schema';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
-const saltRounds = process.env.SALT_ROUNDS || 10;
+const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);
 
-export const registerUser = async ({
-  name,
-  email,
-  password,
-  type,
-  organizationId,
-}: User) => {
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log(hashedPassword);
-
-  return prisma.user.create({
-    data: {
-      name,
+export class AuthService {
+  static async signupUser({ email, password, orgName }: any) {
+    const parseResult = await signupSchema.parseAsync({
       email,
-      password: hashedPassword,
-      type,
-      organizationId: organizationId ?? null,
-    },
-  });
-};
+      password,
+      orgName,
+    });
+    console.log(email, password, orgName, parseResult);
+    // const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // return prisma.user.create({
+    //   data: {
+    //     name,
+    //     email,
+    //     password: hashedPassword,
+    //     type,
+    //     organizationId: orgId ?? null,
+    //   },
+    // });
+  }
 
-export const generateToken = (user: { id: string; email: string }) => {
-  return jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
-    expiresIn: '1h',
-  });
-};
+  static generateToken(payload: { id: string; email: string }) {
+    return jwt.sign(payload, SECRET_KEY, {
+      expiresIn: '1h',
+    });
+  }
+}

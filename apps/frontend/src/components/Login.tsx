@@ -2,8 +2,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 import { AuthForm } from '@prodgenie/libs/ui';
-import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 import { loginSchema } from '@prodgenie/libs/schema';
+import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 
 const Login = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
@@ -26,7 +26,7 @@ const Login = () => {
         onSubmit={handleLogin}
         buttonLabel="Login"
         className={undefined}
-        schema={loginSchema}
+        validationSchema={loginSchema}
       />
     </div>
   );

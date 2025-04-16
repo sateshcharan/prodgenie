@@ -5,6 +5,7 @@ const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
 const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
 const constantsLibPath = resolve(__dirname, '../../libs/constant/src');
 const typesLibPath = resolve(__dirname, '../../libs/types/src');
+const schemaLibPath = resolve(__dirname, '../../libs/schema/src');
 
 module.exports = {
   output: {
@@ -24,6 +25,7 @@ module.exports = {
   // },
   resolve: {
     alias: {
+      '@prodgenie/libs/schema': schemaLibPath,
       '@prodgenie/libs/supabase': supabaseLibPath,
       '@prodgenie/libs/prisma': prismaLibPath,
       '@prodgenie/libs/constant': constantsLibPath,

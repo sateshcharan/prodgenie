@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Organization {
+model Org {
   id    String @id @default(uuid())
   name  String @unique
   users User[]
@@ -27,8 +27,8 @@ model User {
 
   type UserType
 
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  orgId String?
+  org   Org? @relation(fields: [orgId], references: [id])
 
   File      File[]
   createdAt DateTime @default(now())

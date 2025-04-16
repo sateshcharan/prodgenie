@@ -10,24 +10,38 @@ import {
   CardTitle,
   Input,
   Label,
-} from '..';
+} from '../';
 import { cn } from '@prodgenie/libs/utils';
-import { AuthFormProps } from '@prodgenie/libs/types';
-import { loginSchema, signupSchema, authSchema } from '@prodgenie/libs/schema';
+
+type Field = {
+  name: string;
+  label: string;
+  type: string;
+};
+
+type AuthFormProps = {
+  fields: Field[];
+  onSubmit: (data: any) => void;
+  buttonLabel: 'Login' | 'Signup';
+  validationSchema: any;
+  className?: string;
+};
 
 const AuthForm = ({
   fields,
   onSubmit,
   buttonLabel,
   className,
+  validationSchema,
   ...props
 }: AuthFormProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<authSchema>({
-    resolver: zodResolver(buttonLabel === 'Login' ? loginSchema : signupSchema),
+  } = useForm({
+    mode: 'onTouched',
+    resolver: zodResolver(validationSchema),
   });
 
   return (
@@ -44,14 +58,10 @@ const AuthForm = ({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
-              {fields.map(({ name, label, type }) => (
+              {fields.map(({ name, label, type }: any) => (
                 <div key={name} className="grid gap-2">
                   <Label htmlFor={name}>{label}</Label>
-                  <Input
-                    id={name}
-                    type={type}
-                    {...register(name as keyof authSchema)}
-                  />
+                  <Input id={name} type={type} {...register(name)} />
                   <p className="text-sm text-red-500">
                     {errors?.[name as keyof typeof errors]?.message as string}
                   </p>

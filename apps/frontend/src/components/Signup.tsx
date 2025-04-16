@@ -11,9 +11,9 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const handleSignup = async (data: any) => {
+    console.log(data)
     try {
-      console.log(data);
-      const res = await axios.post(`${API_URL}/${apiRoutes.signup.url}`, data);
+      const res = await axios.post(`${API_URL}${apiRoutes.signup.url}`, data);
       console.log('Signup response:', res.data);
       toast.success('Signup successful!');
       navigate('/dashboard');
@@ -30,7 +30,7 @@ const Signup = () => {
         onSubmit={handleSignup}
         buttonLabel="Signup"
         className={undefined}
-        schema={signupSchema}
+        validationSchema={signupSchema}
       />
     </div>
   );

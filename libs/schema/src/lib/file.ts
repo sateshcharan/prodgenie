@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { FileTypeEnum } from './enums.js';
+import { FileType } from '@prisma/client';
 
 export const FileSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   path: z.string(),
-  type: FileTypeEnum,
+  type: z.nativeEnum(FileType),
   userId: z.string().uuid(),
   createdAt: z.date(),
 });
