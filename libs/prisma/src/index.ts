@@ -1,3 +1,4 @@
+export * from './lib/user.service.js'
 export * from './lib/prisma.js';
 
 export function FileType(FileType: any): import("zod").ZodNativeEnum<any> {

@@ -9,22 +9,34 @@ const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);
 
 export class AuthService {
   static async signupUser({ email, password, orgName }: any) {
-    const parseResult = await signupSchema.parseAsync({
+    const parseResult = signupSchema.safeParse({
       email,
       password,
       orgName,
     });
-    console.log(email, password, orgName, parseResult);
-    // const hashedPassword = await bcrypt.hash(password, saltRounds);
-    // return prisma.user.create({
-    //   data: {
-    //     name,
-    //     email,
-    //     password: hashedPassword,
-    //     type,
-    //     organizationId: orgId ?? null,
-    //   },
-    // });
+
+    if (!parseResult.success) {
+      throw new Error(parseResult.error.message);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Check if organization exists, if not create it
+    const org = await prisma.org.upsert({
+      where: { name: orgName },
+      update: {}, // No updates, just check existence
+      create: { name: orgName },
+    });
+
+    // Create the user and associate the org
+    return prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: orgName,
+        type: 'ADMIN',
+        orgId: org.id,
+      },
+    });
   }
 
   static generateToken(payload: { id: string; email: string }) {

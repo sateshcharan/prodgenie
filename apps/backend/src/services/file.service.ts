@@ -1,44 +1,53 @@
-import { supabase } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
+import { supabase } from '@prodgenie/libs/supabase';
+import { StorageFileService } from '@prodgenie/libs/supabase';
+
+const storageFileService = new StorageFileService();
 
 export class FileService {
-  private bucket: string;
-
-  constructor(bucketName: string) {
-    this.bucket = bucketName;
+  constructor(
+    private readonly bucketName: string,
+    private readonly folder: string
+  ) {
+    this.bucketName = bucketName;
   }
 
-  async fetchFiles(fileType: string) {
-    const files = await prisma.file.findMany({
-      where: {
-        type: fileType.toUpperCase().slice(0, fileType.length - 1),
+  async uploadFile(filePath: string, file: File | Blob) {
+    const fullPath = `${this.folder}/${filePath}`;
+    storageFileService.uploadFile(fullPath, file);
+
+    await prisma.file.create({
+      data: {
+        name: filePath,
+        path: fullPath,
+        userId: '1',
       },
     });
 
-    return files;
-  }
-
-  async uploadFile(folder: string, file: Express.Multer.File) {
-    const filePath = `${folder}/${file.originalname}`;
-
-    const { error, data } = await supabase.storage
-      .from(this.bucket)
-      .upload(filePath, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
-      });
-
-    if (error) throw new Error(`Upload failed: ${error.message}`);
+    if (error) throw error;
     return data;
   }
 
-  async deleteFile(folder: string, fileName: string) {
-    const filePath = `${folder}/${fileName}`;
-    const { error, data } = await supabase.storage
-      .from(this.bucket)
-      .remove([filePath]);
+  // async getPublicUrl(filePath: string) {
 
-    if (error) throw new Error(`Delete failed: ${error.message}`);
-    return data;
-  }
+  //   return data.publicUrl;
+  // }
+
+  // async listFiles(): Promise<{ data: any[]; error: any }> {
+
+  //   if (error) throw error;
+  //   return data;
+  // }
+
+  // async downloadFile(filePath: string) {
+
+  //   if (error) throw error;
+  //   return data;
+  // }
+
+  // async deleteFile(filePath: string) {
+
+  //   if (error) throw error;
+  //   return data;
+  // }
 }

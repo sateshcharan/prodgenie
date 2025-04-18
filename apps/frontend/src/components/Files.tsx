@@ -26,7 +26,7 @@ const Files = () => {
 
   useEffect(() => {
     axios
-      .get(`${apiRoutes.api.url}${apiRoutes[file].url}`, {
+      .get(`${apiRoutes.api.url}/files/${file}/list`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { prisma } from '@prodgenie/libs/prisma';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
+const SECRET_KEY = process.env.JWT_SECRET;
 
 // Local Strategy (For Login)
 passport.use(
