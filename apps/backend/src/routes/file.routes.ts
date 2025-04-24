@@ -8,10 +8,11 @@ import {
   downloadFileController,
   deleteFileController,
 } from '../controllers/file.controller';
+
 import { validateFileType } from '../middlewares/fileType.middleware';
 
 const router: Router = express.Router();
-const upload = multer(); // in-memory
+const upload = multer();
 
 router.post(
   `${apiRoutes.fileRoutes.url}/:fileType/upload`,

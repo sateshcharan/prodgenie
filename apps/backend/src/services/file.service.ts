@@ -12,25 +12,23 @@ export class FileService {
   }
 
   async uploadFile(filePath: string, file: File | Blob) {
-    const fullPath = `${this.folder}/${filePath}`;
-    storageFileService.uploadFile(fullPath, file);
-
-    await prisma.file.create({
-      data: {
-        name: filePath,
-        path: fullPath,
-        userId: '1',
-      },
-    });
-
-    if (error) throw error;
-    return data;
+    console.log(filePath, file);
+    // const fullPath = `${this.folder}/${filePath}`;
+    // storageFileService.uploadFile(fullPath, file);
+    // await prisma.file.create({
+    //   data: {
+    //     name: filePath,
+    //     path: fullPath,
+    //     userId: '1',
+    //   },
+    // });
+    // if (error) throw error;
+    // return data;
   }
 
-  // async getPublicUrl(filePath: string) {
-
-  //   return data.publicUrl;
-  // }
+  async getPublicUrl(filePath: string) {
+    return data.publicUrl;
+  }
 
   async listFiles(
     fileType: string
@@ -45,40 +43,33 @@ export class FileService {
           type: extractedFileType,
         },
       });
-
       if (!files) {
         return { data: null, error: 'No files found' };
       }
-
       return { data: files, error: null };
     } catch (error) {
       return { data: null, error };
     }
   }
 
-  // async downloadFile(filePath: string) {
-
-  //   if (error) throw error;
-  //   return data;
-  // }
+  async downloadFile(filePath: string) {
+    if (error) throw error;
+    return data;
+  }
 
   async deleteFile(fileId: string, fileType: string) {
-    try {
-      console.log(fileId);
-
-      const fullPath = `${fileType}/${fileId}`;
-      console.log(fullPath);
-      // storageFileService.deleteFile(fullPath);
-
-      // const result = prisma.file.delete({
-      //   where: {
-      //     id: fileId,
-      //   },
-      // });
-
-      // return result;
-    } catch (error) {
-      return error;
-    }
+    // try {
+    //   const fullPath = `${fileType}/${fileId}`;
+    //   console.log(fullPath);
+    //   storageFileService.deleteFile(fullPath);
+    //   const result = prisma.file.delete({
+    //     where: {
+    //       id: fileId,
+    //     },
+    //   });
+    //   return result;
+    // } catch (error) {
+    //   return error;
+    // }
   }
 }

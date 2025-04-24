@@ -2,6 +2,7 @@ import express from 'express';
 import * as path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import multer from 'multer';
 
 import { authRoutes, fileRoutes, userRoutes } from './routes';
 import { apiRoutes } from '@prodgenie/libs/constant';
@@ -21,11 +22,14 @@ const options: cors.CorsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+const upload = multer();
+
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(express.json());
 app.use(cors(options));
 app.use(passport.initialize());
+app.use(upload.any());
 
 app.use(apiRoutes.api.url, authRoutes);
 app.use(apiRoutes.api.url, fileRoutes);

@@ -24,7 +24,7 @@ export async function createUser(req: Request, res: Response) {
 
 export async function updateProfile(req: Request, res: Response) {
   try {
-    const userId = req.params.id;
+    const userId = req.params.userId;
     const updates = req.body;
     const user = await userService.updateProfile(userId, updates);
     res.json(user);
@@ -33,21 +33,21 @@ export async function updateProfile(req: Request, res: Response) {
   }
 }
 
-export async function deleteUser(req: Request, res: Response) {
+export async function listUsers(req: Request, res: Response) {
+  const orgId = req.params.orgId;
   try {
-    const userId = req.params.id;
-    const user = await userService.deleteUser(userId);
-    res.json({ message: 'User deleted', user });
+    const users = await userService.listUsers(orgId);
+    res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 }
 
-export async function listUsers(req: Request, res: Response) {
-  const orgName = req.params.orgName;
+export async function deleteUser(req: Request, res: Response) {
   try {
-    const users = await userService.listUsers(orgName);
-    res.json(users);
+    const userId = req.params.userId;
+    const user = await userService.deleteUser(userId);
+    res.json({ message: 'User deleted', user });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
