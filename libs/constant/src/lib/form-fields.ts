@@ -23,7 +23,7 @@ export const signupFields = [
     type: 'password',
   },
   {
-    name: 'organization',
+    name: 'orgName',
     label: 'Organization Name',
     type: 'text',
   },

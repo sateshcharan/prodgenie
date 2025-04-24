@@ -7,14 +7,11 @@ import { signupSchema } from '@prodgenie/libs/schema';
 
 const Signup = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
-
   const navigate = useNavigate();
 
   const handleSignup = async (data: any) => {
-    console.log(data)
     try {
       const res = await axios.post(`${API_URL}${apiRoutes.signup.url}`, data);
-      console.log('Signup response:', res.data);
       toast.success('Signup successful!');
       navigate('/dashboard');
     } catch (err) {

@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Card, Button } from '../';
+import { Card, Button } from '..';
 import { UploadCloud } from 'lucide-react';
 
-interface FolderDropzoneProps {
+interface FileDropzoneProps {
   onFilesSelected: (files: File[]) => void;
 }
 
-export const FolderDropzone: React.FC<FolderDropzoneProps> = ({
+export const FileDropzone: React.FC<FileDropzoneProps> = ({
   onFilesSelected,
 }) => {
   const onDrop = useCallback(
@@ -21,6 +21,11 @@ export const FolderDropzone: React.FC<FolderDropzoneProps> = ({
     onDrop,
     noClick: true,
     noKeyboard: true,
+    accept: {
+      'image/*': [],
+      'application/pdf': [],
+      'text/csv': [],
+    },
   });
 
   return (
@@ -32,17 +37,17 @@ export const FolderDropzone: React.FC<FolderDropzoneProps> = ({
     >
       <input
         {...getInputProps()}
-        {...({
-          webkitdirectory: '',
-          directory: '',
-        } as any)}
+        // {...({
+        //   webkitdirectory: '',
+        //   directory: '',
+        // } as any)}
       />
       <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
       <p className="text-sm text-muted-foreground">
-        Drag and drop a folder here, or
+        Drag and drop files here, or
       </p>
       <Button type="button" variant="outline" className="mt-3" onClick={open}>
-        Browse Folder
+        Browse
       </Button>
     </Card>
   );

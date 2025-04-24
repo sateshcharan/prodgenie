@@ -1,5 +1,7 @@
-import { supabase } from '@prodgenie/libs/supabase';
+import { supabase, StorageFolderService } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
+
+const storageFolderService = new StorageFolderService();
 
 export class FolderService {
   private bucket: string;

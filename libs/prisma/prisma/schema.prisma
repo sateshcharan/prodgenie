@@ -21,11 +21,11 @@ enum UserType {
 
 model User {
   id       String @id @default(uuid())
-  name     String
+  name     String?
   email    String @unique
   password String
 
-  type UserType
+  type UserType?
 
   orgId String?
   org   Org? @relation(fields: [orgId], references: [id])

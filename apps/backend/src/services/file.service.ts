@@ -1,44 +1,84 @@
-import { supabase } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
+import { supabase } from '@prodgenie/libs/supabase';
+import { StorageFileService } from '@prodgenie/libs/supabase';
+
+const storageFileService = new StorageFileService();
 
 export class FileService {
-  private bucket: string;
-
-  constructor(bucketName: string) {
-    this.bucket = bucketName;
+  constructor(
+    private readonly bucketName: string // private readonly folder: string
+  ) {
+    this.bucketName = bucketName;
   }
 
-  async fetchFiles(fileType: string) {
-    const files = await prisma.file.findMany({
-      where: {
-        type: fileType.toUpperCase().slice(0, fileType.length - 1),
+  async uploadFile(filePath: string, file: File | Blob) {
+    const fullPath = `${this.folder}/${filePath}`;
+    storageFileService.uploadFile(fullPath, file);
+
+    await prisma.file.create({
+      data: {
+        name: filePath,
+        path: fullPath,
+        userId: '1',
       },
     });
 
-    return files;
+    if (error) throw error;
+    return data;
   }
 
-  async uploadFile(folder: string, file: Express.Multer.File) {
-    const filePath = `${folder}/${file.originalname}`;
+  // async getPublicUrl(filePath: string) {
 
-    const { error, data } = await supabase.storage
-      .from(this.bucket)
-      .upload(filePath, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
+  //   return data.publicUrl;
+  // }
+
+  async listFiles(
+    fileType: string
+  ): Promise<{ data: any[] | null; error: any | null }> {
+    const extractedFileType = fileType.toUpperCase().slice(0, -1);
+    try {
+      // fetch files list from prismsa
+      const files = await prisma.file.findMany({
+        where: {
+          // id: '001',
+          userId: 'd9ff52e5-7688-4070-a288-c2723e6774df',
+          type: extractedFileType,
+        },
       });
 
-    if (error) throw new Error(`Upload failed: ${error.message}`);
-    return data;
+      if (!files) {
+        return { data: null, error: 'No files found' };
+      }
+
+      return { data: files, error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
   }
 
-  async deleteFile(folder: string, fileName: string) {
-    const filePath = `${folder}/${fileName}`;
-    const { error, data } = await supabase.storage
-      .from(this.bucket)
-      .remove([filePath]);
+  // async downloadFile(filePath: string) {
 
-    if (error) throw new Error(`Delete failed: ${error.message}`);
-    return data;
+  //   if (error) throw error;
+  //   return data;
+  // }
+
+  async deleteFile(fileId: string, fileType: string) {
+    try {
+      console.log(fileId);
+
+      const fullPath = `${fileType}/${fileId}`;
+      console.log(fullPath);
+      // storageFileService.deleteFile(fullPath);
+
+      // const result = prisma.file.delete({
+      //   where: {
+      //     id: fileId,
+      //   },
+      // });
+
+      // return result;
+    } catch (error) {
+      return error;
+    }
   }
 }

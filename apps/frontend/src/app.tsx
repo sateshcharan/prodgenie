@@ -1,14 +1,14 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-
 import { PublicLayout, DashLayout } from './layouts/index';
 import { Home, Dashboard } from './pages';
 import { Login, Signup, Files, FileDetails } from './components';
 import { PrivateRoute } from './routes';
 import { TestAuthStore } from './pages/TestAuthStore';
+import { fileTypes } from '@prodgenie/libs/constant';
 
 export function App() {
-  const files = ['drawings', 'templates', 'sequences', 'job_cards'];
+  const files = fileTypes;
 
   return (
     <Routes>
