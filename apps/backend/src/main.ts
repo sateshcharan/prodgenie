@@ -2,10 +2,12 @@ import express from 'express';
 import * as path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { authRoutes, fileRoutes, userRoutes } from './routes';
-import { apiRoutes } from '@prodgenie/libs/constant';
+
+import authRoutes from './routes/auth.routes';
+import fileRoutes from './routes/file.routes';
+import userRoutes from './routes/user.routes';
 import passport from './middlewares/passport.middleware';
-import { errorHandler } from './middlewares/error.middleware';
+import errorHandler from './middlewares/error.middleware';
 import { validateFileType } from './middlewares/fileType.middleware';
 
 dotenv.config();

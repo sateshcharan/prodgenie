@@ -16,7 +16,7 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 
 import { useDialogStore } from '@prodgenie/libs/store';
 
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 
 interface CardItem {
   id: number;
@@ -75,6 +75,21 @@ const Files = () => {
       });
   };
 
+  const handleCardDownload = (card_id: string) => {
+    axios
+      .get(`/api/files/${file}/download/${card_id}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(`error downloading ${card_id}`, err);
+      });
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {cardData.map((card) => (
@@ -89,6 +104,14 @@ const Files = () => {
             className="absolute top-2 right-2 "
           >
             <X />
+          </Button>
+          <Button
+            onClick={() => handleCardDownload(card.id)}
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-8 "
+          >
+            <Download />
           </Button>
 
           <CardHeader>

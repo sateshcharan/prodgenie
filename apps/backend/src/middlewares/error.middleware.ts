@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-export function errorHandler(
+function errorHandler(
   err: any,
   req: Request,
   res: Response,
@@ -17,3 +17,5 @@ export function errorHandler(
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }
+
+export default errorHandler;
