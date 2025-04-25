@@ -10,7 +10,9 @@ datasource db {
 model Org {
   id    String @id @default(uuid())
   name  String @unique
+  
   users User[]
+  File File[]
 }
 
 enum UserType {
@@ -48,6 +50,8 @@ model File {
 
   type      FileType
   userId    String
+  orgId     String
   user      User     @relation(fields: [userId], references: [id])
+  org       Org      @relation(fields: [orgId], references: [id])
   createdAt DateTime @default(now())
 }

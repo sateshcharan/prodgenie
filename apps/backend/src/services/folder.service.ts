@@ -1,43 +1,24 @@
-import { supabase, StorageFolderService } from '@prodgenie/libs/supabase';
+import { supabase } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
 
-const storageFolderService = new StorageFolderService();
-
 export class FolderService {
-  private bucket: string;
+  private readonly bucketName: string = process.env.BUCKET ?? '';
 
-  constructor(bucketName: string) {
-    this.bucket = bucketName;
-  }
-
-  async fetchFolder(orgName: string): Promise<any> {
-    const { data, error } = await supabase.storage
-      .from(this.bucket)
-      .list(`${orgName}/`, {
-        limit: 100,
-        offset: 0,
-        search: '',
-      });
-
-    if (error) {
-      throw new Error(`Failed to fetch folder: ${error.message}`);
+  constructor() {
+    if (!process.env.BUCKET) {
+      throw new Error('BUCKET env variable is not defined');
     }
-
-    return data;
+    this.bucketName = process.env.BUCKET;
   }
 
-  async scafoldFolder(orgName: string) {
-    const existingOrg = await prisma.organization.findUnique({
+  async scaffoldFolder(orgName: string) {
+    const existingOrg = await prisma.org.findUnique({
       where: { name: orgName },
     });
 
     if (existingOrg) {
-      return;
+      return 'Organization already exists contact org admin';
     }
-
-    await prisma.organization.create({
-      data: { name: orgName },
-    });
 
     const paths = [
       `${orgName}/drawings/.init`,
@@ -48,7 +29,7 @@ export class FolderService {
 
     for (const path of paths) {
       const { error } = await supabase.storage
-        .from(this.bucket)
+        .from(this.bucketName)
         .upload(path, '', {
           upsert: false,
           contentType: 'application/octet-stream',
@@ -60,5 +41,8 @@ export class FolderService {
         );
       }
     }
+    await prisma.org.create({
+      data: { name: orgName },
+    });
   }
 }

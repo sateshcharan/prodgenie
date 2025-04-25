@@ -1,6 +1,7 @@
-import multer from 'multer';
 import express, { Router } from 'express';
-import { apiRoutes } from '@prodgenie/libs/constant';
+import passport from 'passport';
+import multer from 'multer';
+
 import {
   uploadFileController,
   listFilesController,
@@ -9,32 +10,15 @@ import {
   deleteFileController,
 } from '../controllers/file.controller';
 
-import { validateFileType } from '../middlewares/fileType.middleware';
-
-const router: Router = express.Router();
+const router: Router = express.Router({ mergeParams: true });
 const upload = multer();
 
-router.post(
-  `${apiRoutes.fileRoutes.url}/:fileType/upload`,
-  upload.single('file'),
-  uploadFileController
-);
-router.get(
-  `${apiRoutes.fileRoutes.url}/:fileType/list`,
-  validateFileType,
-  listFilesController
-);
-router.get(
-  `${apiRoutes.fileRoutes.url}/:fileType/public/:filename`,
-  getPublicUrlController
-);
-router.get(
-  `${apiRoutes.fileRoutes.url}/:fileType/download/:filename`,
-  downloadFileController
-);
-router.delete(
-  `${apiRoutes.fileRoutes.url}/:fileType/:fileId`,
-  deleteFileController
-);
+router.use(passport.authenticate('jwt', { session: false }));
+
+router.post(`/upload`, upload.array('files'), uploadFileController);
+router.get(`/list`, listFilesController);
+router.get(`/public/:filename`, getPublicUrlController);
+router.get(`/download/:filename`, downloadFileController);
+router.delete(`/:fileId`, deleteFileController);
 
 export default router;

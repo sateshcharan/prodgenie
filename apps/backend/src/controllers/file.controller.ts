@@ -1,19 +1,18 @@
 import { Request, Response } from 'express';
 import { FileService } from '../services/file.service';
 
-const folder = 'your-folder';
-
-const filesService = new FileService(folder);
+const filesService = new FileService();
 
 export const uploadFileController = async (req: Request, res: Response) => {
+  const { fileType } = req.params;
+  const userId = req.user?.id;
   try {
-    const file = req.file;
-    if (!file) return res.status(400).json({ message: 'No file provided' });
+    const files = req.files as Express.Multer.File[];
+    if (!files || !files.length) {
+      return res.status(400).json({ message: 'No files uploaded' });
+    }
 
-    const result = await filesService.uploadFile(
-      file.originalname,
-      file.buffer
-    );
+    const result = await filesService.uploadFile(files, fileType, userId);
     res.status(201).json(result);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -21,9 +20,10 @@ export const uploadFileController = async (req: Request, res: Response) => {
 };
 
 export const listFilesController = async (req: Request, res: Response) => {
-  const fileType = req.params.fileType;
+  const { fileType } = req.params;
+  const orgId = req.user?.orgId;
   try {
-    const files = await filesService.listFiles(fileType);
+    const files = await filesService.listFiles(fileType, orgId);
     res.status(200).json(files);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -51,9 +51,8 @@ export const downloadFileController = async (req: Request, res: Response) => {
 };
 
 export const deleteFileController = async (req: Request, res: Response) => {
-  const fileType = req.params.fileType;
+  const { fileType, fileId } = req.params;
   try {
-    const { fileId } = req.params;
     const result = await filesService.deleteFile(fileId, fileType);
     res.status(200).json(result);
   } catch (error: any) {

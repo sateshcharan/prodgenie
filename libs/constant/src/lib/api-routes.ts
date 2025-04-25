@@ -1,10 +1,4 @@
 export const apiRoutes = {
-  api: {
-    url: '/api',
-  },
-  fileRoutes: {
-    url: '/files',
-  },
   signup: {
     url: '/auth/signup',
   },
@@ -12,15 +6,15 @@ export const apiRoutes = {
     url: '/auth/login',
   },
   drawings: {
-    url: '/files/drawings/list',
+    url: '/drawings/list',
   },
   templates: {
-    url: '/files/templates/list',
+    url: '/templates/list',
   },
   sequences: {
-    url: '/files/sequences',
+    url: '/sequences',
   },
   job_cards: {
-    url: '/files/job_cards',
+    url: '/job_cards',
   },
 };

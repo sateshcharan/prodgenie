@@ -3,9 +3,11 @@ import jwt from 'jsonwebtoken';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { signupSchema } from '@prodgenie/libs/schema';
+import { FolderService } from './folder.service';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
+const SECRET_KEY = process.env.JWT_SECRET_BCRYPT || 'your_secret_key';
 const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);
+const folderService = new FolderService();
 
 export class AuthService {
   static async signupUser({ email, password, orgName }: any) {
@@ -20,11 +22,12 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    // Check if organization exists, if not create it
-    const org = await prisma.org.upsert({
+
+    // Scaffold folders for the organization
+    await folderService.scaffoldFolder(orgName);
+
+    const org = await prisma.org.findUnique({
       where: { name: orgName },
-      update: {}, // No updates, just check existence
-      create: { name: orgName },
     });
 
     // Create the user and associate the org
@@ -34,7 +37,7 @@ export class AuthService {
         password: hashedPassword,
         name: orgName,
         type: 'ADMIN',
-        orgId: org.id,
+        orgId: org?.id,
       },
     });
   }

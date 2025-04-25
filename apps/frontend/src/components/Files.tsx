@@ -37,7 +37,7 @@ const Files = () => {
 
   useEffect(() => {
     axios
-      .get(`${apiRoutes.api.url}/files/${file}/list`, {
+      .get(`/api/files/${file}/list`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -62,7 +62,7 @@ const Files = () => {
   const handleCardDelete = (card_id: number) => {
     console.log(card_id);
     axios
-      .delete(`${apiRoutes.api.url}/files/${file}/${card_id}`, {
+      .delete(`/api/files/${file}/${card_id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -117,6 +117,7 @@ const Files = () => {
       <DialogDropZone
         title={`Upload file to ${file}`}
         description={`Select or drag and drop files to upload to ${file}`}
+        submitUrl={`/api/files/${file}/upload`}
       />
     </div>
   );

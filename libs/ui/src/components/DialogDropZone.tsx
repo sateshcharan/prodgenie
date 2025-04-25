@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import axios from 'axios';
+
 import {
   Dialog,
   DialogContent,
@@ -14,9 +16,14 @@ import { Button } from '../button';
 interface DialogDropZoneProps {
   title: string;
   description?: string;
+  submitUrl: string;
 }
 
-export function DialogDropZone({ title, description }: DialogDropZoneProps) {
+export function DialogDropZone({
+  title,
+  description,
+  submitUrl,
+}: DialogDropZoneProps) {
   const { isOpen, close } = useDialogStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
@@ -24,9 +31,25 @@ export function DialogDropZone({ title, description }: DialogDropZoneProps) {
     setSelectedFiles(files);
   };
 
-  const handleFileUpload = () => {
-    // Handle file upload logic here
-  }
+  const handleFileUpload = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append('files', file));
+
+    try {
+      const response = await axios.post(submitUrl, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      console.log('Upload success:', response.data);
+      close();
+    } catch (error) {
+      console.error('Upload failed:', error);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>

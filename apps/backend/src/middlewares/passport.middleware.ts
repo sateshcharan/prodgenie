@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { prisma } from '@prodgenie/libs/prisma';
 
-const SECRET_KEY = process.env.JWT_SECRET;
+const SECRET_KEY = process.env.JWT_SECRET_PASSPORT;
 
 // Local Strategy (For Login)
 passport.use(
@@ -30,7 +30,7 @@ passport.use(
 // JWT Strategy (For Protected Routes)
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: SECRET_KEY,
+  secretOrKey: process.env.JWT_SECRET_PASSPORT,
 };
 
 passport.use(
