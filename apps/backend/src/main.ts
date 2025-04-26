@@ -6,6 +6,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import fileRoutes from './routes/file.routes';
 import userRoutes from './routes/user.routes';
+import pdfRoutes from './routes/pdf.routes';
 import passport from './middlewares/passport.middleware';
 import errorHandler from './middlewares/error.middleware';
 import { validateFileType } from './middlewares/fileType.middleware';
@@ -33,6 +34,7 @@ app.use(errorHandler);
 app.use('/api', authRoutes);
 app.use('/api/files/:fileType', validateFileType, fileRoutes);
 app.use('/api', userRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

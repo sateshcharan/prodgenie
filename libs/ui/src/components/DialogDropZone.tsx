@@ -17,12 +17,14 @@ interface DialogDropZoneProps {
   title: string;
   description?: string;
   submitUrl: string;
+  onUploadSuccess?: () => void;
 }
 
 export function DialogDropZone({
   title,
   description,
   submitUrl,
+  onUploadSuccess,
 }: DialogDropZoneProps) {
   const { isOpen, close } = useDialogStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -45,6 +47,10 @@ export function DialogDropZone({
       });
 
       console.log('Upload success:', response.data);
+
+      if (onUploadSuccess) {
+        onUploadSuccess(); // 👈 Notify parent
+      }
       close();
     } catch (error) {
       console.error('Upload failed:', error);

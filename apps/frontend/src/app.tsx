@@ -32,7 +32,7 @@ export function App() {
         {files.map((fileType) => (
           <React.Fragment key={fileType}>
             <Route path={`${fileType}`} element={<Files />} />
-            <Route path={`${fileType}/:id`} element={<FileDetails />} />
+            <Route path={`${fileType}/:fileId`} element={<FileDetails />} />
           </React.Fragment>
         ))}
       </Route>

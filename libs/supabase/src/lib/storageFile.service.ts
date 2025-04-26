@@ -1,44 +1,45 @@
 import { supabase } from './supabase.js';
 
 export class StorageFileService {
-  private readonly bucketName: string = process.env.BUCKET ?? '';
+  private readonly bucketName: string;
 
   constructor() {
-    if (!process.env.BUCKET) {
+    const bucket = process.env.BUCKET;
+    if (!bucket) {
       throw new Error('BUCKET env variable is not defined');
     }
-    this.bucketName = process.env.BUCKET;
+    this.bucketName = bucket;
   }
 
-  async uploadFile(uploadPath: string, file: File | Blob) {
+  async uploadFile(uploadPath: string, file: any) {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
-      .upload(uploadPath, file, { upsert: true });
+      .upload(uploadPath, file.buffer, {
+        upsert: true,
+        contentType: file.mimetype,
+      });
 
-    if (error) throw error;
+    if (error) throw new Error(`Upload failed: ${error.message}`);
     return data;
   }
 
-  async getPublicUrl(filePath: string) {
-    const { data } = supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(filePath);
-    return data.publicUrl;
-  }
-
-  async downloadFile(filePath: string) {
+  async getSignedUrl(filePath: string): Promise<string> {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
-      .download(filePath);
-    if (error) throw error;
-    return data;
+      .createSignedUrl(filePath, 60 * 60);
+
+    if (error) throw new Error(`Get signed URL failed: ${error.message}`);
+    if (!data?.signedUrl) throw new Error('Signed URL not generated');
+
+    return data.signedUrl;
   }
 
-  async deleteFile(deletePath: string): Promise<any> {
+  async deleteFile(filePath: string): Promise<any> {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
-      .remove([deletePath]);
-    if (error) throw error;
+      .remove([filePath]);
+
+    if (error) throw new Error(`Delete failed: ${error.message}`);
     return data;
   }
 }

@@ -15,8 +15,6 @@ router.post(
   FileController.uploadFileController
 );
 router.get(`/list`, FileController.listFilesController);
-router.get(`/public/:filename`, FileController.getPublicUrlController);
-router.get(`/download/:filename`, FileController.downloadFileController);
-router.delete(` /:fileId`, FileController.deleteFileController);
+router.delete(`/:fileId`, FileController.deleteFileController);
 
 export default router;

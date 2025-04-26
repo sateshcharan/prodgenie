@@ -35,7 +35,7 @@ const Files = () => {
 
   const [cardData, setCardData] = useState<CardItem[]>([]);
 
-  useEffect(() => {
+  const fetchFiles = () => {
     axios
       .get(`/api/files/${file}/list`, {
         headers: {
@@ -49,13 +49,21 @@ const Files = () => {
         setCardData(res.data.data);
       })
       .catch((err) => {
-        console.log(`error fetching ${file}`, err);
+        if (err.response?.status === 401) {
+          navigate('/login');
+        } else {
+          console.error(`Error fetching ${file}:`, err);
+        }
       });
+  };
+
+  useEffect(() => {
+    fetchFiles();
   }, []);
 
-  const handleCardClick = (card_id: number, path: string) => {
+  const handleCardClick = (card_id: number, signedUrl: string) => {
     navigate(`/dashboard/${file}/${card_id}`, {
-      state: { path },
+      state: { signedUrl },
     });
   };
 
@@ -69,25 +77,32 @@ const Files = () => {
       })
       .then((res) => {
         console.log(res);
+        setCardData(cardData.filter((card) => card.id !== card_id));
       })
       .catch((err) => {
         console.log(`error deleting ${card_id}`, err);
       });
   };
 
-  const handleCardDownload = (card_id: string) => {
-    axios
-      .get(`/api/files/${file}/download/${card_id}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(`error downloading ${card_id}`, err);
+  const handleCardDownload = async (card_path: string, card_name: string) => {
+    try {
+      const response = await fetch(card_path, {
+        method: 'GET',
       });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // You can set a custom file name here if you want
+      link.download = card_name;
+      document.body.appendChild(link);
+      link.click();
+      // Cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
   };
 
   return (
@@ -106,7 +121,7 @@ const Files = () => {
             <X />
           </Button>
           <Button
-            onClick={() => handleCardDownload(card.id)}
+            onClick={() => handleCardDownload(card.path, card.name)}
             variant="ghost"
             size="icon"
             className="absolute top-2 right-8 "
@@ -117,6 +132,7 @@ const Files = () => {
           <CardHeader>
             <CardTitle>{card.name}</CardTitle>
           </CardHeader>
+
           <CardContent onClick={() => handleCardClick(card.id, card.path)}>
             <p className="text-gray-600">{card.id}</p>
             <iframe src={card.path} frameBorder="0" className="w-full h-40" />
@@ -141,6 +157,7 @@ const Files = () => {
         title={`Upload file to ${file}`}
         description={`Select or drag and drop files to upload to ${file}`}
         submitUrl={`/api/files/${file}/upload`}
+        onUploadSuccess={fetchFiles}
       />
     </div>
   );
