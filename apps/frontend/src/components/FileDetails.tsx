@@ -13,11 +13,11 @@ const FileDetails = () => {
     axios
       .post(
         `/api/pdf/parse`,
-        { signedUrl }, // <- body
+        { signedUrl },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json', // Optional but good practice
+            'Content-Type': 'application/json',
           },
         }
       )
