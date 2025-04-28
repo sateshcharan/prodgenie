@@ -10,6 +10,8 @@ export * from './sheet';
 export * from './sidebar';
 export * from './modal';
 export * from './scroll-area';
+export * from './accordion';
+export * from './form';
 
 //components
 export * from './components/pricing-card';

@@ -29,15 +29,20 @@ export function App() {
         }
       >
         <Route index element={<Dashboard />} />
+
+        {/* Dynamically generated routes for file types */}
         {files.map((fileType) => (
           <React.Fragment key={fileType}>
-            <Route path={`${fileType}`} element={<Files />} />
-            <Route path={`${fileType}/:fileId`} element={<FileDetails />} />
+            {/* Adjust path to be relative */}
+            <Route path=":fileType" element={<Files />} />
+            <Route path=":fileType/:fileId" element={<FileDetails />} />
           </React.Fragment>
         ))}
       </Route>
 
       <Route path="state" element={<TestAuthStore />} />
+
+      <Route path="*" element={'404'} />
     </Routes>
   );
 }

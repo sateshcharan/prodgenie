@@ -23,7 +23,7 @@ export const appSidebarItems = [
   },
   {
     title: 'Job Cards',
-    url: '/dashboard/job_cards',
+    url: '/dashboard/jobCards',
     icon: Briefcase,
   },
 ];

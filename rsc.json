@@ -1,0 +1,12 @@
+{
+  "sheet1": {
+    "startRow": 1,
+    "startColumn": "A",
+    "template": "title-block.xlsx"
+  },
+  "sheet2": {
+    "startRow": 1,
+    "startColumn": "A",
+    "template": "slotting-cutting.xlsx"
+  }
+}

@@ -5,6 +5,17 @@ import io
 import json
 
 class PdfService:
+
+    @staticmethod
+    def extract_tables_from_pdf(pdf_bytes: bytes) -> list:
+        all_tables = []
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                tables = page.extract_tables()
+                if tables:
+                    all_tables.extend(tables)
+        return all_tables
+
     @staticmethod
     def extract_text_from_pdf(pdf_bytes: bytes) -> str:
         text = ""
@@ -14,32 +25,6 @@ class PdfService:
                 if page_text:
                     text += page_text + "\n"
         return text
-
-    @staticmethod
-    def extract_tables_from_text(text: str) -> list:
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
-        tables = []
-        current_table = []
-
-        for line in lines:
-            columns = [col for col in line.split('  ') if col]
-            if len(columns) > 1:
-                current_table.append(columns)
-            elif current_table:
-                tables.append(current_table)
-                current_table = []
-
-        if current_table:
-            tables.append(current_table)
-
-        return tables
-
-    @staticmethod
-    def parse_pdf_from_bytes(pdf_bytes: bytes) -> list:
-        text = PdfService.extract_text_from_pdf(pdf_bytes)
-        print(text)
-        tables = PdfService.extract_tables_from_text(text)
-        return tables
 
 def main():
     if len(sys.argv) < 2:
@@ -54,9 +39,16 @@ def main():
         sys.exit(1)
 
     pdf_bytes = response.content
-    result = PdfService.parse_pdf_from_bytes(pdf_bytes)
 
-    # Print the extracted tables as JSON
+    tables = PdfService.extract_tables_from_pdf(pdf_bytes)
+    text = PdfService.extract_text_from_pdf(pdf_bytes)
+
+    result = {
+        "tables": tables,
+        "text": text
+    }
+
+    # Print the result JSON
     print(json.dumps(result), flush=True)
 
 if __name__ == "__main__":

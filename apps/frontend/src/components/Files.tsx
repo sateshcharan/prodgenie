@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import {
   Button,
   Card,
@@ -6,38 +9,26 @@ import {
   CardTitle,
   DialogDropZone,
 } from '@prodgenie/libs/ui';
-import axios from 'axios';
-
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { PDFViewer, JSONViewer, ExcelViewer } from '../utils';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
-
-import { useDialogStore } from '@prodgenie/libs/store';
-
 import { X, Download } from 'lucide-react';
-
-interface CardItem {
-  id: number;
-  name: string;
-  path: string;
-  userId: string;
-  createdAt: string;
-}
-
-const cardData: CardItem[] = [];
+import { useDialogStore } from '@prodgenie/libs/store';
+import { fileTypes } from '@prodgenie/libs/constant';
+import { CardItem } from '@prodgenie/libs/types';
 
 const Files = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const file = location.pathname.split('/').pop();
-
+  const { fileType } = useParams();
   const [cardData, setCardData] = useState<CardItem[]>([]);
 
+  useEffect(() => {
+    fetchFiles();
+  }, [fileType]); // Re-fetch files whenever fileType changes
+
+  // Fetch files whenever fileType changes
   const fetchFiles = () => {
+    if (!fileType || !fileTypes.includes(fileType)) return;
+
     axios
-      .get(`/api/files/${file}/list`, {
+      .get(`/api/files/${fileType}/list`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -52,52 +43,42 @@ const Files = () => {
         if (err.response?.status === 401) {
           navigate('/login');
         } else {
-          console.error(`Error fetching ${file}:`, err);
+          console.error(`Error fetching ${fileType}:`, err);
         }
       });
   };
 
-  useEffect(() => {
-    fetchFiles();
-  }, []);
-
   const handleCardClick = (card_id: number, signedUrl: string) => {
-    navigate(`/dashboard/${file}/${card_id}`, {
+    navigate(`/dashboard/${fileType}/${card_id}`, {
       state: { signedUrl },
     });
   };
 
   const handleCardDelete = (card_id: number) => {
-    console.log(card_id);
     axios
-      .delete(`/api/files/${file}/${card_id}`, {
+      .delete(`/api/files/${fileType}/${card_id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
       .then((res) => {
-        console.log(res);
         setCardData(cardData.filter((card) => card.id !== card_id));
       })
       .catch((err) => {
-        console.log(`error deleting ${card_id}`, err);
+        console.error(`Error deleting ${card_id}`, err);
       });
   };
 
   const handleCardDownload = async (card_path: string, card_name: string) => {
     try {
-      const response = await fetch(card_path, {
-        method: 'GET',
-      });
+      const response = await fetch(card_path, { method: 'GET' });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      // You can set a custom file name here if you want
       link.download = card_name;
       document.body.appendChild(link);
       link.click();
-      // Cleanup
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -116,7 +97,7 @@ const Files = () => {
             onClick={() => handleCardDelete(card.id)}
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 "
+            className="absolute top-2 right-2"
           >
             <X />
           </Button>
@@ -124,15 +105,13 @@ const Files = () => {
             onClick={() => handleCardDownload(card.path, card.name)}
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-8 "
+            className="absolute top-2 right-8"
           >
             <Download />
           </Button>
-
           <CardHeader>
             <CardTitle>{card.name}</CardTitle>
           </CardHeader>
-
           <CardContent onClick={() => handleCardClick(card.id, card.path)}>
             <p className="text-gray-600">{card.id}</p>
             <iframe src={card.path} frameBorder="0" className="w-full h-40" />
@@ -144,7 +123,6 @@ const Files = () => {
       <Card
         className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100"
         onClick={() => {
-          // trigger your file upload modal or form
           useDialogStore.getState().open();
         }}
       >
@@ -154,9 +132,9 @@ const Files = () => {
         </CardContent>
       </Card>
       <DialogDropZone
-        title={`Upload file to ${file}`}
-        description={`Select or drag and drop files to upload to ${file}`}
-        submitUrl={`/api/files/${file}/upload`}
+        title={`Upload file to ${fileType}`}
+        description={`Select or drag and drop files to upload to ${fileType}`}
+        submitUrl={`/api/files/${fileType}/upload`}
         onUploadSuccess={fetchFiles}
       />
     </div>

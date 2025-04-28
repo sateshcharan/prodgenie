@@ -1,15 +1,27 @@
+import { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
 import axios from 'axios';
+import JobCard from './JobCard';
 
 const FileDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const { signedUrl } = location.state || {};
+  const isDrawing = location.pathname.split('/').includes('drawings');
+  const fileId = location.pathname.split('/').pop();
+
+  const [tables, setTables] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    if (!isDrawing || !signedUrl) return;
 
+    const cachedTables = localStorage.getItem(`tables-${fileId}`);
+    if (cachedTables) {
+      setTables(JSON.parse(cachedTables));
+      return;
+    }
+
+    const token = localStorage.getItem('token');
     axios
       .post(
         `/api/pdf/parse`,
@@ -23,19 +35,32 @@ const FileDetails = () => {
       )
       .then((res) => {
         console.log('Parsed tables:', res.data);
+        localStorage.setItem(`tables-${fileId}`, JSON.stringify(res.data));
+        setTables(res.data);
       })
       .catch((err) => {
         console.error('Error parsing PDF:', err);
       });
-  }, []);
+  }, [isDrawing, signedUrl, fileId]);
+
+  if (!signedUrl) {
+    return <div>No file found.</div>;
+  }
 
   return (
-    <div className="">
-      <h1>File ID: {id}</h1>
-      <iframe
-        src={signedUrl}
-        className="rounded-lg shadow-md w-screen h-screen"
-      />
+    <div className="relative w-screen h-screen">
+      <h1 className="p-4 font-semibold">File ID: {id}</h1>
+      <div className="relative w-full h-full">
+        <iframe
+          src={signedUrl}
+          className="rounded-lg shadow-md w-full h-full"
+        />
+        {tables && (
+          <div className="absolute top-5 left-5 bg-white rounded-lg p-4 shadow-lg">
+            <JobCard tables={tables} fileId={fileId}/>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -22,9 +22,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     noClick: true,
     noKeyboard: true,
     accept: {
-      'image/*': [],
-      'application/pdf': [],
-      'text/csv': [],
+      'application/json': ['.json'],
+      'application/pdf': ['.pdf'],
+      'application/javascript': ['.jsx'], // closest for .jsx files
     },
   });
 

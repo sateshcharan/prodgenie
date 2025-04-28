@@ -43,7 +43,7 @@ export class FileService {
             path: uploadPath,
             userId,
             orgId,
-            type: fileType.toUpperCase().slice(0, -1) as FileType,
+            type: fileType.slice(0, -1) as FileType,
           },
         });
 
@@ -62,7 +62,7 @@ export class FileService {
     orgId: string
   ): Promise<{ data: any[] | null; error: string | null }> {
     try {
-      const extractedFileType = fileType.toUpperCase().slice(0, -1) as FileType;
+      const extractedFileType = fileType.slice(0, -1) as FileType;
 
       const files = await prisma.file.findMany({
         where: {

@@ -11,9 +11,9 @@ const Signup = () => {
 
   const handleSignup = async (data: any) => {
     try {
-      const res = await axios.post(`${API_URL}${apiRoutes.signup.url}`, data);
+      await axios.post(`${API_URL}${apiRoutes.signup.url}`, data);
       toast.success('Signup successful!');
-      navigate('/dashboard');
+      navigate('/login');
     } catch (err) {
       console.error('Signup failed:', err);
       toast.error('Signup failed!');

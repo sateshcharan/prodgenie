@@ -1,4 +1,3 @@
-// libs/store/dialogStore.ts
 import { create } from 'zustand';
 
 interface DialogStore {

@@ -1,1 +1,1 @@
-export const fileTypes = ['drawings', 'templates', 'sequences', 'job_cards'];
+export const fileTypes = ['drawings', 'templates', 'sequences', 'jobCards'];

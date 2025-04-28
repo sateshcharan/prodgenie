@@ -1,63 +1,29 @@
-// import pdf from 'pdf-parse';
-// import { supabase } from '@prodgenie/libs/supabase';
-
 import path from 'path';
 import { spawn } from 'child_process';
 
+interface ParsedPdf {
+  bom: {
+    slNo: string;
+    description: string;
+    material: string;
+    specification: string;
+    ectBs: string;
+    length: string;
+    width: string;
+    height: string;
+    qty: string;
+  }[];
+  titleBlock: {
+    customerName?: string;
+    drawingNumber?: string;
+    revision?: string;
+    scale?: string;
+    date?: string;
+    productTitle?: string;
+  };
+}
+
 export class PdfService {
-  private readonly bucketName = process.env.BUCKET ?? '';
-
-  // static async downloadPdfFromStorage(
-  //   bucket: string,
-  //   path: string
-  // ): Promise<Buffer> {
-  //   const { data, error } = await supabase.storage.from(bucket).download(path);
-  //   if (error || !data) {
-  //     throw new Error(`Failed to download PDF from storage: ${error?.message}`);
-  //   }
-  //   const buffer = Buffer.from(await data.arrayBuffer());
-  //   return buffer;
-  // }
-
-  // static async extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
-  //   const data = await pdf(pdfBuffer);
-  //   return data.text;
-  // }
-
-  // static async extractTablesFromText(text: string): Promise<any[]> {
-  //   // Very naive example - this needs to be customized for your PDF structure
-  //   const lines = text.split('\n').filter((line) => line.trim() !== '');
-  //   const tables: any[] = [];
-  //   let currentTable: string[][] = [];
-  //   lines.forEach((line) => {
-  //     const columns = line.split(/\s{2,}/); // split by multiple spaces
-  //     if (columns.length > 1) {
-  //       currentTable.push(columns);
-  //     } else if (currentTable.length) {
-  //       tables.push(currentTable);
-  //       currentTable = [];
-  //     }
-  //   });
-  //   if (currentTable.length) {
-  //     tables.push(currentTable);
-  //   }
-  //   return tables;
-  // }
-
-  // static async parsePdf(signedUrl: string) {
-  //   const response = await fetch(signedUrl, {
-  //     method: 'GET',
-  //   });
-  //   if (!response.ok) {
-  //     throw new Error(`Failed to fetch PDF: ${response.statusText}`);
-  //   }
-  //   const blob = await response.blob();
-  //   const pdfBuffer = Buffer.from(await blob.arrayBuffer());
-  //   const text = await this.extractTextFromPdf(pdfBuffer);
-  //   const tables = await this.extractTablesFromText(text);
-  //   return tables;
-  // }
-
   static async parsePdf(signedUrl: string): Promise<any> {
     const pythonScript = path.join(
       __dirname,
@@ -68,7 +34,7 @@ export class PdfService {
       '../../../apps/pdf-parser/venv/bin/python'
     );
 
-    return new Promise((resolve, reject) => {
+    const parsedPdf = new Promise((resolve, reject) => {
       let stdoutData = '';
       let stderrData = '';
 
@@ -76,12 +42,12 @@ export class PdfService {
 
       python.stdout.on('data', (data) => {
         stdoutData += data.toString();
-        console.log(data.toString());
+        // console.log(data.toString());
       });
 
       python.stderr.on('data', (data) => {
         stderrData += data.toString();
-        console.error(data.toString());
+        // console.error(data.toString());
       });
 
       python.on('close', (code) => {
@@ -97,5 +63,79 @@ export class PdfService {
         }
       });
     });
+
+    const tables = this.processParsedPdf(await parsedPdf);
+    return tables;
+  }
+  static processParsedPdf(data: any): ParsedPdf {
+    const tables = data.tables;
+    const text = data.text;
+
+    // Find the BOM table
+    const bomTable = tables.find((table: any[][]) => {
+      if (table && table.length > 0) {
+        const header = table[0].map((x) => (x || '').toLowerCase());
+        return (
+          header.includes('sl no.') &&
+          header.includes('description') &&
+          header.includes('qty.')
+        );
+      }
+      return false;
+    });
+
+    const bom: ParsedPdf['bom'] = [];
+
+    if (bomTable) {
+      const [headerRow, ...dataRows] = bomTable;
+      for (const row of dataRows) {
+        if (row && row.length >= 9) {
+          bom.push({
+            slNo: row[0],
+            description: row[1],
+            material: row[2],
+            specification: row[3],
+            ectBs: row[4],
+            length: row[5],
+            width: row[6],
+            height: row[7],
+            qty: row[8],
+          });
+        }
+      }
+    }
+
+    // Extract title block info from text
+    const titleBlock: ParsedPdf['titleBlock'] = {};
+
+    const lines = text
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string | any[]) => line.length > 0);
+
+    for (const line of lines) {
+      if (line.toLowerCase().includes('customer name')) {
+        titleBlock.customerName = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('dwg no')) {
+        titleBlock.drawingNumber = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('scale')) {
+        titleBlock.scale = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('product detail')) {
+        const nextLine = lines[lines.indexOf(line) + 1] || '';
+        titleBlock.productTitle = nextLine.trim();
+      }
+      if (line.match(/\d{2}-\d{2}-\d{4}/)) {
+        // Date like 05-03-2025
+        titleBlock.date = line.trim();
+      }
+    }
+
+    return {
+      bom,
+      titleBlock,
+    };
   }
 }

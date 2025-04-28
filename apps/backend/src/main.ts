@@ -2,14 +2,13 @@ import express from 'express';
 import * as path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
 import authRoutes from './routes/auth.routes';
 import fileRoutes from './routes/file.routes';
 import userRoutes from './routes/user.routes';
 import pdfRoutes from './routes/pdf.routes';
+import jobCardRoutes from './routes/jobCard.routes';
 import passport from './middlewares/passport.middleware';
 import errorHandler from './middlewares/error.middleware';
-import { validateFileType } from './middlewares/fileType.middleware';
 
 dotenv.config();
 const app = express();
@@ -31,10 +30,11 @@ app.use(cors(options));
 app.use(passport.initialize());
 app.use(errorHandler);
 
-app.use('/api', authRoutes);
-app.use('/api/files/:fileType', validateFileType, fileRoutes);
-app.use('/api', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/files',  fileRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/jobCard', jobCardRoutes);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

@@ -37,6 +37,7 @@
     "../ui/src/components/FolderDropZone.tsx"
   ],
   "references": [
+    { "path": "../../libs/types/tsconfig.lib.json" },
     {
       "path": "../../libs/utils/tsconfig.lib.json"
     },

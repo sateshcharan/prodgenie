@@ -13,6 +13,7 @@ import { useDialogStore } from '@prodgenie/libs/store';
 import { FileDropzone } from './FileDropzone';
 import { ScrollArea } from '../scroll-area';
 import { Button } from '../button';
+import { toast } from 'sonner';
 interface DialogDropZoneProps {
   title: string;
   description?: string;
@@ -46,7 +47,7 @@ export function DialogDropZone({
         },
       });
 
-      console.log('Upload success:', response.data);
+      toast.success('upload successful');
 
       if (onUploadSuccess) {
         onUploadSuccess(); // 👈 Notify parent

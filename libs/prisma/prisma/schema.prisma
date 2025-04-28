@@ -8,11 +8,11 @@ datasource db {
 }
 
 model Org {
-  id    String @id @default(uuid())
-  name  String @unique
-  
+  id   String @id @default(uuid())
+  name String @unique
+
   users User[]
-  File File[]
+  File  File[]
 }
 
 enum UserType {
@@ -22,25 +22,25 @@ enum UserType {
 }
 
 model User {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   name     String?
-  email    String @unique
+  email    String  @unique
   password String
 
   type UserType?
 
   orgId String?
-  org   Org? @relation(fields: [orgId], references: [id])
+  org   Org?    @relation(fields: [orgId], references: [id])
 
   File      File[]
   createdAt DateTime @default(now())
 }
 
 enum FileType {
-  DRAWING
-  TEMPLATE
-  SEQUENCE
-  JOB_CARD
+  drawing
+  template
+  sequence
+  jobCard
 }
 
 model File {
