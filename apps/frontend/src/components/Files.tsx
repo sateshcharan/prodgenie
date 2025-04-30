@@ -20,69 +20,66 @@ const Files = () => {
   const [cardData, setCardData] = useState<CardItem[]>([]);
 
   useEffect(() => {
-    fetchFiles();
-  }, [fileType]); // Re-fetch files whenever fileType changes
+    if (fileType && fileTypes.includes(fileType)) {
+      fetchFiles();
+    }
+  }, [fileType]);
 
-  // Fetch files whenever fileType changes
-  const fetchFiles = () => {
-    if (!fileType || !fileTypes.includes(fileType)) return;
-
-    axios
-      .get(`/api/files/${fileType}/list`, {
+  const fetchFiles = async () => {
+    try {
+      const res = await axios.get(`/api/files/${fileType}/list`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      })
-      .then((res) => {
-        if (res.data.data.length === 0) {
-          return;
-        }
-        setCardData(res.data.data);
-      })
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          navigate('/login');
-        } else {
-          console.error(`Error fetching ${fileType}:`, err);
-        }
       });
+
+      if (res.data.data?.length) {
+        setCardData(res.data.data);
+      } else {
+        setCardData([]);
+      }
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        navigate('/login');
+      } else {
+        console.error(`Error fetching ${fileType}:`, err);
+      }
+    }
   };
 
-  const handleCardClick = (card_id: number, signedUrl: string) => {
-    navigate(`/dashboard/${fileType}/${card_id}`, {
+  const handleCardClick = (cardId: number, signedUrl: string) => {
+    navigate(`/dashboard/${fileType}/${cardId}`, {
       state: { signedUrl },
     });
   };
 
-  const handleCardDelete = (card_id: number) => {
-    axios
-      .delete(`/api/files/${fileType}/${card_id}`, {
+  const handleCardDelete = async (cardId: number) => {
+    try {
+      await axios.delete(`/api/files/${fileType}/${cardId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      })
-      .then((res) => {
-        setCardData(cardData.filter((card) => card.id !== card_id));
-      })
-      .catch((err) => {
-        console.error(`Error deleting ${card_id}`, err);
       });
+      setCardData((prev) => prev.filter((card) => card.id !== cardId));
+    } catch (err) {
+      console.error(`Error deleting file ${cardId}:`, err);
+    }
   };
 
-  const handleCardDownload = async (card_path: string, card_name: string) => {
+  const handleCardDownload = async (path: string, name: string) => {
     try {
-      const response = await fetch(card_path, { method: 'GET' });
+      const response = await fetch(path);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = card_name;
+      link.download = name;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading file:', error);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading file:', err);
     }
   };
 
@@ -119,18 +116,17 @@ const Files = () => {
         </Card>
       ))}
 
-      {/* Add Card */}
+      {/* Add New File Card */}
       <Card
         className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100"
-        onClick={() => {
-          useDialogStore.getState().open();
-        }}
+        onClick={() => useDialogStore.getState().open()}
       >
         <CardContent className="flex flex-col items-center justify-center">
           <div className="text-4xl text-gray-400">+</div>
           <p className="mt-2 text-gray-600">Add File</p>
         </CardContent>
       </Card>
+
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}

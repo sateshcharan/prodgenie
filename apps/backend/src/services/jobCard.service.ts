@@ -13,10 +13,16 @@ interface JobCardItem {
 interface GenerateJobCardProps {
   bom: JobCardItem[];
   fileId: string;
+  jobStore: any;
 }
 
 export class JobCardService {
-  static async generateJobCard({ bom, fileId }: GenerateJobCardProps) {
+  static async generateJobCard({
+    bom,
+    fileId,
+    jobStore,
+  }: GenerateJobCardProps) {
+    console.log(jobStore);
     console.log(`Starting Job Card generation for File ID: ${fileId}`);
 
     for (const item of bom) {

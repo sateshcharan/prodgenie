@@ -46,7 +46,7 @@ export function DialogDropZone({
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-
+      console.log('Upload response:', response.data);
       toast.success('upload successful');
 
       if (onUploadSuccess) {

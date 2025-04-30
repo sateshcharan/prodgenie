@@ -7,9 +7,6 @@
       "path": "../schema"
     },
     {
-      "path": "../prisma"
-    },
-    {
       "path": "./tsconfig.lib.json"
     }
   ]

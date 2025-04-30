@@ -1,11 +1,11 @@
-import { prisma } from '@prodgenie/libs/prisma';
+// import * as prisma from '@prodgenie/libs/prisma';
 import * as schema from '@prodgenie/libs/schema';
 
 // prisma types
-export type UserType = prisma.UserType;
-export type FileType = prisma.FileType;
-export type File = prisma.File;
-export type Organization = prisma.Organization;
+// export type UserType = prisma.UserType;
+// export type FileType = prisma.FileType;
+// export type File = prisma.File;
+// export type Organization = prisma.Organization;
 
 // zod types
 export type loginSchema = schema.loginSchema;

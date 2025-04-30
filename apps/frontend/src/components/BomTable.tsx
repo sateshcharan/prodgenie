@@ -2,6 +2,7 @@ import { Button } from '@prodgenie/libs/ui';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useJobStore } from '@prodgenie/libs/store';
 
 interface BomItem {
   slNo: string;
@@ -20,7 +21,7 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
     bom.map((item) => item.slNo)
   );
   const navigate = useNavigate();
-
+  const jobStore = useJobStore();
   const toggleSelection = (slNo: string) => {
     setSelectedItems((prev) =>
       prev.includes(slNo)
@@ -73,11 +74,14 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
         Selected Items: {selectedItems.length}/{bom.length}
       </p>
       <Button
+        type="submit"
         className="mt-4"
         // onClick={() => navigate(`/dashboard/job_cards/${fileId}`)}
         onClick={() => {
           axios.post('/api/jobCard/generate', {
             bom: bom.filter((item) => selectedItems.includes(item.slNo)),
+            fileId,
+            jobStore,
           });
           // navigate(`/dashboard/job_cards`);
         }}
