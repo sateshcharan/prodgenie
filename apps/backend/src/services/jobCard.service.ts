@@ -1,4 +1,10 @@
+import axios from 'axios';
 import { prisma } from '@prodgenie/libs/prisma';
+import { FileService } from './file.service';
+import { StorageFileService } from '@prodgenie/libs/supabase';
+
+const fileService = new FileService();
+const storageFileService = new StorageFileService();
 
 interface JobCardItem {
   description: string;
@@ -7,7 +13,7 @@ interface JobCardItem {
   poNumber: string;
   preparedBy: string;
   scheduledDate: string;
-  // ... other fields you have
+  // Add more fields as needed
 }
 
 interface GenerateJobCardProps {
@@ -17,49 +23,48 @@ interface GenerateJobCardProps {
 
 export class JobCardService {
   static async generateJobCard({ bom, fileId }: GenerateJobCardProps) {
-    console.log(`Starting Job Card generation for File ID: ${fileId}`);
+    console.log(`🛠 Generating Job Card for File ID: ${fileId}`);
 
     for (const item of bom) {
-      console.log(`Processing item: ${item.description}`);
+      const productInfo = await this.identifyProduct(item);
+      if (!productInfo?.sequenceId || !productInfo?.sequencePath) {
+        console.warn(`⚠️ Sequence not found for: ${item.description}`);
+        continue;
+      }
 
-      // Step 1: Identify Product Type
-      const productType = await this.identifyProduct(item);
-      console.log(`Identified product: ${productType}`);
+      const { sequencePath } = productInfo;
+      const sequenceUrl = await storageFileService.getSignedUrl(sequencePath);
+      const { data: sequence } = await axios.get(sequenceUrl);
 
-      // Step 2: Fetch Sequence for Product
-      const sequence = await this.fetchSequence(productType);
-      // console.log(`Fetched sequence: ${JSON.stringify(sequence)}`);
+      const templates: string[] = [];
 
-      // Step 3: Fetch Associated Templates
-      const templates = await this.fetchTemplates(productType);
-      // console.log(`Fetched ${templates.length} templates`);
+      for (const section of sequence.sections) {
+        const signedUrl = await storageFileService.getSignedUrl(
+          `test/${section.path}`
+        );
+        const rawTemplate = await fileService.downloadToTemp(
+          signedUrl,
+          section.name
+        );
+        const populated = this.injectValues(rawTemplate, item);
+        templates.push(populated);
+      }
 
-      // Step 4: Inject values into copies of templates
-      const populatedTemplates = templates.map((template) =>
-        this.injectValues(template, item)
-      );
-
-      // Step 5: Combine templates based on sequence
-      const finalDocument = await this.combineTemplates(
-        populatedTemplates,
-        sequence
-      );
-
-      // Step 6: Save the final document
+      const finalDocument = await this.combineTemplates(templates, sequence);
       const outputPath = await this.saveDocument(finalDocument, fileId, item);
 
-      // console.log(`Saved Job Card for ${item.description} at ${outputPath}`);
+      console.log(
+        `✅ Job Card for "${item.description}" saved at: ${outputPath}`
+      );
     }
 
-    // Step 7: (Optional) Notify frontend or update database
     await this.notifyFrontend(fileId);
   }
 
-  // ---------- Helper methods ----------
+  // --- Helper Methods ---
 
   static async identifyProduct(item: JobCardItem) {
-    const keyword = item.description.toLowerCase() + '.json';
-    let sequenceId: string | null = null;
+    const keyword = `${item.description.toLowerCase()}.json`;
     try {
       const result = await prisma.file.findFirst({
         where: {
@@ -67,30 +72,37 @@ export class JobCardService {
           name: keyword,
         },
       });
-      sequenceId = result?.id;
+
+      return {
+        sequenceId: result?.id,
+        sequencePath: result?.path,
+      };
     } catch (error) {
-      console.error(`Error finding sequence for keyword "${keyword}":`, error);
+      console.error(`❌ Error identifying product for "${keyword}":`, error);
+      return null;
     }
-    return sequenceId;
   }
 
-  static async fetchSequence(productType: string) {
-    // fetch sequence from database or config
-    return ['Template1', 'Template2', 'Template3'];
+  static injectValues(template: string, item: JobCardItem): string {
+    const jsxTemplate = template.replace(
+      /\{\{\s*(\w+)\s*\}\}/g,
+      (_, key) => `{${key}}`
+    );
+
+    const propsList = Object.keys(item).join(', ');
+    const finalTemplate = jsxTemplate.replace(
+      /const\s+\w+\s*=\s*\(\s*\)\s*=>/,
+      `const Component = ({ ${propsList} }) =>`
+    );
+
+    return finalTemplate;
   }
 
-  static async fetchTemplates(productType: string) {
-    // fetch templates from storage/database
-    return ['TemplateContent1', 'TemplateContent2'];
-  }
-
-  static injectValues(template: string, item: JobCardItem) {
-    // simple string replace, or you can use something like handlebars/mustache templates
-    return template.replace(/\{\{description\}\}/g, item.description);
-  }
-
-  static async combineTemplates(templates: string[], sequence: string[]) {
-    // Combine into a single document (PDF/HTML/Docx)
+  static async combineTemplates(
+    templates: string[],
+    sequence: any
+  ): Promise<string> {
+    // For now, we're just joining the JSX strings with page breaks
     return templates.join('\n\n--- Page Break ---\n\n');
   }
 
@@ -98,14 +110,14 @@ export class JobCardService {
     finalDoc: string,
     fileId: string,
     item: JobCardItem
-  ) {
-    const path = `/output/jobcards/${fileId}/${item.description}.pdf`;
-    // actually save the file
-    return path;
+  ): Promise<string> {
+    const outputPath = `/output/jobcards/${fileId}/${item.description}.pdf`;
+    // TODO: Implement actual file saving logic here (e.g., PDF generation)
+    return outputPath;
   }
 
-  static async notifyFrontend(fileId: string) {
-    // emit WebSocket event, or set a "job complete" flag in database
-    console.log(`Notifying frontend for file ${fileId}`);
+  static async notifyFrontend(fileId: string): Promise<void> {
+    // Optionally implement websocket or database notification here
+    console.log(`📢 Job card generation complete for file: ${fileId}`);
   }
 }

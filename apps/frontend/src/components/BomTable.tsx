@@ -77,7 +77,8 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
         // onClick={() => navigate(`/dashboard/job_cards/${fileId}`)}
         onClick={() => {
           axios.post('/api/jobCard/generate', {
-            bom: bom.filter((item) => selectedItems.includes(item.slNo)),
+            bom: bom,
+            fileId,
           });
           // navigate(`/dashboard/job_cards`);
         }}

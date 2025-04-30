@@ -7,7 +7,6 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
   Input,
   Form,
@@ -18,14 +17,19 @@ import { useState } from 'react';
 import BomTable from './BomTable';
 
 type JobCardFormValues = {
-  username: string;
+  jobCardNumber: string;
+  jobCardDate: string;
+  productionQty: number;
 };
 
 const JobCard = ({ tables, fileId }: any) => {
   const bom = tables?.data?.bom || [];
+
   const form = useForm<JobCardFormValues>({
     defaultValues: {
-      username: '',
+      jobCardNumber: '',
+      jobCardDate: '',
+      productionQty: 1,
     },
   });
 
@@ -37,7 +41,7 @@ const JobCard = ({ tables, fileId }: any) => {
         type="single"
         className="w-full"
         collapsible
-        value={activeItem} // <-- Control active accordion item
+        value={activeItem}
         onValueChange={(value) => setActiveItem(value)}
       >
         <AccordionItem value="item-1">
@@ -45,7 +49,7 @@ const JobCard = ({ tables, fileId }: any) => {
           <AccordionContent>
             <FormField
               control={form.control}
-              name="username"
+              name="jobCardNumber"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Job Card Number</FormLabel>
@@ -53,31 +57,45 @@ const JobCard = ({ tables, fileId }: any) => {
                     <Input placeholder="ABC-123-DEF" {...field} />
                   </FormControl>
                   <FormMessage />
-
-                  <FormLabel>
-                    Job Card Date
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                  </FormLabel>
-
-                  <FormLabel>
-                    Production Qty
-                    <FormControl>
-                      <Input type="number" placeholder="100" {...field} />
-                    </FormControl>
-                  </FormLabel>
-
-                  <Button
-                    type="button"
-                    onClick={() => setActiveItem('item-2')}
-                    className="mt-4"
-                  >
-                    Next
-                  </Button>
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="jobCardDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Card Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="productionQty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Production Qty</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="100" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="button"
+              onClick={() => setActiveItem('item-2')}
+              className="mt-4"
+            >
+              Next
+            </Button>
           </AccordionContent>
         </AccordionItem>
 
