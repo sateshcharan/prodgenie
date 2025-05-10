@@ -1,7 +1,5 @@
 import { Button } from '@prodgenie/libs/ui';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useBomStore } from '@prodgenie/libs/store';
 
 interface BomItem {
   slNo: string;
@@ -15,12 +13,18 @@ interface BomItem {
   qty: string;
 }
 
-const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
-  const [selectedItems, setSelectedItems] = useState<string[]>(() =>
-    bom.map((item) => item.slNo)
-  );
-  const navigate = useNavigate();
+const BomTable = ({
+  bom,
+  fileId,
+  setActiveItem,
+}: {
+  bom: BomItem[];
+  fileId: string;
+  setActiveItem: (item: string) => void;
+}) => {
+  const { setSelectedItems, selectedItems } = useBomStore();
 
+  // Toggle selection of BOM item
   const toggleSelection = (slNo: string) => {
     setSelectedItems((prev) =>
       prev.includes(slNo)
@@ -29,21 +33,25 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
     );
   };
 
+  // Handles the Next button click
+  const handleNext = () => {
+    const filteredBom = bom.filter((item) => selectedItems.includes(item.slNo));
+    // setSelectedItems(filteredBom); // optional if next step only needs filtered
+    // You may send to backend here
+    // axios.post('/api/jobCard/generate', { bom: filteredBom, fileId });
+    setActiveItem('item-2');
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left border-collapse">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-gray-100 text-black">
             <th className="border px-2 py-2">Sl No.</th>
             <th className="border px-2 py-2">Description</th>
             <th className="border px-2 py-2">Material</th>
-            {/* <th className="border px-2 py-2">Specification</th>
-            <th className="border px-2 py-2">ECT/BS</th>
-            <th className="border px-2 py-2">Length</th>
-            <th className="border px-2 py-2">Width</th>
-            <th className="border px-2 py-2">Height</th> */}
             <th className="border px-2 py-2">Qty</th>
-            <th className="border px-2 py-2">Select</th>
+            <th className="border px-2 py-2 text-center">Select</th>
           </tr>
         </thead>
         <tbody>
@@ -52,11 +60,6 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
               <td className="border px-2 py-2">{item.slNo}</td>
               <td className="border px-2 py-2">{item.description}</td>
               <td className="border px-2 py-2">{item.material}</td>
-              {/* <td className="border px-2 py-2">{item.specification}</td>
-              <td className="border px-2 py-2">{item.ectBs}</td>
-              <td className="border px-2 py-2">{item.length}</td>
-              <td className="border px-2 py-2">{item.width}</td>
-              <td className="border px-2 py-2">{item.height}</td> */}
               <td className="border px-2 py-2">{item.qty}</td>
               <td className="border px-2 py-2 text-center">
                 <input
@@ -69,21 +72,13 @@ const BomTable = ({ bom, fileId }: { bom: BomItem[]; fileId: string }) => {
           ))}
         </tbody>
       </table>
+
       <p className="mt-4">
         Selected Items: {selectedItems.length}/{bom.length}
       </p>
-      <Button
-        className="mt-4"
-        // onClick={() => navigate(`/dashboard/job_cards/${fileId}`)}
-        onClick={() => {
-          axios.post('/api/jobCard/generate', {
-            bom: bom,
-            fileId,
-          });
-          // navigate(`/dashboard/job_cards`);
-        }}
-      >
-        Generate Job Cards
+
+      <Button className="mt-4" onClick={handleNext}>
+        Next
       </Button>
     </div>
   );

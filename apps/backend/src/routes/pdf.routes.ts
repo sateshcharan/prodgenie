@@ -5,4 +5,4 @@ const router: Router = express.Router();
 
 router.post('/parse', PdfController.parsePdf);
 
-export default router;
+export { router };

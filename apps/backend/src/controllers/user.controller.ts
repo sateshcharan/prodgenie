@@ -6,7 +6,20 @@ const userService = new UserService();
 export async function getProfile(req: Request, res: Response) {
   try {
     const userId = req.params.userId;
+
+    if (userId === 'me') {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      return res.json(req.user); // early return
+    }
+
     const user = await userService.getProfile(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

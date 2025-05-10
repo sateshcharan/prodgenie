@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Card, Button } from '..';
+import { Card, Button } from '../';
 import { UploadCloud } from 'lucide-react';
 
 interface FileDropzoneProps {
@@ -24,7 +24,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     accept: {
       'application/json': ['.json'],
       'application/pdf': ['.pdf'],
-      'application/javascript': ['.jsx'], // closest for .jsx files
+      'text/html': ['.html'],
     },
   });
 

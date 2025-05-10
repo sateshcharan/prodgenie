@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AuthForm } from '@prodgenie/libs/ui';
+import { AuthForm, toast } from '@prodgenie/libs/ui';
 import { loginSchema } from '@prodgenie/libs/schema';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 
@@ -15,6 +15,7 @@ const Login = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
+      toast.error('Incorrect Password');
     }
   };
 

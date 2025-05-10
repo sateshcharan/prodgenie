@@ -8,15 +8,23 @@ import {
   Button,
 } from '../';
 
+type PricingCardProps = {
+  title: string;
+  price: number;
+  cycle?: 'monthly' | 'annual';
+  features?: string[];
+  onClick?: () => void;
+};
+
 const PricingCard = ({
   title,
   price,
+  cycle = 'monthly',
+  features = [],
   onClick,
-}: {
-  title: string;
-  price: number;
-  onClick?: () => void;
-}) => {
+}: PricingCardProps) => {
+  const cycleLabel = cycle === 'annual' ? '/year' : '/month';
+
   return (
     <Card className="w-[350px] border border-gray-200 shadow-md">
       <CardHeader className="text-center">
@@ -29,14 +37,13 @@ const PricingCard = ({
       <CardContent className="flex flex-col items-center space-y-4">
         <div className="text-3xl font-bold">
           ${price}
-          <span className="text-sm text-gray-500">/month</span>
+          <span className="text-sm text-gray-500">{cycleLabel}</span>
         </div>
 
-        <ul className="text-gray-600 text-sm space-y-2">
-          <li>✅ Unlimited projects</li>
-          <li>✅ Advanced analytics</li>
-          <li>✅ Priority support</li>
-          <li>✅ 100GB cloud storage</li>
+        <ul className="text-gray-600 text-sm space-y-2 text-left">
+          {features.map((feature, idx) => (
+            <li key={idx}>✅ {feature}</li>
+          ))}
         </ul>
       </CardContent>
 

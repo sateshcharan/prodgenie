@@ -1,11 +1,12 @@
-import { prisma } from '@prodgenie/libs/prisma';
+import type { UserType, FileType, File, Org } from '@prisma/client';
+
 import * as schema from '@prodgenie/libs/schema';
 
 // prisma types
-export type UserType = prisma.UserType;
-export type FileType = prisma.FileType;
-export type File = prisma.File;
-export type Organization = prisma.Organization;
+export type userType = UserType;
+export type fileType = FileType;
+export type file = File;
+export type org = Org;
 
 // zod types
 export type loginSchema = schema.loginSchema;
@@ -15,4 +16,6 @@ export type userSchema = schema.UserSchema;
 export type organizationSchema = schema.OrganizationSchema;
 
 // other types
-export * from './Card.js';
+export * from './lib/Card.js';
+export * from './lib/JobCard.js';
+export * from './lib/form.js';

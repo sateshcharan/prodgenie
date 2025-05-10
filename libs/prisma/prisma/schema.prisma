@@ -8,17 +8,19 @@ datasource db {
 }
 
 model Org {
-  id   String @id @default(uuid())
-  name String @unique
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
 
-  users User[]
-  File  File[]
+  users       User[]
+  File        File[]
+  inviteCodes InviteCode[]
 }
 
 enum UserType {
   ADMIN
   OWNER
-  USER
+  MEMBER
 }
 
 model User {
@@ -27,13 +29,13 @@ model User {
   email    String  @unique
   password String
 
-  type UserType?
-
+  type  UserType?
   orgId String?
-  org   Org?    @relation(fields: [orgId], references: [id])
+  org   Org?      @relation(fields: [orgId], references: [id])
 
-  File      File[]
-  createdAt DateTime @default(now())
+  File       File[]
+  createdAt  DateTime    @default(now())
+  InviteCode InviteCode?
 }
 
 enum FileType {
@@ -44,14 +46,24 @@ enum FileType {
 }
 
 model File {
-  id   String @id @default(uuid())
-  name String
-  path String
+  id     String   @id @default(uuid())
+  name   String
+  path   String
+  type   FileType
+  userId String
+  orgId  String
 
-  type      FileType
-  userId    String
-  orgId     String
   user      User     @relation(fields: [userId], references: [id])
   org       Org      @relation(fields: [orgId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model InviteCode {
+  code      String    @id
+  org       Org       @relation(fields: [orgId], references: [id])
+  orgId     String
+  usedBy    String?   @unique
+  user      User?     @relation(fields: [usedBy], references: [id])
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 }

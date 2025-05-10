@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { prisma } from '@prodgenie/libs/prisma';
 
-const SECRET_KEY = process.env.JWT_SECRET_PASSPORT;
+const SECRET_KEY = process.env.JWT_SECRET_PASSPORT || 'your-secret-key';
 
 // Local Strategy (For Login)
 passport.use(
@@ -28,23 +28,46 @@ passport.use(
 );
 
 // JWT Strategy (For Protected Routes)
-const opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET_PASSPORT,
-};
 
 passport.use(
-  new JwtStrategy(opts, async (jwtPayload, done) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: jwtPayload.id },
-      });
-      if (!user) return done(null, false);
-      return done(null, user);
-    } catch (error) {
-      return done(error, false);
+  new JwtStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET_PASSPORT || 'your-secret-key',
+    },
+    async (jwtPayload, done) => {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: jwtPayload.id },
+          include: {
+            org: true,
+          },
+        });
+        if (!user) return done(null, false);
+        return done(null, user);
+      } catch (error) {
+        return done(error, false);
+      }
     }
-  })
+  )
 );
+
+// Middleware for route protection
+export const authenticateJWT = passport.authenticate('jwt', { session: false });
+
+// Optional: Role-based middleware (ADMIN, OWNER)
+export const requireAdmin = (req, res, next) => {
+  if (req.user?.type === 'ADMIN' || req.user?.type === 'OWNER') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Forbidden: Admins only' });
+};
+
+export const requireOwner = (req, res, next) => {
+  if (req.user?.type === 'OWNER') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Forbidden: Owners only' });
+};
 
 export default passport;

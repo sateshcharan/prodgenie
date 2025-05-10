@@ -1,53 +1,53 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { PublicLayout, DashLayout } from './layouts/index';
+import { createBrowserRouter, RouteObject } from 'react-router-dom';
+
+import { PublicLayout, DashLayout } from './layouts';
 import { Home, Dashboard } from './pages';
 import { Login, Signup, Files, FileDetails } from './components';
+
+import { fileDetailsLoader } from './loaders/fileDetailsLoader';
+import { fileDatasLoader } from './loaders/filesDataLoader';
 import { PrivateRoute } from './routes';
-import { TestAuthStore } from './pages/TestAuthStore';
-import { fileTypes } from '@prodgenie/libs/constant';
-import { ThemeProvider } from '@prodgenie/libs/ui';
 
-export function App() {
-  const files = fileTypes;
+const dashboardRoutes: RouteObject[] = [
+  {
+    index: true,
+    element: <Dashboard />,
+  },
+  {
+    path: ':fileType',
+    element: <Files />,
+    loader: fileDatasLoader,
+  },
+  {
+    path: ':fileType/:fileId',
+    element: <FileDetails />,
+    loader: fileDetailsLoader,
+  },
+];
 
-  return (
-    <ThemeProvider>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<PublicLayout />}>
-          <Route index element={<Home />} />
-          <Route path="login" element={<Login />} />
-          <Route path="signup" element={<Signup />} />
-        </Route>
+const router: any = createBrowserRouter([
+  {
+    path: '/',
+    element: <PublicLayout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'login', element: <Login /> },
+      { path: 'signup', element: <Signup /> },
+    ],
+  },
+  {
+    path: 'dashboard',
+    element: (
+      <PrivateRoute>
+        <DashLayout />
+      </PrivateRoute>
+    ),
+    children: dashboardRoutes,
+  },
+  {
+    path: '*',
+    element: <>404</>,
+  },
+]);
 
-        {/* Protected Dashboard Routes */}
-        <Route
-          path="dashboard"
-          element={
-            <PrivateRoute>
-              <DashLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-
-          {/* Dynamically generated routes for file types */}
-          {files.map((fileType) => (
-            <React.Fragment key={fileType}>
-              {/* Adjust path to be relative */}
-              <Route path=":fileType" element={<Files />} />
-              <Route path=":fileType/:fileId" element={<FileDetails />} />
-            </React.Fragment>
-          ))}
-        </Route>
-
-        <Route path="state" element={<TestAuthStore />} />
-
-        <Route path="*" element={'404'} />
-      </Routes>
-    </ThemeProvider>
-  );
-}
-
-export default App;
+export default router;

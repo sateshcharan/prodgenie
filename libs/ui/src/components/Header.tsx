@@ -7,6 +7,7 @@ import {
   SelectValue,
   Button,
 } from '../';
+import { ModeToggle } from './mode-toggle';
 
 // import { NavigationMenuDemo } from './NavigationMenuDemo';
 
@@ -29,6 +30,7 @@ const Header = () => {
         {/* <NavigationMenuDemo /> */}
       </div>
       <div className=" flex items-center gap-2">
+        <ModeToggle />
         <Select defaultValue="english">
           <SelectTrigger className="w-[140px] flex items-center gap-2">
             <Globe className="w-4 h-4" />

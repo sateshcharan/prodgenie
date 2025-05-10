@@ -41,7 +41,7 @@ export function DialogDropZone({
     selectedFiles.forEach((file) => formData.append('files', file));
 
     try {
-      const response = await axios.post(submitUrl, formData, {
+      await axios.post(submitUrl, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
-import App from './app';
+import { ThemeProvider } from '@prodgenie/libs/ui';
+import router from './app';
 
 import { Toaster } from 'sonner';
 
@@ -11,9 +12,9 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
+    <ThemeProvider>
+      <RouterProvider router={router} />
       <Toaster richColors position="top-right" />
-    </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>
 );

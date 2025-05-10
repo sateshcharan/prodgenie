@@ -5,4 +5,4 @@ const router: Router = express.Router();
 
 router.post('/generate', JobCardController.generateJobCard);
 
-export default router;
+export { router };

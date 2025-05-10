@@ -4,10 +4,10 @@
   "include": [],
   "references": [
     {
-      "path": "../store"
+      "path": "../constant"
     },
     {
-      "path": "../constant"
+      "path": "../store"
     },
     {
       "path": "../utils"

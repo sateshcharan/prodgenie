@@ -4,10 +4,10 @@
   "include": [],
   "references": [
     {
-      "path": "../schema"
+      "path": "../constant"
     },
     {
-      "path": "../prisma"
+      "path": "../schema"
     },
     {
       "path": "./tsconfig.lib.json"

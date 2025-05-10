@@ -12,10 +12,10 @@
   "include": ["src/**/*.ts"],
   "references": [
     {
-      "path": "../schema/tsconfig.lib.json"
+      "path": "../constant/tsconfig.lib.json"
     },
     {
-      "path": "../prisma/tsconfig.lib.json"
+      "path": "../schema/tsconfig.lib.json"
     }
   ]
 }

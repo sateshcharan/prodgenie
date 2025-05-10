@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -25,6 +26,7 @@ type AuthFormProps = {
   buttonLabel: 'Login' | 'Signup';
   validationSchema: any;
   className?: string;
+  onFieldChange?: (fieldName: string, value: string) => void;
 };
 
 const AuthForm = ({
@@ -33,16 +35,28 @@ const AuthForm = ({
   buttonLabel,
   className,
   validationSchema,
+  onFieldChange,
   ...props
 }: AuthFormProps) => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(validationSchema),
   });
+
+  // Track changes to all fields and notify parent
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name && onFieldChange) {
+        onFieldChange(name, value[name]);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, onFieldChange]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -58,7 +72,7 @@ const AuthForm = ({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
-              {fields.map(({ name, label, type }: any) => (
+              {fields.map(({ name, label, type }) => (
                 <div key={name} className="grid gap-2">
                   <Label htmlFor={name}>{label}</Label>
                   <Input id={name} type={type} {...register(name)} />
@@ -76,21 +90,23 @@ const AuthForm = ({
                 </Button>
               )}
             </div>
-            {buttonLabel === 'Login' ? (
-              <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?{' '}
-                <a href="/signup" className="underline underline-offset-4">
-                  Sign up
-                </a>
-              </div>
-            ) : (
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <a href="/login" className="underline underline-offset-4">
-                  Login
-                </a>
-              </div>
-            )}
+            <div className="mt-4 text-center text-sm">
+              {buttonLabel === 'Login' ? (
+                <>
+                  Don&apos;t have an account?{' '}
+                  <a href="/signup" className="underline underline-offset-4">
+                    Sign up
+                  </a>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <a href="/login" className="underline underline-offset-4">
+                    Login
+                  </a>
+                </>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>

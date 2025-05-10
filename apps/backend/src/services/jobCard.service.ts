@@ -1,76 +1,111 @@
 import axios from 'axios';
+import fs from 'fs/promises';
+
+import { PdfService } from './pdf.service.js';
+import { TemplateService } from './template.service.js';
+
 import { prisma } from '@prodgenie/libs/prisma';
-import { FileService } from './file.service';
 import { StorageFileService } from '@prodgenie/libs/supabase';
+import {
+  JobCardItem,
+  JobCardData,
+  JobCardRequest,
+} from '@prodgenie/libs/types';
 
-const fileService = new FileService();
-const storageFileService = new StorageFileService();
-
-interface JobCardItem {
-  description: string;
-  qty: number;
-  drgPartNo: string;
-  poNumber: string;
-  preparedBy: string;
-  scheduledDate: string;
-  // Add more fields as needed
-}
-
-interface GenerateJobCardProps {
-  bom: JobCardItem[];
-  fileId: string;
-}
+import { FileService } from './file.service.js';
 
 export class JobCardService {
-  static async generateJobCard({ bom, fileId }: GenerateJobCardProps) {
-    console.log(`🛠 Generating Job Card for File ID: ${fileId}`);
+  private readonly fileService: FileService;
+  private readonly storageFileService: StorageFileService;
+  private readonly templateService: TemplateService;
+  private readonly pdfService: PdfService;
+
+  constructor() {
+    this.fileService = new FileService();
+    this.storageFileService = new StorageFileService();
+    this.templateService = new TemplateService();
+    this.pdfService = new PdfService();
+  }
+
+  async generateJobCard({
+    bom,
+    fileId,
+    jobCardData,
+    user,
+  }: JobCardRequest): Promise<void> {
+    console.log(`Generating job card for File ID: ${fileId}`);
+
+    if (!bom.length) {
+      console.log('bom is empty');
+      return;
+    }
+
+    const templates: string[] = [];
 
     for (const item of bom) {
-      const productInfo = await this.identifyProduct(item);
-      if (!productInfo?.sequenceId || !productInfo?.sequencePath) {
-        console.warn(`⚠️ Sequence not found for: ${item.description}`);
+      const product = await this.identifyProduct(item);
+
+      if (!product?.sequencePath) {
+        console.warn(`⚠️ Missing sequence for: ${item.description}`);
         continue;
       }
 
-      const { sequencePath } = productInfo;
-      const sequenceUrl = await storageFileService.getSignedUrl(sequencePath);
+      const sequenceUrl = await this.storageFileService.getSignedUrl(
+        product.sequencePath
+      );
       const { data: sequence } = await axios.get(sequenceUrl);
 
-      const templates: string[] = [];
+      const userOrg = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { org: { select: { name: true } } },
+      });
 
       for (const section of sequence.sections) {
-        const signedUrl = await storageFileService.getSignedUrl(
-          `test/${section.path}`
+        const sectionUrl = await this.storageFileService.getSignedUrl(
+          `${userOrg?.org?.name}/${section.path}`
         );
-        const rawTemplate = await fileService.downloadToTemp(
-          signedUrl,
+
+        const template = await this.fileService.downloadToTemp(
+          sectionUrl,
           section.name
         );
-        const populated = this.injectValues(rawTemplate, item);
-        templates.push(populated);
+
+        const item = {
+          ...jobCardData,
+          ...user,
+          ...bom,
+          ...product,
+        };
+
+        const populatedTemplate = await this.templateService.injectValues(
+          template,
+          item
+        );
+        templates.push(populatedTemplate);
       }
-
-      const finalDocument = await this.combineTemplates(templates, sequence);
-      const outputPath = await this.saveDocument(finalDocument, fileId, item);
-
-      console.log(
-        `✅ Job Card for "${item.description}" saved at: ${outputPath}`
-      );
     }
 
-    await this.notifyFrontend(fileId);
+    const finalDoc = await this.templateService.combineTemplates(templates);
+    const outputPath = await this.pdfService.generatePDF(finalDoc, fileId, {
+      description: 'jobcard',
+      qty: 1,
+      drgPartNo: '1234567890',
+      poNumber: '1234567890',
+      preparedBy: 'John Doe',
+      scheduledDate: '2025-05-05',
+    });
+    console.log(`Job card saved to ${outputPath}`);
+    await this.uploadJobCard(outputPath);
+
+    // cleanup temp files after upload
+    // await fs.rm('./tmp', { recursive: true });
   }
 
-  // --- Helper Methods ---
-
-  static async identifyProduct(item: JobCardItem) {
-    const keyword = `${item.description.toLowerCase()}.json`;
+  private async identifyProduct(item: JobCardItem) {
+    const name = `${item.description.toLowerCase()}.json`;
     try {
       const result = await prisma.file.findFirst({
-        where: {
-          type: 'sequence',
-          name: keyword,
-        },
+        where: { type: 'sequence', name },
       });
 
       return {
@@ -78,46 +113,39 @@ export class JobCardService {
         sequencePath: result?.path,
       };
     } catch (error) {
-      console.error(`❌ Error identifying product for "${keyword}":`, error);
+      console.error(`❌ Failed to identify product for "${name}":`, error);
       return null;
     }
   }
 
-  static injectValues(template: string, item: JobCardItem): string {
-    const jsxTemplate = template.replace(
-      /\{\{\s*(\w+)\s*\}\}/g,
-      (_, key) => `{${key}}`
+  private async uploadJobCard(filePath: string): Promise<any> {
+    const fileBuffer = await fs.readFile(filePath);
+    const fileName = '1234567890.pdf';
+    const mimetype = 'application/pdf';
+
+    const fakeMulterFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: fileName,
+      encoding: '7bit',
+      mimetype,
+      size: fileBuffer.length,
+      destination: '',
+      filename: fileName,
+      path: filePath,
+      buffer: fileBuffer,
+      stream: undefined as any,
+    };
+
+    const result = await this.fileService.uploadFile(
+      [fakeMulterFile],
+      'jobCard',
+      '5e4174e2-d53b-4199-a1d3-239bb82f4833'
     );
 
-    const propsList = Object.keys(item).join(', ');
-    const finalTemplate = jsxTemplate.replace(
-      /const\s+\w+\s*=\s*\(\s*\)\s*=>/,
-      `const Component = ({ ${propsList} }) =>`
-    );
-
-    return finalTemplate;
+    return result;
   }
 
-  static async combineTemplates(
-    templates: string[],
-    sequence: any
-  ): Promise<string> {
-    // For now, we're just joining the JSX strings with page breaks
-    return templates.join('\n\n--- Page Break ---\n\n');
-  }
-
-  static async saveDocument(
-    finalDoc: string,
-    fileId: string,
-    item: JobCardItem
-  ): Promise<string> {
-    const outputPath = `/output/jobcards/${fileId}/${item.description}.pdf`;
-    // TODO: Implement actual file saving logic here (e.g., PDF generation)
-    return outputPath;
-  }
-
-  static async notifyFrontend(fileId: string): Promise<void> {
-    // Optionally implement websocket or database notification here
-    console.log(`📢 Job card generation complete for file: ${fileId}`);
+  async notifyFrontend(fileId: string): Promise<void> {
+    console.log(`✅ Job card generation completed for File ID: ${fileId}`);
   }
 }

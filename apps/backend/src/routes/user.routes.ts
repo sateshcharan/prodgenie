@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   getProfile,
   createUser,
@@ -16,4 +15,4 @@ router.post(`/updateUser/:userId`, updateProfile);
 router.get(`/listUsers/:orgId`, listUsers);
 router.delete(`/deleteUser/:userId`, deleteUser);
 
-export default router;
+export { router };

@@ -1,5 +1,6 @@
 import { supabase } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
+import { FileType } from '@prisma/client';
 
 export class FolderService {
   private readonly bucketName: string = process.env.BUCKET ?? '';
@@ -20,12 +21,10 @@ export class FolderService {
       return 'Organization already exists contact org admin';
     }
 
-    const paths = [
-      `${orgName}/drawings/.init`,
-      `${orgName}/templates/.init`,
-      `${orgName}/sequences/.init`,
-      `${orgName}/job_cards/.init`,
-    ];
+    const paths: string[] = [];
+    for (const fileType of Object.values(FileType)) {
+      paths.push(`${orgName}/${fileType}/.init`);
+    }
 
     for (const path of paths) {
       const { error } = await supabase.storage

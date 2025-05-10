@@ -1,18 +1,12 @@
+import fs from 'fs/promises';
 import path from 'path';
+import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 
+import { JobCardItem } from '@prodgenie/libs/types';
+
 interface ParsedPdf {
-  bom: {
-    slNo: string;
-    description: string;
-    material: string;
-    specification: string;
-    ectBs: string;
-    length: string;
-    width: string;
-    height: string;
-    qty: string;
-  }[];
+  bom: JobCardItem[];
   titleBlock: {
     customerName?: string;
     drawingNumber?: string;
@@ -137,5 +131,38 @@ export class PdfService {
       bom,
       titleBlock,
     };
+  }
+
+  async generatePDF(
+    htmlContent: string,
+    fileId: string,
+    item: JobCardItem
+  ): Promise<string> {
+    const dirPath = path.join('./tmp/jobcards', fileId);
+    const outputPath = path.join(dirPath, `${item.description}.pdf`);
+
+    // Ensure directory exists
+    await fs.mkdir(dirPath, { recursive: true });
+
+    // Launch Puppeteer
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    try {
+      // Set HTML content
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+      // Generate PDF
+      await page.pdf({
+        path: outputPath,
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+      });
+
+      return outputPath;
+    } finally {
+      await browser.close();
+    }
   }
 }

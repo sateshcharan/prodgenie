@@ -1,23 +1,14 @@
-import { FileType } from '@prisma/client';
-import { prisma } from '@prodgenie/libs/prisma';
-import { StorageFileService } from '@prodgenie/libs/supabase';
 import fs from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
 
+import { FileType } from '@prisma/client';
+import { prisma } from '@prodgenie/libs/prisma';
+import { StorageFileService } from '@prodgenie/libs/supabase';
+
 const storageFileService = new StorageFileService();
 
 export class FileService {
-  private readonly bucketName: string;
-
-  constructor() {
-    const bucket = process.env.BUCKET;
-    if (!bucket) {
-      throw new Error('BUCKET env variable is not defined');
-    }
-    this.bucketName = bucket;
-  }
-
   async uploadFile(
     files: Express.Multer.File[],
     fileType: string,
@@ -41,7 +32,7 @@ export class FileService {
             path: uploadPath,
             userId,
             orgId,
-            type: fileType.slice(0, -1) as FileType,
+            type: fileType as FileType,
           },
         });
         savedFiles.push(savedFile);
@@ -58,7 +49,7 @@ export class FileService {
     orgId: string
   ): Promise<{ data: any[] | null; error: string | null }> {
     try {
-      const extractedFileType = fileType.slice(0, -1) as FileType;
+      const extractedFileType = fileType as FileType;
       const files = await prisma.file.findMany({
         where: {
           orgId,
@@ -112,9 +103,14 @@ export class FileService {
     }
 
     // Extract the file extension from the original filename or URL
-    const extension = path.extname(filename) || new URL(signedUrl).pathname.split('.').pop() || '';
-    const filenameWithExt = extension ? `${filename}${extension.startsWith('.') ? extension : `.${extension}`}` : filename;
-    
+    const extension =
+      path.extname(filename) ||
+      new URL(signedUrl).pathname.split('.').pop() ||
+      '';
+    const filenameWithExt = extension
+      ? `${filename}${extension.startsWith('.') ? extension : `.${extension}`}`
+      : filename;
+
     const tempFilePath = path.join(tempDir, filenameWithExt);
     const response = await fetch(signedUrl);
     if (!response.ok) {
