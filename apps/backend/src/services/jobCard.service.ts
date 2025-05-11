@@ -6,11 +6,8 @@ import { TemplateService } from './template.service.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { StorageFileService } from '@prodgenie/libs/supabase';
-import {
-  JobCardItem,
-  JobCardData,
-  JobCardRequest,
-} from '@prodgenie/libs/types';
+import { JobCardRequest } from '@prodgenie/libs/types';
+import { BomItem } from '@prodgenie/libs/types';
 
 import { FileService } from './file.service.js';
 
@@ -29,11 +26,12 @@ export class JobCardService {
 
   async generateJobCard({
     bom,
-    fileId,
-    jobCardData,
+    file,
+    jobCardForm,
     user,
+    titleBlock,
   }: JobCardRequest): Promise<void> {
-    console.log(`Generating job card for File ID: ${fileId}`);
+    console.log(`Generating job card for File ID: ${file.id}`);
 
     if (!bom.length) {
       console.log('bom is empty');
@@ -42,11 +40,11 @@ export class JobCardService {
 
     const templates: string[] = [];
 
-    for (const item of bom) {
-      const product = await this.identifyProduct(item);
+    for (const bomItem of bom) {
+      const product = await this.identifyProduct(bomItem);
 
       if (!product?.sequencePath) {
-        console.warn(`⚠️ Missing sequence for: ${item.description}`);
+        console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
 
@@ -70,29 +68,33 @@ export class JobCardService {
           section.name
         );
 
-        const item = {
-          ...jobCardData,
-          ...user,
-          ...bom,
-          ...product,
+        const injectionValues = {
+          description: titleBlock.productTitle,
+          productionQty:
+            Number(bomItem.qty) * Number(jobCardForm.productionQty),
+          drgPartNo: titleBlock.drawingNumber,
+          poNumber: jobCardForm.poNumber,
+          preparedBy: user.name,
+          scheduleDate: jobCardForm.scheduleDate,
+          jobCardNumber: jobCardForm.jobCardNumber,
+          customerName: titleBlock.customerName,
+          jobCardDate: jobCardForm.scheduleDate,
+          length: bomItem.length,
+          width: bomItem.width,
+          height: bomItem.height,
         };
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
-          item
+          injectionValues
         );
         templates.push(populatedTemplate);
       }
     }
 
     const finalDoc = await this.templateService.combineTemplates(templates);
-    const outputPath = await this.pdfService.generatePDF(finalDoc, fileId, {
+    const outputPath = await this.pdfService.generatePDF(finalDoc, file.id, {
       description: 'jobcard',
-      qty: 1,
-      drgPartNo: '1234567890',
-      poNumber: '1234567890',
-      preparedBy: 'John Doe',
-      scheduledDate: '2025-05-05',
     });
     console.log(`Job card saved to ${outputPath}`);
     await this.uploadJobCard(outputPath);
@@ -101,7 +103,7 @@ export class JobCardService {
     // await fs.rm('./tmp', { recursive: true });
   }
 
-  private async identifyProduct(item: JobCardItem) {
+  private async identifyProduct(item: BomItem) {
     const name = `${item.description.toLowerCase()}.json`;
     try {
       const result = await prisma.file.findFirst({

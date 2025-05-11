@@ -34,20 +34,4 @@ export const signupFields = [
   // },
 ];
 
-export const jobCardFields = [
-  {
-    name: 'jobCardNumber',
-    label: 'Job Card Number',
-    type: 'text',
-  },
-  {
-    name: 'jobCardDate',
-    label: 'Job Card Date',
-    type: 'date',
-  },
-  {
-    name: 'jobCardQty',
-    label: 'Job Card Quantity',
-    type: 'number',
-  },
-];
+

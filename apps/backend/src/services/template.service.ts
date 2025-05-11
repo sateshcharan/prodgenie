@@ -1,38 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-interface JobCardItem {
-  description: string;
-  qty: number;
-  drgPartNo: string;
-  poNumber: string;
-  preparedBy: string;
-  scheduledDate: string;
-}
-
 export class TemplateService {
-  async injectValues(templatePath: string, item: JobCardItem): Promise<string> {
-    const defaultValues = {
-      customer: 'ABC Corp',
-      jobNumber: jobCardData.jobCardNumber,
-      date: '2025-04-28',
-      description: 'Fabrication of metal frame',
-      quantity: '12',
-      partNumber: 'DRW-67890',
-      poNumber: 'PO-5555',
-      preparedBy: 'John Doe',
-      scheduledDate: '2025-05-05',
-      companyName: 'BSP CHENNAI',
-    };
-
+  async injectValues(templatePath: string, item: any): Promise<string> {
     try {
       const absolutePath = path.resolve(templatePath);
       const templateContent = await fs.readFile(absolutePath, 'utf-8');
       const populated = templateContent.replace(/{{(.*?)}}/g, (_, key) => {
-        const value =
-          item[key.trim() as keyof JobCardItem] ||
-          defaultValues[key.trim() as keyof typeof defaultValues];
-        return value ?? '';
+        const value = item[key.trim()];
+        return value;
       });
       return populated;
     } catch (error) {

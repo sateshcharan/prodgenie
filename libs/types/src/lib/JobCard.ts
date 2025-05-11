@@ -1,29 +1,16 @@
 import { jobCardFields } from '@prodgenie/libs/constant';
+import { JobCardFormValues } from '@prodgenie/libs/schema';
+import { BomItem } from './bom.js';
 
-interface JobCardItem {
-  slNo: string;
-  description: string;
-  material: string;
-  specification: string;
-  ectBs: string;
-  length: string;
-  width: string;
-  height: string;
-  qty: string;
-}
-
-interface JobCardData {
-  jobCardNumber: string;
-  jobCardDate: Date;
-  jobCardQty: number;
-}
+type JobCardForm = JobCardFormValues;
 
 interface JobCardRequest {
-  bom: JobCardItem[];
-  fileId: string;
-  jobCardData: JobCardData;
   user: any;
+  bom: BomItem[];
+  file: { id: string };
+  jobCardForm: JobCardForm;
+  titleBlock: any;
 }
 
 export type JobCard = typeof jobCardFields;
-export type { JobCardItem, JobCardData, JobCardRequest };
+export type { JobCardForm, JobCardRequest };

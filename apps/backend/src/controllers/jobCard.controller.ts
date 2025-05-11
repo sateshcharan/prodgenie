@@ -5,12 +5,13 @@ export class JobCardController {
   private static jobCardService = new JobCardService();
 
   static async generateJobCard(req: Request, res: Response) {
-    const user = req.user;
-
     try {
       await JobCardController.jobCardService.generateJobCard({
-        ...req.body,
-        user,
+        user: req.user,
+        file: req.body.file,
+        bom: req.body.bom,
+        titleBlock: req.body.titleBlock,
+        jobCardForm: req.body.jobCardForm,
       });
       res
         .status(201)

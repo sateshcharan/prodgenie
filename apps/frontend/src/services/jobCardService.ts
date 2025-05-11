@@ -1,55 +1,27 @@
-import axios from 'axios';
+import { BomItem } from '@prodgenie/libs/types';
 
-export const requestJobCardTemplates = async ({
-  bom,
-  fileId,
-  jobCardData,
-  titleBlock,
-}: {
-  bom: any[];
-  fileId: string;
-  jobCardData: {
-    jobCardNumber: string;
-    jobCardDate: string;
-    jobCardQty: number;
-  };
-  titleBlock: any;
-}) => {
-  return axios.post('/api/jobCard/getTemplates', {
-    bom,
-    fileId,
-    jobCardData,
-    titleBlock,
-  });
-};
+import api from '../utils/api';
 
 export const generateJobCard = async ({
+  file,
   bom,
-  fileId,
-  jobCardData,
   titleBlock,
+  jobCardForm,
 }: {
-  bom: any[];
-  fileId: string;
-  jobCardData: {
-    jobCardNumber: string;
-    jobCardDate: string;
-    jobCardQty: number;
-  };
+  bom: BomItem[];
+  file: { id: string };
   titleBlock: any;
+  jobCardForm: {
+    jobCardNumber: string;
+    scheduleDate: string;
+    poNumber: string;
+    productionQty: number;
+  };
 }) => {
-  return axios.post(
-    '/api/jobCard/generate',
-    {
-      bom,
-      fileId,
-      jobCardData,
-      titleBlock,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    }
-  );
+  return api.post('/api/jobCard/generate', {
+    bom,
+    file,
+    jobCardForm,
+    titleBlock,
+  });
 };

@@ -157,7 +157,7 @@ export class PdfService {
         path: outputPath,
         format: 'A4',
         printBackground: true,
-        margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+        margin: { top: '5mm', bottom: '5mm', left: '10mm', right: '10mm' },
       });
 
       return outputPath;

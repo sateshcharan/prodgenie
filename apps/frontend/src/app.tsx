@@ -4,9 +4,9 @@ import { PublicLayout, DashLayout } from './layouts';
 import { Home, Dashboard } from './pages';
 import { Login, Signup, Files, FileDetails } from './components';
 
+import { PrivateRoute } from './routes';
 import { fileDetailsLoader } from './loaders/fileDetailsLoader';
 import { fileDatasLoader } from './loaders/filesDataLoader';
-import { PrivateRoute } from './routes';
 
 const dashboardRoutes: RouteObject[] = [
   {

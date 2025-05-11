@@ -2,20 +2,24 @@ import { create } from 'zustand';
 
 interface JobCardState {
   jobCardNumber: string;
-  jobCardDate: Date;
-  jobCardQty: number;
+  scheduleDate: Date;
+  poNumber: string;
+  productionQty: number;
   setJobCardNumber: (jobCardNumber: string) => void;
-  setJobCardDate: (jobCardDate: Date) => void;
-  setJobCardQty: (jobCardQty: number) => void;
+  setScheduleDate: (scheduleDate: Date) => void;
+  setPoNumber: (poNumber: string) => void;
+  setProductionQty: (productionQty: number) => void;
 }
 
 const useJobCardStore = create<JobCardState>((set) => ({
   jobCardNumber: '',
-  jobCardDate: new Date(),
-  jobCardQty: 0,
+  scheduleDate: new Date(),
+  poNumber: '',
+  productionQty: 0,
   setJobCardNumber: (jobCardNumber: string) => set({ jobCardNumber }),
-  setJobCardDate: (jobCardDate: Date) => set({ jobCardDate }),
-  setJobCardQty: (jobCardQty: number) => set({ jobCardQty }),
+  setScheduleDate: (scheduleDate: Date) => set({ scheduleDate }),
+  setPoNumber: (poNumber: string) => set({ poNumber }),
+  setProductionQty: (productionQty: number) => set({ productionQty }),
 }));
 
 export { useJobCardStore };
