@@ -133,13 +133,9 @@ export class PdfService {
     };
   }
 
-  async generatePDF(
-    htmlContent: string,
-    fileId: string,
-    item: JobCardItem
-  ): Promise<string> {
+  async generatePDF(htmlContent: string, fileId: string): Promise<string> {
     const dirPath = path.join('./tmp/jobcards', fileId);
-    const outputPath = path.join(dirPath, `${item.description}.pdf`);
+    const outputPath = path.join(dirPath, `${fileId}-${Date.now()}.pdf`);
 
     // Ensure directory exists
     await fs.mkdir(dirPath, { recursive: true });
@@ -157,7 +153,7 @@ export class PdfService {
         path: outputPath,
         format: 'A4',
         printBackground: true,
-        margin: { top: '5mm', bottom: '5mm', left: '10mm', right: '10mm' },
+        margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' },
       });
 
       return outputPath;

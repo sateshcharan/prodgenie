@@ -79,9 +79,9 @@ export class JobCardService {
           jobCardNumber: jobCardForm.jobCardNumber,
           customerName: titleBlock.customerName,
           jobCardDate: jobCardForm.scheduleDate,
-          length: bomItem.length,
-          width: bomItem.width,
-          height: bomItem.height,
+          lengthID: bomItem.length,
+          widthID: bomItem.width,
+          heightID: bomItem.height,
         };
 
         const populatedTemplate = await this.templateService.injectValues(
@@ -92,10 +92,10 @@ export class JobCardService {
       }
     }
 
+    console.log(templates);
+
     const finalDoc = await this.templateService.combineTemplates(templates);
-    const outputPath = await this.pdfService.generatePDF(finalDoc, file.id, {
-      description: 'jobcard',
-    });
+    const outputPath = await this.pdfService.generatePDF(finalDoc, file.id);
     console.log(`Job card saved to ${outputPath}`);
     await this.uploadJobCard(outputPath);
 
@@ -122,7 +122,7 @@ export class JobCardService {
 
   private async uploadJobCard(filePath: string): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
-    const fileName = '1234567890.pdf';
+    const fileName = filePath.split('/').pop();
     const mimetype = 'application/pdf';
 
     const fakeMulterFile: Express.Multer.File = {

@@ -19,7 +19,7 @@ export class TemplateService {
 
   async combineTemplates(templates: string[]): Promise<string> {
     // Join all populated templates
-    const combined = templates.join();
+    const combined = templates.join('\n');
 
     // Wrap in a basic HTML structure
     return `
@@ -32,6 +32,7 @@ export class TemplateService {
             body { font-family: Calibri, sans-serif; margin: 0; padding: 0; }
             table { width: 100%; border-collapse: collapse; }
             td, th { border: 1px solid #000; padding: 4px; }
+
           </style>
         </head>
         <body>
