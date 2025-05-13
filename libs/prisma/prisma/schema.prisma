@@ -43,6 +43,7 @@ enum FileType {
   template
   sequence
   jobCard
+  calculation
 }
 
 model File {

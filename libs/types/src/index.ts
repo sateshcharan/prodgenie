@@ -17,6 +17,6 @@ export type organizationSchema = schema.OrganizationSchema;
 
 // other types
 export * from './lib/card.js';
-export * from './lib/jobCard.js';
+export * from './lib/JobCard.js';
 export * from './lib/form.js';
 export * from './lib/bom.js';

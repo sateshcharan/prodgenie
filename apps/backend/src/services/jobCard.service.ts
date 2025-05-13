@@ -82,7 +82,10 @@ export class JobCardService {
           lengthID: bomItem.length,
           widthID: bomItem.width,
           heightID: bomItem.height,
+          joints: bom.length > 500 ? 1 : 2,
         };
+
+        console.log(injectionValues.joints);
 
         const populatedTemplate = await this.templateService.injectValues(
           template,

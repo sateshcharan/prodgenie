@@ -1,4 +1,11 @@
-import { Home, Inbox, Calendar, StepForward, Briefcase } from 'lucide-react';
+import {
+  Home,
+  Inbox,
+  Calendar,
+  StepForward,
+  Briefcase,
+  Calculator,
+} from 'lucide-react';
 import { FileType } from '@prisma/client';
 
 export const appSidebarItems = [
@@ -26,5 +33,10 @@ export const appSidebarItems = [
     title: 'Job Cards',
     url: `/dashboard/${FileType.jobCard}`,
     icon: Briefcase,
+  },
+  {
+    title: 'Calculations',
+    url: `/dashboard/${FileType.calculation}`,
+    icon: Calculator,
   },
 ];

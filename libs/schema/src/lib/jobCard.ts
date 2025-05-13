@@ -9,4 +9,4 @@ export const jobCardSchema = z.object({
     .min(1, 'Quantity must be at least 1'),
 });
 
-export type JobCardFormValues = z.infer<typeof jobCardSchema>;
+export type jobCardFormValues = z.infer<typeof jobCardSchema>;

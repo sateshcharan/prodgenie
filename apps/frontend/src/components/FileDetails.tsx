@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useLoaderData } from 'react-router-dom';
 import JobCard from './JobCard';
 import { parsePdfFromUrl } from '../services/pdfService';
-import PdfThumbnail from './PdfThumbnail';
 const FileDetails = () => {
   const { fileId, fileType } = useLoaderData() as {
     fileId: string;
@@ -31,7 +30,7 @@ const FileDetails = () => {
     <div className="relative w-screen h-screen">
       <h1 className="p-4 font-semibold">File ID: {fileId}</h1>
       <div className="relative w-full h-full">
-        <PdfThumbnail url={signedUrl} width={800} />
+        <iframe src={signedUrl} className="w-full h-full" />
         {tables && (
           <div className="absolute top-5 left-5 bg-white rounded-lg p-4 shadow-lg">
             <JobCard tables={tables} fileId={fileId} />

@@ -17,4 +17,7 @@ export const apiRoutes = {
   job_cards: {
     url: '/job_cards',
   },
+  calculations: {
+    url: '/calculations',
+  },
 };

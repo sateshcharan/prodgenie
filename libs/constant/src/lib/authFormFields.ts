@@ -27,11 +27,4 @@ export const signupFields = [
     label: 'Organization Name',
     type: 'text',
   },
-  // {
-  //   name: 'inviteCode',
-  //   label: 'Invite Code',
-  //   type: 'text',
-  // },
 ];
-
-
