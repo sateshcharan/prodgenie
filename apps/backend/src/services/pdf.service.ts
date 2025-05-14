@@ -36,7 +36,7 @@ export class PdfService {
 
       python.stdout.on('data', (data) => {
         stdoutData += data.toString();
-        console.log(data.toString());
+        // console.log(data.toString());
       });
 
       python.stderr.on('data', (data) => {
@@ -49,7 +49,6 @@ export class PdfService {
           try {
             const parsedOutput = JSON.parse(stdoutData);
             resolve(parsedOutput);
-            console.log(parsedOutput.text);
           } catch (err) {
             reject('Failed to parse Python JSON: ' + err);
           }
@@ -67,45 +66,91 @@ export class PdfService {
     const text = data.text;
 
     // Find the BOM table
+    // const bomTable = tables.find((table: any[][]) => {
+    //   if (table && table.length > 0) {
+    //     const header = table[0].map((x) => (x || '').toLowerCase());
+    //     return (
+    //       header.includes('material') &&
+    //       header.includes('description') &&
+    //       header.includes('length')
+    //     );
+    //   }
+    //   return false;
+    // });
+
     const bomTable = tables.find((table: any[][]) => {
-      if (table && table.length > 0) {
-        const header = table[0].map((x) => (x || '').toLowerCase());
-        return (
-          header.includes('sl no.') &&
+      if (!Array.isArray(table)) return false;
+      for (const row of table) {
+        if (!Array.isArray(row)) continue;
+        const header = row.map((x) => (x || '').toLowerCase().trim());
+        if (
           header.includes('description') &&
-          header.includes('qty.')
-        );
+          header.includes('material') &&
+          header.includes('length')
+        ) {
+          return true;
+        }
       }
       return false;
     });
 
-    // const bomTable = tables.find((table: any[][]) => {
-    //   if (!table?.length) return false;
-    //   const header = table[0].map((x) => (x || '').toLowerCase().trim());
-    //   return (
-    //     header.some((h) => h.includes('description')) &&
-    //     header.some((h) => h.includes('material')) &&
-    //     header.some((h) => h.includes('qty'))
-    //   );
-    // });
+    if (bomTable) {
+      console.log('✅ Found BOM Table:', bomTable);
+    } else {
+      console.warn('⚠️ No BOM Table Found');
+    }
 
     const bom: ParsedPdf['bom'] = [];
 
+    // if (bomTable) {
+    //   const [headerRow, ...dataRows] = bomTable;
+    //   for (const row of dataRows) {
+    //     if (row && row.length >= 9) {
+    //       bom.push({
+    //         slNo: row[0],
+    //         description: row[1],
+    //         material: row[2],
+    //         specification: row[3],
+    //         ectBs: row[4],
+    //         length: row[5],
+    //         width: row[6],
+    //         height: row[7],
+    //         qty: row[8],
+    //       });
+    //     }
+    //   }
+    // }
+
     if (bomTable) {
-      const [headerRow, ...dataRows] = bomTable;
-      for (const row of dataRows) {
-        if (row && row.length >= 9) {
-          bom.push({
-            slNo: row[0],
-            description: row[1],
-            material: row[2],
-            specification: row[3],
-            ectBs: row[4],
-            length: row[5],
-            width: row[6],
-            height: row[7],
-            qty: row[8],
-          });
+      // Find the actual header row index inside bomTable
+      const headerIndex = bomTable.findIndex((row: any[]) => {
+        if (!Array.isArray(row)) return false;
+        const header = row.map((x) => (x || '').toLowerCase().trim());
+        return (
+          header.includes('description') &&
+          header.includes('material') &&
+          header.includes('length')
+        );
+      });
+
+      if (headerIndex >= 0) {
+        const headerRow = bomTable[headerIndex];
+        const dataRows = bomTable.slice(headerIndex + 1);
+
+        for (const row of dataRows) {
+          if (Array.isArray(row) && row.length >= 8) {
+            bom.push({
+              slNo: row[0] || '',
+              description: row[1] || '',
+              material: row[2] || '',
+              specification: row[3] || '',
+              ectBs: row[4] || '',
+              length: row[5] || '',
+              width: row[6] || '',
+              height: row[7] || '',
+              qty: row[8] || '',
+            });
+          }
         }
       }
     }

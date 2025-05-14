@@ -42,6 +42,8 @@ const BomTable = ({
     setActiveItem('item-2');
   };
 
+  console.log(bom);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left border-collapse">

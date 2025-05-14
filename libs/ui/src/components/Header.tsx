@@ -11,13 +11,17 @@ import { ModeToggle } from './mode-toggle';
 
 // import { NavigationMenuDemo } from './NavigationMenuDemo';
 
-import { Globe } from 'lucide-react';
+import { Ghost, Globe } from 'lucide-react';
 
 import logo from '../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
+import { useDialogStore } from '@prodgenie/libs/store';
 
 const Header = () => {
   const navigate = useNavigate();
+  const handleLoginClick = () => {
+    useDialogStore.getState().open();
+  };
   return (
     <header className="bg-while flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
@@ -44,7 +48,10 @@ const Header = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button onClick={() => navigate('/login')}>Log in</Button>
+        {/* <Button className="rounded-sm" onClick={() => navigate('/login')}> */}
+        <Button className="rounded-sm" onClick={handleLoginClick}>
+          Log in
+        </Button>
       </div>
     </header>
   );

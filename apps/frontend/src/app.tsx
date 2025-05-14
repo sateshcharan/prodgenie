@@ -1,29 +1,10 @@
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 
 import { PublicLayout, DashLayout } from './layouts';
-import { Home, Dashboard } from './pages';
-import { Login, Signup, Files, FileDetails } from './components';
+import { Home } from './pages';
+import { Login, Signup } from './components';
 
-import { PrivateRoute } from './routes';
-import { fileDetailsLoader } from './loaders/fileDetailsLoader';
-import { fileDatasLoader } from './loaders/filesDataLoader';
-
-const dashboardRoutes: RouteObject[] = [
-  {
-    index: true,
-    element: <Dashboard />,
-  },
-  {
-    path: ':fileType',
-    element: <Files />,
-    loader: fileDatasLoader,
-  },
-  {
-    path: ':fileType/:fileId',
-    element: <FileDetails />,
-    loader: fileDetailsLoader,
-  },
-];
+import { PrivateRoute, dashboardRoutes } from './routes';
 
 const router: any = createBrowserRouter([
   {

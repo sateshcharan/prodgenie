@@ -10,12 +10,12 @@ class PdfService:
     def extract_tables_from_pdf(pdf_bytes: bytes) -> list:
         all_tables = []
         table_settings = {
-            "vertical_strategy": "lines",     # Use vertical lines to split columns
-            "horizontal_strategy": "lines",   # Use horizontal lines to split rows
-            "intersection_tolerance": 5,      # Tweak this if lines are slightly misaligned
-            "snap_tolerance": 3,              # Helps with line detection noise
-            "join_tolerance": 3,              # Merge close characters into one cell
-            "edge_min_length": 3,             # Ignore tiny line segments
+            "vertical_strategy": "lines",     
+            "horizontal_strategy": "lines",   
+            "intersection_tolerance": 5,      
+            "snap_tolerance": 3,              
+            "join_tolerance": 3,              
+            "edge_min_length": 3,             
             "min_words_vertical": 1,
             "min_words_horizontal": 1,
             "keep_blank_chars": False
