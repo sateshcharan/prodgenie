@@ -5,6 +5,8 @@ import { spawn } from 'child_process';
 
 import { JobCardItem } from '@prodgenie/libs/types';
 
+import { normalize } from '../utils';
+
 import initConfig from '../config/init.config.json';
 
 interface ParsedPdf {
@@ -17,14 +19,6 @@ interface ParsedPdf {
     date?: string;
     productTitle?: string;
   };
-}
-
-function normalize(str: string): string {
-  return (str || '')
-    .toLowerCase()
-    .replace(/\./g, '')
-    .replace(/\s+([a-z])/g, (_, char) => char.toUpperCase())
-    .replace(/\s+/g, '');
 }
 
 export class PdfService {
@@ -79,7 +73,6 @@ export class PdfService {
     const titleBlockHeaders = initConfig.titleBlock;
 
     const bomTable = tables.find((table: any[][]) => {
-      console.log(table);
       if (!Array.isArray(table)) return false;
 
       for (const row of table) {

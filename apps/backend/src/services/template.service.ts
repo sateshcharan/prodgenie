@@ -29,13 +29,34 @@ export class TemplateService {
           <meta charset="UTF-8" />
           <title>Combined Job Cards</title>
           <style>
-            body { font-family: Calibri, sans-serif; margin: 0; padding: 0; }
-            table { width: 100%; border-collapse: collapse; }
-            td, th { border: 1px solid #000; padding: 4px; }
-
+            body {
+              font-family: Calibri, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            td,th {
+              border: 1px solid #000;
+              padding: 4px;
+            }
+            h1 {
+              text-align: center;
+              text-transform: uppercase;
+              font-weight: bold;
+              margin-bottom: 0;
+            }
+            h2 {
+              text-align: center;
+              margin-top: 4px;
+            }
           </style>
         </head>
         <body>
+          <h1>Blue Saphire Packaging</h1>
+          <h2>Process cum Inspection Report</h2>
           ${combined}
         </body>
       </html>

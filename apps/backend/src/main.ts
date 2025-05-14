@@ -35,9 +35,6 @@ app.use(passport.initialize());
 // Static Files
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-// Passport Middleware for protected routes
-// app.use(passport.authenticate('jwt', { session: false }));
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/files', authenticateJWT, fileRoutes);

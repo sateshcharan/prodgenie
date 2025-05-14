@@ -10,6 +10,7 @@ import { StorageFileService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
 
 import { FileService } from './file.service.js';
+import { normalize } from '../utils';
 
 const parser = new Parser();
 
@@ -113,6 +114,7 @@ export class JobCardService {
 
         templates.push(populatedTemplate);
       }
+      templates.push(`<div style="page-break-after: always;"></div>`);
     }
 
     const finalDoc = await this.templateService.combineTemplates(templates);
@@ -125,7 +127,7 @@ export class JobCardService {
   }
 
   private async identifyProduct(item: BomItem) {
-    const name = `${item.description.toLowerCase()}.json`;
+    const name = `${normalize(item.description)}.json`;
     try {
       const result = await prisma.file.findFirst({
         where: { type: 'sequence', name },
