@@ -1,14 +1,30 @@
 import { Outlet } from 'react-router-dom';
-import { Footer, Header } from '@prodgenie/libs/ui';
+import { PublicHeader, PublicFooter } from '../navigation';
+import { Login, Signup } from '../components';
+
+import { useAuthModalStore } from '@prodgenie/libs/store';
+import { AuthDialog } from '../components/auth/authDialog';
+
+import authImage from '@prodgenie/libs/ui/assets/authDialogImage.webp';
 
 const PublicLayout = () => {
+  const { modalType, closeModal } = useAuthModalStore();
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <PublicHeader />
       <main className="flex-grow p-4">
         <Outlet />
       </main>
-      <Footer />
+      <PublicFooter />
+
+      <AuthDialog
+        open={modalType === 'login' || modalType === 'signup'}
+        onOpenChange={closeModal}
+        imageUrl={authImage}
+      >
+        {modalType === 'login' ? <Login /> : <Signup />}
+      </AuthDialog>
     </div>
   );
 };

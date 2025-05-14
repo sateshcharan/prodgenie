@@ -14,6 +14,8 @@ import {
 } from '../';
 import { cn } from '@prodgenie/libs/utils';
 
+import { useAuthModalStore } from '@prodgenie/libs/store';
+
 type Field = {
   name: string;
   label: string;
@@ -47,6 +49,8 @@ const AuthForm = ({
     mode: 'onTouched',
     resolver: zodResolver(validationSchema),
   });
+
+  const { openModal } = useAuthModalStore();
 
   // Track changes to all fields and notify parent
   useEffect(() => {
@@ -94,16 +98,24 @@ const AuthForm = ({
               {buttonLabel === 'Login' ? (
                 <>
                   Don&apos;t have an account?{' '}
-                  <a href="/signup" className="underline underline-offset-4">
+                  <button
+                    type="button"
+                    onClick={() => openModal('signup')}
+                    className="underline underline-offset-4 text-primary hover:text-primary/80"
+                  >
                     Sign up
-                  </a>
+                  </button>
                 </>
               ) : (
                 <>
                   Already have an account?{' '}
-                  <a href="/login" className="underline underline-offset-4">
+                  <button
+                    type="button"
+                    onClick={() => openModal('login')}
+                    className="underline underline-offset-4 text-primary hover:text-primary/80"
+                  >
                     Login
-                  </a>
+                  </button>
                 </>
               )}
             </div>

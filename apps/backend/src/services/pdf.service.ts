@@ -5,6 +5,8 @@ import { spawn } from 'child_process';
 
 import { JobCardItem } from '@prodgenie/libs/types';
 
+import bomConfig from '../config/init.config.json';
+
 interface ParsedPdf {
   bom: JobCardItem[];
   titleBlock: {
@@ -64,92 +66,65 @@ export class PdfService {
   static processParsedPdf(data: any): ParsedPdf {
     const tables = data.tables;
     const text = data.text;
-
-    // Find the BOM table
-    // const bomTable = tables.find((table: any[][]) => {
-    //   if (table && table.length > 0) {
-    //     const header = table[0].map((x) => (x || '').toLowerCase());
-    //     return (
-    //       header.includes('material') &&
-    //       header.includes('description') &&
-    //       header.includes('length')
-    //     );
-    //   }
-    //   return false;
-    // });
+    const expectedBomHeaders = bomConfig.bom.header;
+    const requiredBomHeaders = bomConfig.bom.required;
+    const titleBlockHeaders = bomConfig.titleBlock;
 
     const bomTable = tables.find((table: any[][]) => {
       if (!Array.isArray(table)) return false;
+
       for (const row of table) {
         if (!Array.isArray(row)) continue;
         const header = row.map((x) => (x || '').toLowerCase().trim());
-        if (
-          header.includes('description') &&
-          header.includes('material') &&
-          header.includes('length')
-        ) {
-          return true;
-        }
+
+        const matchesAll = requiredBomHeaders.every((required) =>
+          header.includes(required)
+        );
+
+        if (matchesAll) return true;
       }
+
       return false;
     });
 
-    if (bomTable) {
-      console.log('✅ Found BOM Table:', bomTable);
-    } else {
-      console.warn('⚠️ No BOM Table Found');
-    }
-
     const bom: ParsedPdf['bom'] = [];
-
-    // if (bomTable) {
-    //   const [headerRow, ...dataRows] = bomTable;
-    //   for (const row of dataRows) {
-    //     if (row && row.length >= 9) {
-    //       bom.push({
-    //         slNo: row[0],
-    //         description: row[1],
-    //         material: row[2],
-    //         specification: row[3],
-    //         ectBs: row[4],
-    //         length: row[5],
-    //         width: row[6],
-    //         height: row[7],
-    //         qty: row[8],
-    //       });
-    //     }
-    //   }
-    // }
 
     if (bomTable) {
       // Find the actual header row index inside bomTable
-      const headerIndex = bomTable.findIndex((row: any[]) => {
+      const headerIndex = bomTable.findIndex((row: string[]) => {
         if (!Array.isArray(row)) return false;
         const header = row.map((x) => (x || '').toLowerCase().trim());
-        return (
-          header.includes('description') &&
-          header.includes('material') &&
-          header.includes('length')
+        return requiredBomHeaders.every((required) =>
+          header.includes(required)
         );
       });
 
       if (headerIndex >= 0) {
         const headerRow = bomTable[headerIndex];
+
+        // Create a mapping of header names to their respective column indexes
+        const headerMapping: { [key: string]: number } = {};
+        headerRow.forEach((header: string, index: number) => {
+          headerMapping[
+            header
+              .toLowerCase()
+              .replace(/\./g, '')
+              .replace(/\s+([a-z])/g, (_, char) => char.toUpperCase())
+              .replace(/\s+/g, '')
+          ] = index;
+        });
+
         const dataRows = bomTable.slice(headerIndex + 1);
 
         for (const row of dataRows) {
-          if (Array.isArray(row) && row.length >= 8) {
-            bom.push({
-              slNo: row[0] || '',
-              description: row[1] || '',
-              material: row[2] || '',
-              specification: row[3] || '',
-              ectBs: row[4] || '',
-              length: row[5] || '',
-              width: row[6] || '',
-              height: row[7] || '',
-              qty: row[8] || '',
+          if (Array.isArray(row) && row.length >= headerRow.length) {
+            const bomEntry: Record<string, string> = {};
+
+            expectedBomHeaders.forEach((header) => {
+              bomEntry[header] = row[headerMapping[header]] || '';
             });
+
+            bom.push(bomEntry);
           }
         }
       }
@@ -163,24 +138,32 @@ export class PdfService {
       .map((line: string) => line.trim())
       .filter((line: string | any[]) => line.length > 0);
 
+    console.log(lines);
+
     for (const line of lines) {
-      if (line.toLowerCase().includes('customer name')) {
-        titleBlock.customerName = line.split(':').pop()?.trim();
+      if (
+        titleBlockHeaders.some((header) => line.toLowerCase().includes(header))
+      ) {
+        titleBlock[header] = line.split(':').pop()?.trim();
       }
-      if (line.toLowerCase().includes('dwg no')) {
-        titleBlock.drawingNumber = line.split(':').pop()?.trim();
-      }
-      if (line.toLowerCase().includes('scale')) {
-        titleBlock.scale = line.split(':').pop()?.trim();
-      }
-      if (line.toLowerCase().includes('product detail')) {
-        const nextLine = lines[lines.indexOf(line) + 1] || '';
-        titleBlock.productTitle = nextLine.trim();
-      }
-      if (line.match(/\d{2}-\d{2}-\d{4}/)) {
-        // Date like 05-03-2025
-        titleBlock.date = line.trim();
-      }
+
+      // if (line.toLowerCase().includes('customer name')) {
+      //   titleBlock.customerName = line.split(':').pop()?.trim();
+      // }
+      // if (line.toLowerCase().includes('dwg no')) {
+      //   titleBlock.drawingNumber = line.split(':').pop()?.trim();
+      // }
+      // if (line.toLowerCase().includes('scale')) {
+      //   titleBlock.scale = line.split(':').pop()?.trim();
+      // }
+      // if (line.toLowerCase().includes('product detail')) {
+      //   const nextLine = lines[lines.indexOf(line) + 1] || '';
+      //   titleBlock.productTitle = nextLine.trim();
+      // }
+      // if (line.match(/\d{2}-\d{2}-\d{4}/)) {
+      //   // Date like 05-03-2025
+      //   titleBlock.date = line.trim();
+      // }
     }
 
     return {

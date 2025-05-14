@@ -1,20 +1,12 @@
-import axios from 'axios';
+import { api } from '../utils';
 
 export const fetchFilesByType = async (fileType: string) => {
-  const { data } = await axios.get(`/api/files/${fileType}/list`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
+  const { data } = await api.get(`/api/files/${fileType}/list`);
   return data?.data || [];
 };
 
 export const deleteFile = async (fileType: string, fileId: number) => {
-  await axios.delete(`/api/files/${fileType}/${fileId}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
+  await api.delete(`/api/files/${fileType}/${fileId}`);
 };
 
 export const downloadFile = async (path: string, name: string) => {

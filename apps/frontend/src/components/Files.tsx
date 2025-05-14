@@ -1,24 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  DialogDropZone,
-  Input,
-} from '@prodgenie/libs/ui';
-import { X, Download } from 'lucide-react';
+
+import { Card, CardContent, DialogDropZone } from '@prodgenie/libs/ui';
 import { useDialogStore } from '@prodgenie/libs/store';
-import { FileType } from '@prisma/client';
 import { CardItem } from '@prodgenie/libs/types';
+
+import { FileType } from '@prisma/client';
+
 import {
   fetchFilesByType,
   deleteFile,
   downloadFile,
 } from '../services/fileService';
-import PdfThumbnail from './PdfThumbnail';
+
+import banner from '@prodgenie/libs/ui/assets/banner.png';
+import FileCard from './FileCard';
+import { SearchBanner } from './SearchBanner';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -73,48 +70,24 @@ const Files = () => {
 
   return (
     <div className="p-4">
-      {/* Search Bar */}
-      <div className="mb-4">
-        <Input
-          type="text"
-          placeholder="Search files..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full max-w-sm"
-        />
-      </div>
+      {/* Search Bar with Banner */}
+      <SearchBanner
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        banner={banner}
+      />
 
       {/* File Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {filteredCards.map((card) => (
-          <Card key={card.id} className="relative shadow-lg rounded-xl">
-            <Button
-              onClick={() => handleCardDelete(card.id)}
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2"
-            >
-              <X />
-            </Button>
-            <Button
-              onClick={() => handleCardDownload(card.path, card.name)}
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-8"
-            >
-              <Download />
-            </Button>
-            <CardHeader>
-              <CardTitle>{card.name}</CardTitle>
-            </CardHeader>
-            <CardContent onClick={() => handleCardClick(card.id, card.path)}>
-              {fileType === 'drawing' || fileType === 'jobCard' ? (
-                <PdfThumbnail url={card.path} width={300} />
-              ) : (
-                <iframe src={card.path} className="w-full h-40" />
-              )}
-            </CardContent>
-          </Card>
+          <FileCard
+            key={card.id}
+            card={card}
+            fileType={fileType}
+            onDelete={handleCardDelete}
+            onDownload={handleCardDownload}
+            onClick={handleCardClick}
+          />
         ))}
 
         {/* Add File Card */}

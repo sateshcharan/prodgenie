@@ -1,8 +1,12 @@
+// routes/privateRoutes.ts
 import { RouteObject } from 'react-router-dom';
-import { fileDetailsLoader } from '../loaders/fileDetailsLoader';
-import { fileDatasLoader } from '../loaders/filesDataLoader';
+
+import { DashLayout } from '../layouts';
+import { fileDetailsLoader, fileDatasLoader } from '../loaders';
 import { Files, FileDetails } from '../components';
 import { Dashboard } from '../pages';
+
+import PrivateRoute from './PrivateRoute';
 
 const dashboardRoutes: RouteObject[] = [
   {
@@ -21,4 +25,14 @@ const dashboardRoutes: RouteObject[] = [
   },
 ];
 
-export default dashboardRoutes;
+export const privateRoutes = [
+  {
+    path: 'dashboard',
+    element: (
+      <PrivateRoute>
+        <DashLayout />
+      </PrivateRoute>
+    ),
+    children: dashboardRoutes,
+  },
+];

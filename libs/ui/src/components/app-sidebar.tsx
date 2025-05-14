@@ -1,4 +1,3 @@
-// import { Calendar, Home, Inbox, Briefcase, StepForward } from 'lucide-react';
 import { appSidebarItems } from '@prodgenie/libs/constant';
 
 import {
@@ -17,10 +16,10 @@ const items = appSidebarItems;
 
 export function AppSidebar() {
   return (
-    <Sidebar side="left" collapsible="none">
+    <Sidebar side="left" collapsible="none" className="bg-white w-auto">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          {/* <SidebarGroupLabel>Application</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

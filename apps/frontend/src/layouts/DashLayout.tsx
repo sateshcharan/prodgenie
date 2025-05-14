@@ -1,13 +1,12 @@
 import { Outlet } from 'react-router-dom';
-import { Footer, DashHeader } from '@prodgenie/libs/ui';
 
 import { SidebarProvider, SidebarTrigger } from '@prodgenie/libs/ui';
 import { AppSidebar } from '@prodgenie/libs/ui';
-
+import { PrivateHeader } from '../navigation';
 const Layout = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <DashHeader />
+      <PrivateHeader />
       <SidebarProvider>
         <AppSidebar />
         <main className="flex-grow p-4">
@@ -15,7 +14,6 @@ const Layout = () => {
           <Outlet />
         </main>
       </SidebarProvider>
-      <Footer />
     </div>
   );
 };

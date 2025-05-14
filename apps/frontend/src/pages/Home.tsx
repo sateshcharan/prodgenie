@@ -2,10 +2,11 @@ import { Button } from '@prodgenie/libs/ui';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@prodgenie/libs/ui';
 import PricingCard from '../components/PricingCard';
+import { useAuthModalStore } from '@prodgenie/libs/store';
 
 const Home = () => {
   const navigate = useNavigate();
-
+  const { openModal } = useAuthModalStore();
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -19,7 +20,12 @@ const Home = () => {
               Streamline your manufacturing process with our intelligent job
               card management system
             </p>
-            <Button size="lg" onClick={() => navigate('/signup')}>
+            <Button
+              size="lg"
+              onClick={() => {
+                openModal('signup');
+              }}
+            >
               Get Started Now
             </Button>
           </div>
@@ -68,7 +74,7 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate('/signup');
+              openModal('signup');
               toast.success('Welcome to ProdGenie!');
             }}
           >

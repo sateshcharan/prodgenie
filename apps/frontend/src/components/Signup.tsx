@@ -18,8 +18,13 @@ export default function SignupPage() {
         ? '/api/auth/signup/invite'
         : '/api/auth/signup/owner';
       await api.post(endpoint, data);
-      toast.success('Signup successful!');
-      navigate('/login');
+      toast.success('Signup successful! Logging in...');
+      // console.log(data);
+      // await api.post('/api/auth/login', {
+      //   email: data.email,
+      //   password: data.password,
+      // });
+      navigate('/dashboard');
     } catch (err: any) {
       console.error('Signup failed:', err);
       toast.error('Signup failed! ' + err.response.data.error);
@@ -76,7 +81,7 @@ export default function SignupPage() {
   }, []);
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center ">
       <AuthForm
         fields={fields}
         validationSchema={signupSchema}

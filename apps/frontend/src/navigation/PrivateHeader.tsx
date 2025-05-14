@@ -6,32 +6,20 @@ import {
   SelectTrigger,
   SelectValue,
   Button,
-} from '../';
-import { ModeToggle } from './mode-toggle';
+} from '@prodgenie/libs/ui';
 
-// import { NavigationMenuDemo } from './NavigationMenuDemo';
+import { Globe } from 'lucide-react';
+import { ModeToggle } from '@prodgenie/libs/ui';
 
-import { Ghost, Globe } from 'lucide-react';
-
-import logo from '../assets/logo.png';
+import logo from '@prodgenie/libs/ui/assets/logo.png';
 import { useNavigate } from 'react-router-dom';
-import { useDialogStore } from '@prodgenie/libs/store';
 
 const Header = () => {
   const navigate = useNavigate();
-  const handleLoginClick = () => {
-    useDialogStore.getState().open();
-  };
   return (
     <header className="bg-while flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
-        <img
-          src={logo}
-          alt="Website Logo"
-          className="h-8 w-auto cursor-pointer"
-          onClick={() => navigate('/')}
-        />
-        {/* <NavigationMenuDemo /> */}
+        <img src={logo} alt="Website Logo" className="h-8 w-auto" />
       </div>
       <div className=" flex items-center gap-2">
         <ModeToggle />
@@ -48,9 +36,13 @@ const Header = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        {/* <Button className="rounded-sm" onClick={() => navigate('/login')}> */}
-        <Button className="rounded-sm" onClick={handleLoginClick}>
-          Log in
+        <Button
+          onClick={() => {
+            localStorage.clear();
+            navigate('/');
+          }}
+        >
+          Log Out
         </Button>
       </div>
     </header>

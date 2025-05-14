@@ -6,20 +6,33 @@ import {
   SelectTrigger,
   SelectValue,
   Button,
-} from '..';
+} from '@prodgenie/libs/ui';
+import { ModeToggle } from '@prodgenie/libs/ui';
 
 import { Globe } from 'lucide-react';
-import { ModeToggle } from './mode-toggle';
 
-import logo from '../assets/logo.png';
+import logo from '@prodgenie/libs/ui/assets/logo.png';
 import { useNavigate } from 'react-router-dom';
+import { useAuthModalStore } from '@prodgenie/libs/store';
 
-const Header = () => {
+import { NavigationMenuDemo } from './NavigationMenuDemo';
+
+const PublicHeader = () => {
   const navigate = useNavigate();
+  const { openModal } = useAuthModalStore();
+  const handleLoginClick = () => {
+    openModal('login');
+  };
   return (
     <header className="bg-while flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
-        <img src={logo} alt="Website Logo" className="h-8 w-auto" />
+        <img
+          src={logo}
+          alt="Website Logo"
+          className="h-8 w-auto cursor-pointer"
+          onClick={() => navigate('/')}
+        />
+        {/* <NavigationMenuDemo /> */}
       </div>
       <div className=" flex items-center gap-2">
         <ModeToggle />
@@ -36,17 +49,12 @@ const Header = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button
-          onClick={() => {
-            localStorage.clear();
-            navigate('/login');
-          }}
-        >
-          Log Out
+        <Button className="rounded-sm" onClick={handleLoginClick}>
+          Log in
         </Button>
       </div>
     </header>
   );
 };
 
-export default Header;
+export default PublicHeader;

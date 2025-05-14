@@ -1,4 +1,4 @@
-const Footer = () => {
+const PublicFooter = () => {
   return (
     <footer className="bg-gray-950 text-white p-4 mt-auto text-center">
       <p className="text-sm">
@@ -8,4 +8,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default PublicFooter;

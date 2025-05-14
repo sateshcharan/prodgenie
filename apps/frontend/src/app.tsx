@@ -1,30 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-import { PublicLayout, DashLayout } from './layouts';
-import { Home } from './pages';
-import { Login, Signup } from './components';
-
-import { PrivateRoute, dashboardRoutes } from './routes';
+import { publicRoutes, privateRoutes } from './routes';
 
 const router: any = createBrowserRouter([
-  {
-    path: '/',
-    element: <PublicLayout />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: 'login', element: <Login /> },
-      { path: 'signup', element: <Signup /> },
-    ],
-  },
-  {
-    path: 'dashboard',
-    element: (
-      <PrivateRoute>
-        <DashLayout />
-      </PrivateRoute>
-    ),
-    children: dashboardRoutes,
-  },
+  ...publicRoutes,
+  ...privateRoutes,
   {
     path: '*',
     element: <>404</>,

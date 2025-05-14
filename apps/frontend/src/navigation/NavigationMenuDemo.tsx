@@ -10,7 +10,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '../navigation-menu';
+} from '@prodgenie/libs/ui';
 
 const components: { title: string; href: string; description: string }[] = [
   {
