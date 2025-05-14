@@ -6,7 +6,16 @@ import {
   Briefcase,
   Calculator,
 } from 'lucide-react';
-import { FileType } from '@prisma/client';
+
+// import { FileType } from '@prodgenie/libs/prisma';
+
+const FileType = {
+  drawing: 'drawing',
+  template: 'template',
+  sequence: 'sequence',
+  jobCard: 'jobCard',
+  calculation: 'calculation',
+};
 
 export const appSidebarItems = [
   {

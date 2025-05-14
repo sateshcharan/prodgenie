@@ -9,11 +9,25 @@ class PdfService:
     @staticmethod
     def extract_tables_from_pdf(pdf_bytes: bytes) -> list:
         all_tables = []
+        table_settings = {
+            "vertical_strategy": "lines",     # Use vertical lines to split columns
+            "horizontal_strategy": "lines",   # Use horizontal lines to split rows
+            "intersection_tolerance": 5,      # Tweak this if lines are slightly misaligned
+            "snap_tolerance": 3,              # Helps with line detection noise
+            "join_tolerance": 3,              # Merge close characters into one cell
+            "edge_min_length": 3,             # Ignore tiny line segments
+            "min_words_vertical": 1,
+            "min_words_horizontal": 1,
+            "keep_blank_chars": False
+        }
+
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
             for page in pdf.pages:
+                # tables = page.extract_tables(table_settings=table_settings)
                 tables = page.extract_tables()
                 if tables:
                     all_tables.extend(tables)
+                    # all_tables.append(tables)
         return all_tables
 
     @staticmethod
@@ -42,6 +56,7 @@ def main():
 
     tables = PdfService.extract_tables_from_pdf(pdf_bytes)
     text = PdfService.extract_text_from_pdf(pdf_bytes)
+    
 
     result = {
         "tables": tables,

@@ -36,7 +36,7 @@ export class PdfService {
 
       python.stdout.on('data', (data) => {
         stdoutData += data.toString();
-        // console.log(data.toString());
+        console.log(data.toString());
       });
 
       python.stderr.on('data', (data) => {
@@ -49,6 +49,7 @@ export class PdfService {
           try {
             const parsedOutput = JSON.parse(stdoutData);
             resolve(parsedOutput);
+            console.log(parsedOutput.text);
           } catch (err) {
             reject('Failed to parse Python JSON: ' + err);
           }
@@ -77,6 +78,16 @@ export class PdfService {
       }
       return false;
     });
+
+    // const bomTable = tables.find((table: any[][]) => {
+    //   if (!table?.length) return false;
+    //   const header = table[0].map((x) => (x || '').toLowerCase().trim());
+    //   return (
+    //     header.some((h) => h.includes('description')) &&
+    //     header.some((h) => h.includes('material')) &&
+    //     header.some((h) => h.includes('qty'))
+    //   );
+    // });
 
     const bom: ParsedPdf['bom'] = [];
 

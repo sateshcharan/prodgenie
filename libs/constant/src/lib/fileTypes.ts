@@ -1,7 +1,0 @@
-export const fileTypes = [
-  'drawings',
-  'templates',
-  'sequences',
-  'jobCards',
-  'calculations',
-];

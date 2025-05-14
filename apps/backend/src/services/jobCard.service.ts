@@ -1,15 +1,17 @@
 import axios from 'axios';
 import fs from 'fs/promises';
+import { Parser } from 'expr-eval';
 
 import { PdfService } from './pdf.service.js';
 import { TemplateService } from './template.service.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { StorageFileService } from '@prodgenie/libs/supabase';
-import { JobCardRequest } from '@prodgenie/libs/types';
-import { BomItem } from '@prodgenie/libs/types';
+import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
 
 import { FileService } from './file.service.js';
+
+const parser = new Parser();
 
 export class JobCardService {
   private readonly fileService: FileService;
@@ -30,7 +32,7 @@ export class JobCardService {
     jobCardForm,
     user,
     titleBlock,
-  }: JobCardRequest): Promise<void> {
+  }: jobCardRequest): Promise<void> {
     console.log(`Generating job card for File ID: ${file.id}`);
 
     if (!bom.length) {
@@ -40,9 +42,18 @@ export class JobCardService {
 
     const templates: string[] = [];
 
+    const userOrg = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { org: { select: { name: true } } },
+    });
+
+    const formulaUrl = await this.storageFileService.getSignedUrl(
+      `${userOrg?.org?.name}/calculation/formulas.json`
+    );
+    const { data: formulaConfig } = await axios.get(formulaUrl);
+
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);
-
       if (!product?.sequencePath) {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
@@ -52,11 +63,6 @@ export class JobCardService {
         product.sequencePath
       );
       const { data: sequence } = await axios.get(sequenceUrl);
-
-      const userOrg = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { org: { select: { name: true } } },
-      });
 
       for (const section of sequence.sections) {
         const sectionUrl = await this.storageFileService.getSignedUrl(
@@ -68,10 +74,24 @@ export class JobCardService {
           section.name
         );
 
+        // Your runtime context
+        const context = {
+          bomQty: Number(bomItem.qty),
+          jobCardQty: Number(jobCardForm.productionQty),
+          lengthId: Number(bomItem.length),
+          widthId: Number(bomItem.width),
+          heightId: Number(bomItem.height),
+        };
+
+        // Evaluate in safe order (since thinBlade depends on joints)
+        const productionQty = parser.evaluate(
+          formulaConfig.common.productionQty,
+          context
+        );
+        const joints = parser.evaluate(formulaConfig.common.joints, context);
+
         const injectionValues = {
           description: titleBlock.productTitle,
-          productionQty:
-            Number(bomItem.qty) * Number(jobCardForm.productionQty),
           drgPartNo: titleBlock.drawingNumber,
           poNumber: jobCardForm.poNumber,
           preparedBy: user.name,
@@ -82,20 +102,18 @@ export class JobCardService {
           lengthID: bomItem.length,
           widthID: bomItem.width,
           heightID: bomItem.height,
-          joints: bom.length > 500 ? 1 : 2,
+          productionQty,
+          joints,
         };
-
-        console.log(injectionValues.joints);
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
           injectionValues
         );
+
         templates.push(populatedTemplate);
       }
     }
-
-    console.log(templates);
 
     const finalDoc = await this.templateService.combineTemplates(templates);
     const outputPath = await this.pdfService.generatePDF(finalDoc, file.id);
@@ -141,13 +159,11 @@ export class JobCardService {
       stream: undefined as any,
     };
 
-    const result = await this.fileService.uploadFile(
+    return await this.fileService.uploadFile(
       [fakeMulterFile],
       'jobCard',
       '5e4174e2-d53b-4199-a1d3-239bb82f4833'
     );
-
-    return result;
   }
 
   async notifyFrontend(fileId: string): Promise<void> {

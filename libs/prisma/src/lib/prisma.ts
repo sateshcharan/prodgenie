@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserType, FileType, File, Org } from '@prisma/client';
 
-export const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-export type { UserType, FileType, File, Org } from '@prisma/client';
+export { prisma };
+export type { UserType, FileType, File, Org };

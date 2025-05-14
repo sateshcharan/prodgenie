@@ -1,12 +1,13 @@
-import type { UserType, FileType, File, Org } from '@prisma/client';
+import type { UserType, FileType, File, Org } from '@prodgenie/libs/prisma';
 
 import * as schema from '@prodgenie/libs/schema';
 
 // prisma types
-export type userType = UserType;
-export type fileType = FileType;
-export type file = File;
-export type org = Org;
+// export type userType = UserType;
+// export type fileType = FileType;
+// export type file = File;
+// export type org = Org;
+export type { UserType, FileType, File, Org };
 
 // zod types
 export type loginSchema = schema.loginSchema;
