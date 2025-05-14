@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 
 import { JobCardItem } from '@prodgenie/libs/types';
 
-import bomConfig from '../config/init.config.json';
+import initConfig from '../config/init.config.json';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -17,6 +17,14 @@ interface ParsedPdf {
     date?: string;
     productTitle?: string;
   };
+}
+
+function normalize(str: string): string {
+  return (str || '')
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+([a-z])/g, (_, char) => char.toUpperCase())
+    .replace(/\s+/g, '');
 }
 
 export class PdfService {
@@ -66,11 +74,12 @@ export class PdfService {
   static processParsedPdf(data: any): ParsedPdf {
     const tables = data.tables;
     const text = data.text;
-    const expectedBomHeaders = bomConfig.bom.header;
-    const requiredBomHeaders = bomConfig.bom.required;
-    const titleBlockHeaders = bomConfig.titleBlock;
+    const expectedBomHeaders = initConfig.bom.header;
+    const requiredBomHeaders = initConfig.bom.required;
+    const titleBlockHeaders = initConfig.titleBlock;
 
     const bomTable = tables.find((table: any[][]) => {
+      console.log(table);
       if (!Array.isArray(table)) return false;
 
       for (const row of table) {
@@ -105,13 +114,7 @@ export class PdfService {
         // Create a mapping of header names to their respective column indexes
         const headerMapping: { [key: string]: number } = {};
         headerRow.forEach((header: string, index: number) => {
-          headerMapping[
-            header
-              .toLowerCase()
-              .replace(/\./g, '')
-              .replace(/\s+([a-z])/g, (_, char) => char.toUpperCase())
-              .replace(/\s+/g, '')
-          ] = index;
+          headerMapping[normalize(header)] = index;
         });
 
         const dataRows = bomTable.slice(headerIndex + 1);
@@ -138,32 +141,32 @@ export class PdfService {
       .map((line: string) => line.trim())
       .filter((line: string | any[]) => line.length > 0);
 
-    console.log(lines);
+    // console.log(lines);
 
     for (const line of lines) {
-      if (
-        titleBlockHeaders.some((header) => line.toLowerCase().includes(header))
-      ) {
-        titleBlock[header] = line.split(':').pop()?.trim();
-      }
+      // if (
+      //   titleBlockHeaders.some((header) => line.toLowerCase().includes(header))
+      // ) {
+      //   titleBlock[header] = line.split(':').pop()?.trim();
+      // }
 
-      // if (line.toLowerCase().includes('customer name')) {
-      //   titleBlock.customerName = line.split(':').pop()?.trim();
-      // }
-      // if (line.toLowerCase().includes('dwg no')) {
-      //   titleBlock.drawingNumber = line.split(':').pop()?.trim();
-      // }
-      // if (line.toLowerCase().includes('scale')) {
-      //   titleBlock.scale = line.split(':').pop()?.trim();
-      // }
-      // if (line.toLowerCase().includes('product detail')) {
-      //   const nextLine = lines[lines.indexOf(line) + 1] || '';
-      //   titleBlock.productTitle = nextLine.trim();
-      // }
-      // if (line.match(/\d{2}-\d{2}-\d{4}/)) {
-      //   // Date like 05-03-2025
-      //   titleBlock.date = line.trim();
-      // }
+      if (line.toLowerCase().includes('customer name')) {
+        titleBlock.customerName = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('dwg no')) {
+        titleBlock.drawingNumber = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('scale')) {
+        titleBlock.scale = line.split(':').pop()?.trim();
+      }
+      if (line.toLowerCase().includes('product detail')) {
+        const nextLine = lines[lines.indexOf(line) + 1] || '';
+        titleBlock.productTitle = nextLine.trim();
+      }
+      if (line.match(/\d{2}-\d{2}-\d{4}/)) {
+        // Date like 05-03-2025
+        titleBlock.date = line.trim();
+      }
     }
 
     return {
