@@ -43,15 +43,13 @@ export class JobCardService {
 
     const templates: string[] = [];
 
-    const formulaUrl = await this.storageFileService.getSignedUrl(
+    const formulaConfig = await this.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/formula.json`
     );
-    const { data: formulaConfig } = await axios.get(formulaUrl);
 
-    const onboardingConfigUrl = await this.storageFileService.getSignedUrl(
-      `${user?.org?.name}/config/onboarding.json`
-    );
-    const { data: onboardingConfig } = await axios.get(onboardingConfigUrl);
+    // const onboardingConfig = await this.fetchJsonFromSignedUrl(
+    //   `${user?.org?.name}/config/onboarding.json`
+    // );
 
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);
@@ -59,11 +57,7 @@ export class JobCardService {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
-
-      const sequenceUrl = await this.storageFileService.getSignedUrl(
-        product.sequencePath
-      );
-      const { data: sequence } = await axios.get(sequenceUrl);
+      const sequence = await this.fetchJsonFromSignedUrl(product.sequencePath);
 
       for (const section of sequence.sections) {
         const sectionUrl = await this.storageFileService.getSignedUrl(
@@ -75,41 +69,30 @@ export class JobCardService {
           section.name
         );
 
-        // Your runtime context
-        const context = {
-          bomQty: Number(bomItem.qty),
-          jobCardQty: Number(jobCardForm.productionQty),
-          lengthId: Number(bomItem.length),
-          widthId: Number(bomItem.width),
-          heightId: Number(bomItem.height),
-        };
-
-        // Evaluate in safe order (since thinBlade depends on joints)
-        const productionQty = parser.evaluate(
-          formulaConfig.common.productionQty,
-          context
+        // evaluate formulas
+        const { productionQty, joints } = this.evaluateFormulas(
+          bomItem,
+          jobCardForm,
+          formulaConfig
         );
-        const joints = parser.evaluate(formulaConfig.common.joints, context);
-
-        const injectionValues = {
-          description: titleBlock.productTitle,
-          drgPartNo: titleBlock.drawingNumber,
-          poNumber: jobCardForm.poNumber,
-          preparedBy: user.name,
-          scheduleDate: jobCardForm.scheduleDate,
-          jobCardNumber: jobCardForm.jobCardNumber,
-          customerName: titleBlock.customerName,
-          jobCardDate: jobCardForm.scheduleDate,
-          lengthID: bomItem.length,
-          widthID: bomItem.width,
-          heightID: bomItem.height,
-          productionQty,
-          joints,
-        };
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
-          injectionValues
+          {
+            description: titleBlock.productTitle,
+            drgPartNo: titleBlock.drawingNumber,
+            poNumber: jobCardForm.poNumber,
+            preparedBy: user.name,
+            scheduleDate: jobCardForm.scheduleDate,
+            jobCardNumber: jobCardForm.jobCardNumber,
+            customerName: titleBlock.customerName,
+            jobCardDate: jobCardForm.scheduleDate,
+            lengthID: bomItem.length,
+            widthID: bomItem.width,
+            heightID: bomItem.height,
+            productionQty,
+            joints,
+          }
         );
 
         templates.push(populatedTemplate);
@@ -170,5 +153,26 @@ export class JobCardService {
 
   async notifyFrontend(fileId: string): Promise<void> {
     console.log(`✅ Job card generation completed for File ID: ${fileId}`);
+  }
+
+  private async fetchJsonFromSignedUrl(path: string): Promise<any> {
+    const url = await this.storageFileService.getSignedUrl(path);
+    const { data } = await axios.get(url);
+    return data;
+  }
+
+  private evaluateFormulas(bomItem: BomItem, jobCardForm: any, formulas: any) {
+    const context = {
+      bomQty: Number(bomItem.qty),
+      jobCardQty: Number(jobCardForm.productionQty),
+      lengthId: Number(bomItem.length),
+      widthId: Number(bomItem.width),
+      heightId: Number(bomItem.height),
+    };
+
+    return {
+      productionQty: parser.evaluate(formulas.common.productionQty, context),
+      joints: parser.evaluate(formulas.common.joints, context),
+    };
   }
 }

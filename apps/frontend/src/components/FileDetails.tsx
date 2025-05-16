@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useLoaderData } from 'react-router-dom';
+
 import JobCard from './JobCard';
 import { parsePdfFromUrl } from '../services/pdfService';
+
 const FileDetails = () => {
   const { fileId, fileType } = useLoaderData() as {
     fileId: string;
     fileType: string;
   };
-
   const location = useLocation();
   const signedUrl = location.state?.signedUrl;
   const [tables, setTables] = useState<any>(null);

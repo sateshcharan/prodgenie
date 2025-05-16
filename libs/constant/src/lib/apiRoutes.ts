@@ -45,6 +45,6 @@ export const apiRoutes = {
 
   orgs: {
     base: '/api/orgs',
-    check: 'check',
+    check: '/check',
   },
 };

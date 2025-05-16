@@ -78,7 +78,7 @@ const Files = () => {
       />
 
       {/* File Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredCards.map((card) => (
           <FileCard
             key={card.id}
@@ -93,7 +93,7 @@ const Files = () => {
         {/* Add File Card */}
         <Card
           onClick={handleAddFileClick}
-          className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100"
+          className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer hover:bg-white-100"
         >
           <CardContent className="flex flex-col items-center justify-center">
             <div className="text-4xl text-gray-400">+</div>

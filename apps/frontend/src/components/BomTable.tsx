@@ -36,13 +36,8 @@ const BomTable = ({
   // Handles the Next button click
   const handleNext = () => {
     const filteredBom = bom.filter((item) => selectedItems.includes(item.slNo));
-    // setSelectedItems(filteredBom); // optional if next step only needs filtered
-    // You may send to backend here
-    // axios.post('/api/jobCard/generate', { bom: filteredBom, fileId });
     setActiveItem('item-2');
   };
-
-  console.log(bom);
 
   return (
     <div className="overflow-x-auto">

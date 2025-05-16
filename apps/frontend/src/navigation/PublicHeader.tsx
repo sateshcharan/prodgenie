@@ -32,7 +32,7 @@ const PublicHeader = () => {
           className="h-8 w-auto cursor-pointer"
           onClick={() => navigate('/')}
         />
-        {/* <NavigationMenuDemo /> */}
+        <NavigationMenuDemo />
       </div>
       <div className=" flex items-center gap-2">
         <ModeToggle />

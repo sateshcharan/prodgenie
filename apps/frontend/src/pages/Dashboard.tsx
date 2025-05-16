@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Button } from '@prodgenie/libs/ui';
+import {
+  Button,
+  SectionCards,
+  DataTable,
+  ChartAreaInteractive,
+} from '@prodgenie/libs/ui';
+import Dashboard1 from '../layouts/DashLayout';
+
+import data from './data.json';
 
 const Dashboard = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
   const [orgId, setOrgId] = useState('');
-  
+
   useEffect(() => {
     const fetchUserData = async () => {
       const { data: userData } = await api.get('/api/users/getProfile/me');
@@ -32,15 +40,21 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    //   </div>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <section>
+        <h1>Add Users</h1>
+        <Button onClick={handleGenerateInviteCode}>Generate Invite Code</Button>
+        <p>{inviteCode}</p>
+      </section>
       {isOwner && (
-        <section>
-          <h1>Add Users</h1>
-          <Button onClick={handleGenerateInviteCode}>
-            Generate Invite Code
-          </Button>
-          <p>{inviteCode}</p>
-        </section>
+        <>
+          <SectionCards />
+          <div className="px-4 lg:px-6">
+            <ChartAreaInteractive />
+            <DataTable data={data} />
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,5 +1,3 @@
-import { appSidebarItems } from '@prodgenie/libs/constant';
-
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +8,7 @@ import {
   SidebarMenuItem,
 } from '../';
 
-// Menu items.
-const items = appSidebarItems;
+import { appSidebarItems } from '@prodgenie/libs/constant';
 
 export function AppSidebar() {
   return (
@@ -20,12 +17,15 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {appSidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <a
+                      href={item.url}
+                      className="flex flex-col items-center gap-2"
+                    >
                       <item.icon />
-                      <span>{item.title}</span>
+                      <span className="text-xs">{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

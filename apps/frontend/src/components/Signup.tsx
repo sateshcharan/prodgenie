@@ -79,14 +79,12 @@ export default function SignupPage() {
   }, []);
 
   return (
-    <div className="flex justify-center items-center ">
-      <AuthForm
-        fields={fields}
-        validationSchema={signupSchema}
-        buttonLabel="Signup"
-        onSubmit={handleSignup}
-        onFieldChange={handleFieldChange}
-      />
-    </div>
+    <AuthForm
+      fields={fields}
+      validationSchema={signupSchema}
+      buttonLabel="Signup"
+      onSubmit={handleSignup}
+      onFieldChange={handleFieldChange}
+    />
   );
 }

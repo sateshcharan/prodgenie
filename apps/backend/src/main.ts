@@ -24,6 +24,7 @@ const port = process.env.PORT || 3333;
 
 // Middlewares
 app.use(express.json());
+app.use(passport.initialize());
 app.use(
   cors({
     origin: ['http://localhost:4200', 'https://prodgenie.vercel.app'],
@@ -32,7 +33,6 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(passport.initialize());
 
 // Static Files
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
@@ -45,8 +45,9 @@ app.use(apiRoutes.pdf.base, authenticateJWT, pdfRoutes);
 app.use(apiRoutes.jobCard.base, authenticateJWT, jobCardRoutes);
 app.use(apiRoutes.payment.base, authenticateJWT, paymentRoutes);
 app.use(apiRoutes.orgs.base, orgRoutes);
+
 // Error Handler
-app.use(errorHandler);
+// app.use(errorHandler);
 
 // Server
 const server = app.listen(port, () => {

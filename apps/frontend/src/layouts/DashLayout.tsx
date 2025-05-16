@@ -1,21 +1,25 @@
 import { Outlet } from 'react-router-dom';
 
-import { SidebarProvider, SidebarTrigger } from '@prodgenie/libs/ui';
-import { AppSidebar } from '@prodgenie/libs/ui';
+import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
+
+import { AppSidebar } from '../pages/AppSidebar';
 import { PrivateHeader } from '../navigation';
-const Layout = () => {
+
+const DashLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen">
-      <PrivateHeader />
-      <SidebarProvider>
-        <AppSidebar />
-        <main className="flex-grow p-4">
-          {/* <SidebarTrigger /> */}
-          <Outlet />
-        </main>
-      </SidebarProvider>
-    </div>
+    <SidebarProvider>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <PrivateHeader />
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <Outlet />
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
-export default Layout;
+export default DashLayout;

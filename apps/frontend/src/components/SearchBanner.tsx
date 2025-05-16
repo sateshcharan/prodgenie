@@ -29,7 +29,11 @@ export const SearchBanner = ({
 
           {/* Right Section: Banner Image */}
           <div className="w-1/2 ml-4">
-            <img src={banner} alt="banner" className="w-full h-auto" />
+            <img
+              src={banner}
+              alt="banner"
+              className="w-full h-[300px] object-contain"
+            />
           </div>
         </CardContent>
       </Card>
