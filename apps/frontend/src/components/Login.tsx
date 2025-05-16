@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthForm, toast } from '@prodgenie/libs/ui';
 import { loginSchema } from '@prodgenie/libs/schema';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
+import { api } from '../utils';
 
 const Login = () => {
   const API_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
@@ -10,7 +11,10 @@ const Login = () => {
 
   const handleLogin = async (data: any) => {
     try {
-      const res = await axios.post(`${API_URL}${apiRoutes.login.url}`, data);
+      const res = await axios.post(
+        `${apiRoutes.auth.base}${apiRoutes.auth.login}`,
+        data
+      );
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err) {

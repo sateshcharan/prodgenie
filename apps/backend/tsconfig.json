@@ -7,10 +7,13 @@
       "path": "../../libs/types"
     },
     {
+      "path": "../../libs/supabase"
+    },
+    {
       "path": "../../libs/schema"
     },
     {
-      "path": "../../libs/supabase"
+      "path": "../../libs/constant"
     },
     {
       "path": "../../libs/prisma"

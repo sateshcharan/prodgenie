@@ -15,15 +15,11 @@ export default function SignupPage() {
   const handleSignup = async (data: any) => {
     try {
       const endpoint = orgExists
-        ? '/api/auth/signup/invite'
-        : '/api/auth/signup/owner';
+        ? `${apiRoutes.auth.base}${apiRoutes.auth.signup.invite}`
+        : `${apiRoutes.auth.base}${apiRoutes.auth.signup.owner}`;
       await api.post(endpoint, data);
       toast.success('Signup successful! Logging in...');
-      // console.log(data);
-      // await api.post('/api/auth/login', {
-      //   email: data.email,
-      //   password: data.password,
-      // });
+
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Signup failed:', err);
@@ -42,7 +38,9 @@ export default function SignupPage() {
         }
 
         try {
-          const { data } = await api.get(`/api/orgs/check?orgName=${orgName}`);
+          const { data } = await api.get(
+            `${apiRoutes.orgs.base}/check?orgName=${orgName}`
+          );
           const exists = data.data;
           setOrgExists(exists);
 

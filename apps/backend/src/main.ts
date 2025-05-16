@@ -15,6 +15,8 @@ import {
   paymentRoutes,
 } from './routes';
 
+import { apiRoutes } from '@prodgenie/libs/constant';
+
 dotenv.config();
 
 const app = express();
@@ -36,13 +38,13 @@ app.use(passport.initialize());
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/files', authenticateJWT, fileRoutes);
-app.use('/api/users', authenticateJWT, userRoutes);
-app.use('/api/pdf', authenticateJWT, pdfRoutes);
-app.use('/api/jobCard', authenticateJWT, jobCardRoutes);
-app.use('/api/payment', authenticateJWT, paymentRoutes);
-app.use('/api/orgs', orgRoutes);
+app.use(apiRoutes.auth.base, authRoutes);
+app.use(apiRoutes.files.base, authenticateJWT, fileRoutes);
+app.use(apiRoutes.users.base, authenticateJWT, userRoutes);
+app.use(apiRoutes.pdf.base, authenticateJWT, pdfRoutes);
+app.use(apiRoutes.jobCard.base, authenticateJWT, jobCardRoutes);
+app.use(apiRoutes.payment.base, authenticateJWT, paymentRoutes);
+app.use(apiRoutes.orgs.base, orgRoutes);
 // Error Handler
 app.use(errorHandler);
 

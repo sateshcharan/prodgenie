@@ -1,23 +1,50 @@
 export const apiRoutes = {
-  signup: {
-    url: '/auth/signup',
+  auth: {
+    base: '/api/auth',
+    signup: {
+      owner: '/signup/owner',
+      invite: '/signup/invite',
+    },
+    login: '/login',
+    invite: {
+      generate: '/invite/generate',
+    },
   },
-  login: {
-    url: '/auth/login',
+
+  files: {
+    base: '/api/files',
+    upload: (fileType: string) => `/${fileType}/upload`,
+    list: (fileType: string) => `/${fileType}/list`,
+    delete: (fileType: string, fileId: string) => `/${fileType}/${fileId}`,
   },
-  drawings: {
-    url: '/drawings/list',
+
+  users: {
+    base: '/api/users',
+    getProfile: (userId: string) => `/getProfile/${userId}`,
+    create: '/createUser',
+    update: (userId: string) => `/updateUser/${userId}`,
+    list: (orgId: string) => `/listUsers/${orgId}`,
+    delete: (userId: string) => `/deleteUser/${userId}`,
   },
-  templates: {
-    url: '/templates/list',
+
+  pdf: {
+    base: '/api/pdf',
+    parse: '/parse',
   },
-  sequences: {
-    url: '/sequences',
+
+  jobCard: {
+    base: '/api/jobCard',
+    generate: '/generate',
   },
-  job_cards: {
-    url: '/job_cards',
+
+  payment: {
+    base: '/api/payment',
+    stripeSession: '/stripe/session',
+    upiOrder: '/upi/order',
   },
-  calculations: {
-    url: '/calculations',
+
+  orgs: {
+    base: '/api/orgs',
+    check: 'check',
   },
 };

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { FileType } from '@prisma/client';
+import { FileType } from '@prodgenie/libs/constant';
 
 const allowedTypes = Object.values(FileType);
 

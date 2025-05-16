@@ -33,7 +33,6 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "**/*.ts, '**/*.tsx"
-, "../../apps/frontend/src/navigation/NavigationMenuDemo.tsx"    // "src/components/auth-form.tsx"
   ],
   "references": [
     {

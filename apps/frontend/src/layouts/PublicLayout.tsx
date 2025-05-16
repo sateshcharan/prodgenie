@@ -22,6 +22,7 @@ const PublicLayout = () => {
         open={modalType === 'login' || modalType === 'signup'}
         onOpenChange={closeModal}
         imageUrl={authImage}
+        modalType={modalType === 'login' ? 'login' : 'signup'}
       >
         {modalType === 'login' ? <Login /> : <Signup />}
       </AuthDialog>

@@ -1,5 +1,5 @@
-import { FileType } from '@prisma/client';
-import { redirect } from 'react-router-dom';
+import { FileType } from '@prodgenie/libs/constant';
+// import { redirect } from 'react-router-dom';
 
 export const fileDatasLoader = async ({ params, request }: any) => {
   const { fileType } = params;

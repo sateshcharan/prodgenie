@@ -5,7 +5,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -16,10 +15,9 @@ const items = appSidebarItems;
 
 export function AppSidebar() {
   return (
-    <Sidebar side="left" collapsible="none" className="bg-white w-auto">
+    <Sidebar side="left" collapsible="none" className="bg-secondary w-auto">
       <SidebarContent>
         <SidebarGroup>
-          {/* <SidebarGroupLabel>Application</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

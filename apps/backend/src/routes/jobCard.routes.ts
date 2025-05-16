@@ -1,8 +1,10 @@
 import express, { Router } from 'express';
 import { JobCardController } from '../controllers/jobCard.controller';
 
+import { apiRoutes } from '@prodgenie/libs/constant';
+
 const router: Router = express.Router();
 
-router.post('/generate', JobCardController.generateJobCard);
+router.post(apiRoutes.jobCard.generate, JobCardController.generateJobCard);
 
 export { router };

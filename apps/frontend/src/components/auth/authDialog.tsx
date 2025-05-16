@@ -4,9 +4,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogOverlay,
+  DialogTitle,
 } from '@prodgenie/libs/ui';
 
 import { cn } from '@prodgenie/libs/utils';
+import { DialogDescription } from '@radix-ui/react-dialog';
 
 type AuthDialogProps = {
   open: boolean;
@@ -15,6 +17,7 @@ type AuthDialogProps = {
   imageUrl?: string;
   imageAlt?: string;
   className?: string;
+  modalType: string;
 };
 
 export function AuthDialog({
@@ -24,11 +27,14 @@ export function AuthDialog({
   imageUrl = '/assets/auth-illustration.jpg', // fallback image
   imageAlt = 'Authentication illustration',
   className,
+  modalType,
 }: AuthDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogOverlay className="fixed inset-0 bg-black/10 backdrop-blur-md z-50" />
       <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white shadow-xl rounded-lg z-50">
+        <DialogTitle className="hidden">{modalType}</DialogTitle>
+        <DialogDescription className="hidden">{modalType}</DialogDescription>
         {/* <DialogContent className={cn('max-w-4xl p-0 overflow-hidden', className)}> */}
         <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full">
           {/* Left side: Image */}

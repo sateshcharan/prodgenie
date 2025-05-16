@@ -3,21 +3,23 @@ import multer from 'multer';
 import { validateFileType } from '../middlewares/fileType.middleware';
 import { FileController } from '../controllers/file.controller';
 
+import { apiRoutes } from '@prodgenie/libs/constant';
+
 const router: Router = express.Router({ mergeParams: true }); // to merge parent params
 const upload = multer();
 
 router.post(
-  `/:fileType/upload`,
+  apiRoutes.files.upload(':fileType'),
   [upload.array('files'), validateFileType],
   FileController.uploadFileController
 );
 router.get(
-  `/:fileType/list`,
+  apiRoutes.files.list(':fileType'),
   validateFileType,
   FileController.listFilesController
 );
 router.delete(
-  `/:fileType/:fileId`,
+  apiRoutes.files.delete(':fileType', ':fileId'),
   validateFileType,
   FileController.deleteFileController
 );

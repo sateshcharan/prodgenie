@@ -7,15 +7,7 @@ import {
   Calculator,
 } from 'lucide-react';
 
-// import { FileType } from '@prodgenie/libs/prisma';
-
-const FileType = {
-  drawing: 'drawing',
-  template: 'template',
-  sequence: 'sequence',
-  jobCard: 'jobCard',
-  calculation: 'calculation',
-};
+import { FileType } from './fileTypes.js';
 
 export const appSidebarItems = [
   {
@@ -44,8 +36,8 @@ export const appSidebarItems = [
     icon: Briefcase,
   },
   {
-    title: 'Calculations',
-    url: `/dashboard/${FileType.calculation}`,
+    title: 'Configs',
+    url: `/dashboard/${FileType.config}`,
     icon: Calculator,
   },
 ];

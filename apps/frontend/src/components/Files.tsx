@@ -5,7 +5,7 @@ import { Card, CardContent, DialogDropZone } from '@prodgenie/libs/ui';
 import { useDialogStore } from '@prodgenie/libs/store';
 import { CardItem } from '@prodgenie/libs/types';
 
-import { FileType } from '@prisma/client';
+import { FileType } from '@prodgenie/libs/constant';
 
 import {
   fetchFilesByType,
@@ -30,7 +30,7 @@ const Files = () => {
       const files = await fetchFilesByType(fileType);
       if (files.length) setCardData(files);
     } catch (err: any) {
-      if (err.response?.status === 401) navigate('/login');
+      if (err.response?.status === 401) navigate('/');
       else console.error(`Error fetching ${fileType}:`, err);
     }
   };
@@ -64,9 +64,9 @@ const Files = () => {
     useDialogStore.getState().open();
   };
 
-  const filteredCards = cardData.filter((card) =>
-    card.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCards = cardData.filter((card) => {
+    return card.name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className="p-4">
@@ -101,7 +101,6 @@ const Files = () => {
           </CardContent>
         </Card>
       </div>
-
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}

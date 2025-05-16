@@ -43,15 +43,15 @@ export class JobCardService {
 
     const templates: string[] = [];
 
-    const userOrg = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { org: { select: { name: true } } },
-    });
-
     const formulaUrl = await this.storageFileService.getSignedUrl(
-      `${userOrg?.org?.name}/calculation/formulas.json`
+      `${user?.org?.name}/config/formula.json`
     );
     const { data: formulaConfig } = await axios.get(formulaUrl);
+
+    const onboardingConfigUrl = await this.storageFileService.getSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
+    );
+    const { data: onboardingConfig } = await axios.get(onboardingConfigUrl);
 
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);
@@ -67,7 +67,7 @@ export class JobCardService {
 
       for (const section of sequence.sections) {
         const sectionUrl = await this.storageFileService.getSignedUrl(
-          `${userOrg?.org?.name}/${section.path}`
+          `${user?.org?.name}/${section.path}`
         );
 
         const template = await this.fileService.downloadToTemp(
@@ -120,7 +120,7 @@ export class JobCardService {
     const finalDoc = await this.templateService.combineTemplates(templates);
     const outputPath = await this.pdfService.generatePDF(finalDoc, file.id);
     console.log(`Job card saved to ${outputPath}`);
-    await this.uploadJobCard(outputPath);
+    await this.uploadJobCard(outputPath, user.id);
 
     // cleanup temp files after upload
     // await fs.rm('./tmp', { recursive: true });
@@ -143,7 +143,7 @@ export class JobCardService {
     }
   }
 
-  private async uploadJobCard(filePath: string): Promise<any> {
+  private async uploadJobCard(filePath: string, userId: string): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
     const fileName = filePath.split('/').pop();
     const mimetype = 'application/pdf';
@@ -164,7 +164,7 @@ export class JobCardService {
     return await this.fileService.uploadFile(
       [fakeMulterFile],
       'jobCard',
-      '5e4174e2-d53b-4199-a1d3-239bb82f4833'
+      userId
     );
   }
 

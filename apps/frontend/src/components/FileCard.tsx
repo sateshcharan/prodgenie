@@ -46,7 +46,7 @@ const FileCard = ({
       <Download />
     </Button>
     <CardHeader>
-      <CardTitle>{card.name}</CardTitle>
+      <CardTitle>{card.name.split('.')[0]}</CardTitle>
     </CardHeader>
     <CardContent onClick={() => onClick(card.id, card.path)}>
       {fileType === 'drawing' || fileType === 'jobCard' ? (

@@ -2,7 +2,9 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "../../libs/types" },
+    { 
+      "path": "../../libs/types" 
+    },
     {
       "path": "../../libs/utils"
     },

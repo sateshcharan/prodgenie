@@ -12,9 +12,6 @@
   "include": ["src/**/*.ts"],
   "references": [
     {
-      "path": "../prisma/tsconfig.lib.json"
-    },
-    {
       "path": "../constant/tsconfig.lib.json"
     },
     {
