@@ -1,10 +1,6 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpCircleIcon } from 'lucide-react';
 
-import { NavDocuments } from '@prodgenie/libs/ui';
-import { NavMain } from '@prodgenie/libs/ui';
-import { NavSecondary } from '@prodgenie/libs/ui';
-import { NavUser } from '@prodgenie/libs/ui';
 import {
   Sidebar,
   SidebarContent,
@@ -13,14 +9,18 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@prodgenie/libs/ui/sidebar';
-
+  NavDocuments,
+  NavMain,
+  NavSecondary,
+  NavUser,
+} from '@prodgenie/libs/ui';
 import { appSidebarItems } from '@prodgenie/libs/constant';
 
 import { api } from '../utils';
-import { useState, useEffect } from 'react';
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export default function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const [userData, setUserData] = useState(null);
   const [user, setUser] = useState({
     name: '',

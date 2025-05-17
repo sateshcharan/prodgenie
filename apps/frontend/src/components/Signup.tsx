@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
 import debounce from 'lodash.debounce';
+
+import { api } from '../utils';
 
 import { AuthForm, toast } from '@prodgenie/libs/ui';
 import { apiRoutes, signupFields } from '@prodgenie/libs/constant';

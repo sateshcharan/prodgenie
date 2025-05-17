@@ -13,6 +13,11 @@ export const loginFields = [
 
 export const signupFields = [
   {
+    name: 'name',
+    label: 'Name',
+    type: 'name',
+  },
+  {
     name: 'email',
     label: 'Email',
     type: 'email',
@@ -21,6 +26,11 @@ export const signupFields = [
     name: 'password',
     label: 'Password',
     type: 'password',
+  },
+  {
+    name: 'confirmPassword',
+    label: 'Confirm Password',
+    type: 'confirmPassword',
   },
   {
     name: 'orgName',

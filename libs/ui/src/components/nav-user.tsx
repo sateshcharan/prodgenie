@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
   BellIcon,
   CreditCardIcon,
@@ -23,7 +24,6 @@ import {
   useSidebar,
 } from '../sidebar';
 
-import { useNavigate } from 'react-router-dom';
 
 export function NavUser({
   user,

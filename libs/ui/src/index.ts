@@ -23,7 +23,6 @@ export * from './drawer';
 
 //components
 export * from './components/pricing-card';
-export * from './components/app-sidebar';
 export * from './components/auth-form';
 export * from './components/toast';
 export * from './components/FileDropzone';

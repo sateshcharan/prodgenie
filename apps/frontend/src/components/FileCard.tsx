@@ -1,4 +1,3 @@
-// FileCard.tsx
 import {
   Card,
   CardHeader,
@@ -32,7 +31,7 @@ const FileCard = ({
     <div className="flex flex-row justify-between relative">
       <Button
         onClick={() => onDelete(card.id)}
-        variant="ghost"
+        variant="outline"
         size="icon"
         className="absolute top-2 right-2"
       >
@@ -40,16 +39,16 @@ const FileCard = ({
       </Button>
       <Button
         onClick={() => onDownload(card.path, card.name)}
-        variant="ghost"
+        variant="outline"
         size="icon"
-        className="absolute top-2 right-8"
+        className="absolute top-2 right-12"
       >
         <Download />
       </Button>
     </div>
     <CardContent
       onClick={() => onClick(card.id, card.path)}
-      className="flex flex-col items-center justify-center "
+      className="flex flex-col items-center justify-center mt-4"
     >
       {fileType === 'drawing' || fileType === 'jobCard' ? (
         <PdfThumbnail url={card.path} width={250} />
@@ -58,7 +57,7 @@ const FileCard = ({
       )}
     </CardContent>
     <CardHeader>
-      <CardTitle className="text-sm">{card.name.split('.')[0]}</CardTitle>
+      <CardTitle className="text-sm ">{card.name.split('.')[0]}</CardTitle>
     </CardHeader>
   </Card>
 );

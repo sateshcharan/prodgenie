@@ -46,5 +46,6 @@ export const apiRoutes = {
   orgs: {
     base: '/api/orgs',
     check: '/check',
+    getOrgUsers: '/getOrgUsers',
   },
 };

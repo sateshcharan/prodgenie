@@ -1,17 +1,21 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 
 import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
 
-import { AppSidebar } from '../pages/AppSidebar';
+import { AppSidebar } from '../components';
 import { PrivateHeader } from '../navigation';
 
 const DashLayout = () => {
+  let { fileType } = useParams();
+
+  !fileType && (fileType = 'Dashboard');
+
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
         <PrivateHeader />
-        <SiteHeader />
+        <SiteHeader title={fileType} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <Outlet />

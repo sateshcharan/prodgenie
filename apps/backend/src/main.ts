@@ -2,8 +2,6 @@ import express from 'express';
 import * as path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import passport, { authenticateJWT } from './middlewares/passport.middleware';
-import errorHandler from './middlewares/error.middleware';
 
 import {
   authRoutes,
@@ -14,6 +12,8 @@ import {
   orgRoutes,
   paymentRoutes,
 } from './routes';
+import passport, { authenticateJWT } from './middlewares/passport.middleware';
+import errorHandler from './middlewares/error.middleware';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
