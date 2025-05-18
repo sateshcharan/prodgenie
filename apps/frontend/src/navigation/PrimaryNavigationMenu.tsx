@@ -1,7 +1,7 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 
 import { cn } from '@prodgenie/libs/utils';
-// import { Icons } from '@/components/icons';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -50,7 +50,7 @@ const components: { title: string; href: string; description: string }[] = [
   },
 ];
 
-export function NavigationMenuDemo() {
+export default function PrimaryNavigationMenu() {
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -104,12 +104,15 @@ export function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink
+          {/* <NavigationMenuLink
             href="/pricing"
             className={navigationMenuTriggerStyle()}
           >
             Pricing
-          </NavigationMenuLink>
+          </NavigationMenuLink> */}
+          <Link to="/pricing" className={navigationMenuTriggerStyle()}>
+            Pricing
+          </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

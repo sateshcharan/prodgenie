@@ -1,7 +1,6 @@
-"use client"
-
-import * as React from "react"
-import { LucideIcon } from "lucide-react"
+import * as React from 'react';
+import { Link } from 'react-router-dom';
+import { LucideIcon } from 'lucide-react';
 
 import {
   SidebarGroup,
@@ -16,10 +15,10 @@ export function NavSecondary({
   ...props
 }: {
   items: {
-    title: string
-    url: string
-    icon: LucideIcon
-  }[]
+    title: string;
+    url: string;
+    icon: LucideIcon;
+  }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   return (
     <SidebarGroup {...props}>
@@ -28,15 +27,15 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <a href={item.url}>
+                <Link to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

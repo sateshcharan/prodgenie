@@ -1,3 +1,8 @@
+import { Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { PrimaryNavigationMenu } from './';
+
 import {
   Select,
   SelectContent,
@@ -6,16 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
   Button,
+  ModeToggle,
+  logo,
 } from '@prodgenie/libs/ui';
-import { ModeToggle } from '@prodgenie/libs/ui';
-
-import { Globe } from 'lucide-react';
-
-import logo from '@prodgenie/libs/ui/assets/logo.png';
-import { useNavigate } from 'react-router-dom';
 import { useAuthModalStore } from '@prodgenie/libs/store';
-
-import { NavigationMenuDemo } from './NavigationMenuDemo';
 
 const PublicHeader = () => {
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ const PublicHeader = () => {
           className="h-8 w-auto cursor-pointer"
           onClick={() => navigate('/')}
         />
-        <NavigationMenuDemo />
+        <PrimaryNavigationMenu />
       </div>
       <div className=" flex items-center gap-2">
         <ModeToggle />

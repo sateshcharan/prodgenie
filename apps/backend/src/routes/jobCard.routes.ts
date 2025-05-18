@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
-import { JobCardController } from '../controllers/jobCard.controller';
+
+import { JobCardController } from '../controllers/jobCard.controller.js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 

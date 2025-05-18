@@ -1,5 +1,4 @@
-import React from 'react';
-import PricingCard from '../components/PricingCard';
+import { PricingCard } from '../components';
 
 const Pricing = () => {
   return <PricingCard />;

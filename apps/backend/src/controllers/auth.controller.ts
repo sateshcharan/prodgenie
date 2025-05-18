@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Request, Response } from 'express';
-import { AuthService } from '../services/auth.service';
+
+import { AuthService } from '../services/index.js';
 
 export class AuthController {
   static async signupOwner(req: Request, res: Response) {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { OrgService } from '../services/org.service';
+
+import { OrgService } from '../services/index.js';
 
 export class OrgController {
   static async checkOrgExists(req: Request, res: Response) {

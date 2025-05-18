@@ -1,8 +1,8 @@
-import { Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/" />;
+  return token ? children : <Link to="/" />;
 };
 
 export default PrivateRoute;

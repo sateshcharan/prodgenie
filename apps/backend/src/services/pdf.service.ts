@@ -3,11 +3,11 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 
-import { JobCardItem } from '@prodgenie/libs/types';
-
-import { normalize } from '../utils';
-
+import { StringService } from '../utils/index.js';
+import { CrudService } from './crud.service';
 import initConfig from '../config/init.config.json';
+
+import { JobCardItem } from '@prodgenie/libs/types';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -22,7 +22,15 @@ interface ParsedPdf {
 }
 
 export class PdfService {
-  static async parsePdf(signedUrl: string): Promise<any> {
+  private readonly stringService: StringService;
+  private readonly crudService: CrudService;
+
+  constructor() {
+    this.stringService = new StringService();
+    this.crudService = new CrudService();
+  }
+
+  static async extractPdfData(signedUrl: string, user: any): Promise<any> {
     const pythonScript = path.join(
       __dirname,
       '../../../apps/pdf-parser/pdfParse.py'
@@ -62,12 +70,19 @@ export class PdfService {
       });
     });
 
+    const initConfig = await CrudService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/formula.json`
+    );
+    console.log(initConfig);
+
     const tables = this.processParsedPdf(await parsedPdf);
     return tables;
   }
+
   static processParsedPdf(data: any): ParsedPdf {
     const tables = data.tables;
     const text = data.text;
+
     const expectedBomHeaders = initConfig.bom.header;
     const requiredBomHeaders = initConfig.bom.required;
     const titleBlockHeaders = initConfig.titleBlock;
@@ -107,7 +122,7 @@ export class PdfService {
         // Create a mapping of header names to their respective column indexes
         const headerMapping: { [key: string]: number } = {};
         headerRow.forEach((header: string, index: number) => {
-          headerMapping[normalize(header)] = index;
+          headerMapping[StringService.camelcase(header)] = index;
         });
 
         const dataRows = bomTable.slice(headerIndex + 1);
@@ -134,31 +149,16 @@ export class PdfService {
       .map((line: string) => line.trim())
       .filter((line: string | any[]) => line.length > 0);
 
-    // console.log(lines);
-
-    for (const line of lines) {
-      // if (
-      //   titleBlockHeaders.some((header) => line.toLowerCase().includes(header))
-      // ) {
-      //   titleBlock[header] = line.split(':').pop()?.trim();
-      // }
-
-      if (line.toLowerCase().includes('customer name')) {
-        titleBlock.customerName = line.split(':').pop()?.trim();
-      }
-      if (line.toLowerCase().includes('dwg no')) {
-        titleBlock.drawingNumber = line.split(':').pop()?.trim();
-      }
-      if (line.toLowerCase().includes('scale')) {
-        titleBlock.scale = line.split(':').pop()?.trim();
-      }
-      if (line.toLowerCase().includes('product detail')) {
-        const nextLine = lines[lines.indexOf(line) + 1] || '';
-        titleBlock.productTitle = nextLine.trim();
-      }
-      if (line.match(/\d{2}-\d{2}-\d{4}/)) {
-        // Date like 05-03-2025
-        titleBlock.date = line.trim();
+    for (const header of Object.keys(titleBlockHeaders)) {
+      console.log(header);
+      const line = lines.find((line: any) =>
+        line.toLowerCase().includes(header.toLowerCase())
+      );
+      if (line) {
+        titleBlock[header as keyof ParsedPdf['titleBlock']] = line
+          .split(':')
+          .pop()
+          ?.trim();
       }
     }
 

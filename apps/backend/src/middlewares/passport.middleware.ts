@@ -1,7 +1,8 @@
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as LocalStrategy } from 'passport-local';
+
 import { prisma } from '@prodgenie/libs/prisma';
 
 const SECRET_KEY = process.env.JWT_SECRET_PASSPORT || 'your-secret-key';
@@ -28,7 +29,6 @@ passport.use(
 );
 
 // JWT Strategy (For Protected Routes)
-
 passport.use(
   new JwtStrategy(
     {
@@ -53,21 +53,21 @@ passport.use(
 );
 
 // Middleware for route protection
-export const authenticateJWT = passport.authenticate('jwt', { session: false });
+const authenticateJWT = passport.authenticate('jwt', { session: false });
 
-// Optional: Role-based middleware (ADMIN, OWNER)
-export const requireAdmin = (req, res, next) => {
-  if (req.user?.type === 'ADMIN' || req.user?.type === 'OWNER') {
-    return next();
-  }
-  return res.status(403).json({ error: 'Forbidden: Admins only' });
-};
+// // Optional: Role-based middleware (ADMIN, OWNER)
+// export const requireAdmin = (req, res, next) => {
+//   if (req.user?.type === 'ADMIN' || req.user?.type === 'OWNER') {
+//     return next();
+//   }
+//   return res.status(403).json({ error: 'Forbidden: Admins only' });
+// };
 
-export const requireOwner = (req, res, next) => {
-  if (req.user?.type === 'OWNER') {
-    return next();
-  }
-  return res.status(403).json({ error: 'Forbidden: Owners only' });
-};
+// export const requireOwner = (req, res, next) => {
+//   if (req.user?.type === 'OWNER') {
+//     return next();
+//   }
+//   return res.status(403).json({ error: 'Forbidden: Owners only' });
+// };
 
-export default passport;
+export { passport, authenticateJWT };

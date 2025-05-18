@@ -42,3 +42,8 @@ export * from './components/site-header';
 
 //hooks
 export { toast } from 'sonner';
+
+//assets
+export { default as authDialogImage } from './assets/authDialogImage.webp';
+export { default as banner } from './assets/banner.png';
+export { default as logo } from './assets/logo.png';

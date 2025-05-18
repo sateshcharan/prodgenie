@@ -1,3 +1,3 @@
-export { default as passport } from './passport.middleware';
-export { default as errorHandler } from './error.middleware';
-export { default as validateFileType } from './fileType.middleware';
+export * from './passport.middleware.js';
+export * from './error.middleware.js';
+export * from './fileType.middleware.js';

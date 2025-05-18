@@ -1,7 +1,8 @@
-import express, { Router } from 'express';
 import multer from 'multer';
-import { validateFileType } from '../middlewares/fileType.middleware';
-import { FileController } from '../controllers/file.controller';
+import express, { Router } from 'express';
+
+import { validateFileType } from '../middlewares/index';
+import { FileController } from '../controllers/index';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 

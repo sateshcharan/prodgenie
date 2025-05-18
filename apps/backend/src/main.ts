@@ -12,8 +12,7 @@ import {
   orgRoutes,
   paymentRoutes,
 } from './routes';
-import passport, { authenticateJWT } from './middlewares/passport.middleware';
-import errorHandler from './middlewares/error.middleware';
+import { errorHandler, passport, authenticateJWT } from './middlewares';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 

@@ -1,16 +1,15 @@
-import axios from 'axios';
 import fs from 'fs/promises';
 import { Parser } from 'expr-eval';
 
 import { PdfService } from './pdf.service.js';
+import { FileService } from './file.service.js';
 import { TemplateService } from './template.service.js';
+import { CrudService } from './crud.service.js';
+import { StringService } from '../utils/index.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { StorageFileService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
-
-import { FileService } from './file.service.js';
-import { normalize } from '../utils';
 
 const parser = new Parser();
 
@@ -19,12 +18,16 @@ export class JobCardService {
   private readonly storageFileService: StorageFileService;
   private readonly templateService: TemplateService;
   private readonly pdfService: PdfService;
+  private readonly crudService: CrudService;
+  private readonly stringService: StringService;
 
   constructor() {
     this.fileService = new FileService();
     this.storageFileService = new StorageFileService();
     this.templateService = new TemplateService();
     this.pdfService = new PdfService();
+    this.crudService = new CrudService();
+    this.stringService = new StringService();
   }
 
   async generateJobCard({
@@ -43,13 +46,9 @@ export class JobCardService {
 
     const templates: string[] = [];
 
-    const formulaConfig = await this.fetchJsonFromSignedUrl(
+    const formulaConfig = await this.crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/formula.json`
     );
-
-    // const onboardingConfig = await this.fetchJsonFromSignedUrl(
-    //   `${user?.org?.name}/config/onboarding.json`
-    // );
 
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);
@@ -57,7 +56,9 @@ export class JobCardService {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
-      const sequence = await this.fetchJsonFromSignedUrl(product.sequencePath);
+      const sequence = await this.crudService.fetchJsonFromSignedUrl(
+        product.sequencePath
+      );
 
       for (const section of sequence.sections) {
         const sectionUrl = await this.storageFileService.getSignedUrl(
@@ -110,7 +111,7 @@ export class JobCardService {
   }
 
   private async identifyProduct(item: BomItem) {
-    const name = `${normalize(item.description)}.json`;
+    const name = `${this.stringService.camelcase(item.description)}.json`;
     try {
       const result = await prisma.file.findFirst({
         where: { type: 'sequence', name },
@@ -153,12 +154,6 @@ export class JobCardService {
 
   async notifyFrontend(fileId: string): Promise<void> {
     console.log(`✅ Job card generation completed for File ID: ${fileId}`);
-  }
-
-  private async fetchJsonFromSignedUrl(path: string): Promise<any> {
-    const url = await this.storageFileService.getSignedUrl(path);
-    const { data } = await axios.get(url);
-    return data;
   }
 
   private evaluateFormulas(bomItem: BomItem, jobCardForm: any, formulas: any) {

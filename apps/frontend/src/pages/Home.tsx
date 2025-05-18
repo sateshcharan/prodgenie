@@ -1,4 +1,3 @@
-import PricingCard from '../components/PricingCard';
 import { CTA, Features, Hero, PreFooter } from '../sections';
 
 const Home = () => {

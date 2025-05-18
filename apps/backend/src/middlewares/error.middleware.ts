@@ -18,4 +18,4 @@ function errorHandler(
   });
 }
 
-export default errorHandler;
+export { errorHandler };

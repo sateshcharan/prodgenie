@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { JobCardService } from '../services/jobCard.service';
+
+import { JobCardService } from '../services/index.js';
 
 export class JobCardController {
   private static jobCardService = new JobCardService();

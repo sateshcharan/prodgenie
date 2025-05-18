@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { signupSchema } from '@prodgenie/libs/schema';
-import { FolderService } from './folder.service';
+import { FolderService } from './folder.service.js';
 
 const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
 const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);

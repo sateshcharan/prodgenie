@@ -5,7 +5,7 @@ import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
 import { AppSidebar } from '../components';
 import { PrivateHeader } from '../navigation';
 
-const DashLayout = () => {
+const PrivateLayout = () => {
   let { fileType } = useParams();
 
   !fileType && (fileType = 'Dashboard');
@@ -26,4 +26,4 @@ const DashLayout = () => {
   );
 };
 
-export default DashLayout;
+export default PrivateLayout;

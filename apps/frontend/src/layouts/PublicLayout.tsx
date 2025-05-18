@@ -1,11 +1,10 @@
 import { Outlet } from 'react-router-dom';
+
 import { PublicHeader, PublicFooter } from '../navigation';
-import { Login, Signup } from '../components';
+import { Login, Signup, AuthDialog } from '../components';
 
 import { useAuthModalStore } from '@prodgenie/libs/store';
-import { AuthDialog } from '../components/auth/authDialog';
-
-import authImage from '@prodgenie/libs/ui/assets/authDialogImage.webp';
+import { authDialogImage } from '@prodgenie/libs/ui';
 
 const PublicLayout = () => {
   const { modalType, closeModal } = useAuthModalStore();
@@ -21,7 +20,7 @@ const PublicLayout = () => {
       <AuthDialog
         open={modalType === 'login' || modalType === 'signup'}
         onOpenChange={closeModal}
-        imageUrl={authImage}
+        imageUrl={authDialogImage}
         modalType={modalType === 'login' ? 'login' : 'signup'}
       >
         {modalType === 'login' ? <Login /> : <Signup />}

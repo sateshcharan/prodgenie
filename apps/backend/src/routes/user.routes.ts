@@ -1,20 +1,15 @@
 import express, { Router } from 'express';
-import {
-  getProfile,
-  createUser,
-  updateProfile,
-  deleteUser,
-  listUsers,
-} from '../controllers/user.controller';
+
+import { UserController } from '../controllers/index.js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
 const router: Router = express.Router();
 
-router.get(`/getProfile/:userId`, getProfile);
-router.post(apiRoutes.users.create, createUser);
-router.post(`/updateUser/:userId`, updateProfile);
-router.get(`/listUsers/:orgId`, listUsers);
-router.delete(`/deleteUser/:userId`, deleteUser);
+router.post(apiRoutes.users.create, UserController.createUser);
+router.get(apiRoutes.users.list(':orgId'), UserController.listUsers);
+router.get(apiRoutes.users.update(':userId'), UserController.updateProfile);
+router.get(apiRoutes.users.delete(':userId'), UserController.deleteUser);
+router.get(apiRoutes.users.getProfile(':userId'), UserController.getProfile);
 
 export { router };

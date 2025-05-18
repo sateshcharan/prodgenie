@@ -11,7 +11,8 @@ const FileDetails = () => {
   };
   const location = useLocation();
   const signedUrl = location.state?.signedUrl;
-  const [tables, setTables] = useState<any>(null);
+  const [tables, setTables] = useState(null);
+  const fileName = signedUrl.split('?')[0].split('/').pop().split('.')[0];
 
   useEffect(() => {
     if (!signedUrl) {
@@ -29,7 +30,7 @@ const FileDetails = () => {
 
   return (
     <div className="relative w-screen h-screen">
-      <h1 className="p-4 font-semibold">File ID: {fileId}</h1>
+      <h1 className="p-4 font-semibold">File Name: {fileName}</h1>
       <div className="relative w-full h-full">
         <iframe src={signedUrl} className="w-full h-full" />
         {tables && (

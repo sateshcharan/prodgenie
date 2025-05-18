@@ -1,21 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
-import { Card, CardContent, DialogDropZone } from '@prodgenie/libs/ui';
-import { useDialogStore } from '@prodgenie/libs/store';
-import { CardItem } from '@prodgenie/libs/types';
-
-import { FileType } from '@prodgenie/libs/constant';
-
 import {
   fetchFilesByType,
   deleteFile,
   downloadFile,
 } from '../services/fileService';
+import { SearchBanner, FileCard } from './';
 
-import banner from '@prodgenie/libs/ui/assets/banner.png';
-import FileCard from './FileCard';
-import { SearchBanner } from './SearchBanner';
+import { Card, CardContent, DialogDropZone, banner } from '@prodgenie/libs/ui';
+import { useDialogStore } from '@prodgenie/libs/store';
+import { CardItem } from '@prodgenie/libs/types';
+import { FileType } from '@prodgenie/libs/constant';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -101,6 +97,8 @@ const Files = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal for User Login or Signup */}
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}

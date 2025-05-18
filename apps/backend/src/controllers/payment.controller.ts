@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { StripeService } from '../services/stripe.service';
-import { UpiService } from '../services/upi.service';
+
+import { StripeService, UpiService } from '../services';
 
 export const PaymentController = {
   async createStripeSession(req: Request, res: Response) {
@@ -9,9 +9,9 @@ export const PaymentController = {
     res.json({ url: session.url });
   },
 
-  // async createUpiOrder(req: Request, res: Response) {
-  //   const { amount, receipt } = req.body;
-  //   const order = await UpiService.createOrder(amount, receipt);
-  //   res.json(order);
-  // },
+  async createUpiOrder(req: Request, res: Response) {
+    const { amount, receipt } = req.body;
+    const order = await UpiService.createOrder(amount, receipt);
+    res.json(order);
+  },
 };

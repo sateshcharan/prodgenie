@@ -1,5 +1,4 @@
-'use client';
-
+import { Link } from 'react-router-dom';
 import {
   FolderIcon,
   MoreHorizontalIcon,
@@ -41,10 +40,10 @@ export function NavDocuments({
         {items.map((item, index) => (
           <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link to={item.url}>
                 <item.icon />
                 <span>{item.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

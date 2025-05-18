@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { FileService } from '../services/file.service';
+
+import { FileService } from '../services/index.js';
 
 const fileService = new FileService();
 

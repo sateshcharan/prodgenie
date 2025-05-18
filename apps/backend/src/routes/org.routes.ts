@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
-import { OrgController } from '../controllers/org.controller';
+
+import { OrgController } from '../controllers/org.controller.js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 

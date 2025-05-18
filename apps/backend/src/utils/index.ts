@@ -1,1 +1,1 @@
-export { normalize } from './stringFunctions';
+export * from './string.service.js';
