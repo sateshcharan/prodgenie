@@ -22,4 +22,14 @@ export class OrgController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  static async getOrgHistory(req: Request, res: Response) {
+    const { orgId } = req.params;
+    try {
+      const history = await OrgService.getOrgHistory(orgId);
+      res.status(201).json({ success: true, data: history });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
 }

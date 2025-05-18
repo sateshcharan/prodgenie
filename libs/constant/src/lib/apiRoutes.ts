@@ -47,5 +47,6 @@ export const apiRoutes = {
     base: '/api/orgs',
     check: '/check',
     getOrgUsers: '/getOrgUsers',
+    getOrgHistory: '/getOrgHistory',
   },
 };

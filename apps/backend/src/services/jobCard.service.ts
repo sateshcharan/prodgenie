@@ -4,8 +4,7 @@ import { Parser } from 'expr-eval';
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
 import { TemplateService } from './template.service.js';
-import { CrudService } from './crud.service.js';
-import { StringService } from '../utils/index.js';
+import { StringService, CrudService } from '../utils/index.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { StorageFileService } from '@prodgenie/libs/supabase';
@@ -111,7 +110,7 @@ export class JobCardService {
   }
 
   private async identifyProduct(item: BomItem) {
-    const name = `${this.stringService.camelcase(item.description)}.json`;
+    const name = `${this.stringService.camelCase(item.description)}.json`;
     try {
       const result = await prisma.file.findFirst({
         where: { type: 'sequence', name },

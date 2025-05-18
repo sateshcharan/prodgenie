@@ -17,4 +17,21 @@ export class OrgService {
     });
     return users;
   }
+
+  static async getOrgHistory(orgId: string) {
+    const history = await prisma.history.findMany({
+      where: {
+        orgId: orgId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+    return history;
+  }
 }

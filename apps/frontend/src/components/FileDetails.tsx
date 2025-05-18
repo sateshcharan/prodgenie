@@ -34,7 +34,7 @@ const FileDetails = () => {
       <div className="relative w-full h-full">
         <iframe src={signedUrl} className="w-full h-full" />
         {tables && (
-          <div className="absolute top-5 left-5 bg-white rounded-lg p-4 shadow-lg">
+          <div className="absolute top-5 left-5 bg-white rounded-lg  ">
             <JobCard tables={tables} fileId={fileId} />
           </div>
         )}

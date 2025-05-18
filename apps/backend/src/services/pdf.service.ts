@@ -3,9 +3,8 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 
-import { StringService } from '../utils/index.js';
-import { CrudService } from './crud.service';
-import initConfig from '../config/init.config.json';
+import { StringService, CrudService } from '../utils/index.js';
+// import initConfig from '../config/init.config.json';
 
 import { JobCardItem } from '@prodgenie/libs/types';
 
@@ -22,14 +21,6 @@ interface ParsedPdf {
 }
 
 export class PdfService {
-  private readonly stringService: StringService;
-  private readonly crudService: CrudService;
-
-  constructor() {
-    this.stringService = new StringService();
-    this.crudService = new CrudService();
-  }
-
   static async extractPdfData(signedUrl: string, user: any): Promise<any> {
     const pythonScript = path.join(
       __dirname,
@@ -70,16 +61,17 @@ export class PdfService {
       });
     });
 
-    const initConfig = await CrudService.fetchJsonFromSignedUrl(
-      `${user?.org?.name}/config/formula.json`
+    const crudService = new CrudService();
+    const initConfig = await crudService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
     );
-    console.log(initConfig);
 
-    const tables = this.processParsedPdf(await parsedPdf);
+    const tables = this.processParsedPdf(await parsedPdf, initConfig);
     return tables;
   }
 
-  static processParsedPdf(data: any): ParsedPdf {
+  static processParsedPdf(data: any, initConfig: any): ParsedPdf {
+    const stringService = new StringService();
     const tables = data.tables;
     const text = data.text;
 
@@ -122,7 +114,7 @@ export class PdfService {
         // Create a mapping of header names to their respective column indexes
         const headerMapping: { [key: string]: number } = {};
         headerRow.forEach((header: string, index: number) => {
-          headerMapping[StringService.camelcase(header)] = index;
+          headerMapping[stringService.camelCase(header)] = index;
         });
 
         const dataRows = bomTable.slice(headerIndex + 1);
@@ -150,7 +142,6 @@ export class PdfService {
       .filter((line: string | any[]) => line.length > 0);
 
     for (const header of Object.keys(titleBlockHeaders)) {
-      console.log(header);
       const line = lines.find((line: any) =>
         line.toLowerCase().includes(header.toLowerCase())
       );

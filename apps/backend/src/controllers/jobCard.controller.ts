@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 
 import { JobCardService } from '../services/index.js';
 
-export class JobCardController {
-  private static jobCardService = new JobCardService();
+const jobCardService = new JobCardService();
 
+export class JobCardController {
   static async generateJobCard(req: Request, res: Response) {
     try {
-      await JobCardController.jobCardService.generateJobCard({
+      await jobCardService.generateJobCard({
         user: req.user,
         file: req.body.file,
         bom: req.body.bom,

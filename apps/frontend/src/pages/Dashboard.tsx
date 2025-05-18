@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import {
   SectionCards,
-  DataTable,
   ChartAreaInteractive,
+  HistoryTable,
 } from '@prodgenie/libs/ui';
 
-import data from './data.json';
 import OrgUsers from '../components/OrgUsers';
 
 const Dashboard = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [orgId, setOrgId] = useState('');
+  const [orgHistory, setOrgHistory] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -19,7 +19,13 @@ const Dashboard = () => {
       setOrgId(userData.org.id);
       setIsOwner(userData.type === 'OWNER');
     };
+    const fetchHistoryData = async () => {
+      const { data: historyData } = await api.get('/api/orgs/getOrgHistory');
+      setOrgHistory(historyData.data);
+    };
+
     fetchUserData();
+    fetchHistoryData();
   }, []);
 
   return (
@@ -32,7 +38,7 @@ const Dashboard = () => {
       )}
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
-        <DataTable data={data} />
+        <HistoryTable history={orgHistory} />
       </div>
     </div>
   );

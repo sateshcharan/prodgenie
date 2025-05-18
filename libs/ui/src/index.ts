@@ -20,6 +20,9 @@ export * from './breadcrumb';
 export * from './chart';
 export * from './checkbox';
 export * from './drawer';
+export * from './dropdown-menu';
+export * from './table';
+export * from './tabs';
 
 //components
 export * from './components/pricing-card';
@@ -39,6 +42,7 @@ export * from './components/nav-secondary';
 export * from './components/nav-user';
 export * from './components/section-cards';
 export * from './components/site-header';
+export * from './components/HistoryTable';
 
 //hooks
 export { toast } from 'sonner';

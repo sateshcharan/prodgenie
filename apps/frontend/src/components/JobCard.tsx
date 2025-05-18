@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -34,6 +35,7 @@ const JobCard = ({
   tables: { data?: { bom: BomItem[]; titleBlock?: any } };
   fileId: string;
 }) => {
+  const navigate = useNavigate();
   const { setBom, setSelectedItems, selectedItems } = useBomStore();
   const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
     useJobCardStore();
@@ -72,7 +74,7 @@ const JobCard = ({
         file: { id: fileId },
         jobCardForm,
       };
-
+      navigate('/dashboard');
       await generateJobCard(jobCardData);
 
       toast.success('Your Job Card is being generated. Please wait.');
@@ -84,8 +86,8 @@ const JobCard = ({
   };
 
   return (
-    <Card className="w-full shadow-lg">
-      <CardContent>
+    <Card className="border-none">
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Accordion
@@ -93,14 +95,14 @@ const JobCard = ({
               collapsible
               value={activeItem}
               onValueChange={(value) => setActiveItem(value)}
-              className="w-full space-y-4"
+              className="w-[400px] space-y-4"
             >
               {/* Item Selection Section */}
-              <AccordionItem value="item-1" className="border-none">
-                <AccordionTrigger className="hover:no-underline py-4 px-6 bg-secondary rounded-lg">
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="hover:no-underline p-4  bg-secondary rounded-lg">
                   Select Items
                 </AccordionTrigger>
-                <AccordionContent className="pt-6">
+                <AccordionContent className="p-4">
                   <BomTable
                     bom={bom || []}
                     fileId={fileId}
@@ -114,7 +116,7 @@ const JobCard = ({
                 <AccordionTrigger className="hover:no-underline py-4 px-6 bg-secondary rounded-lg">
                   Please enter Job Card details
                 </AccordionTrigger>
-                <AccordionContent className="pt-6 space-y-6">
+                <AccordionContent className="p-4">
                   {jobCardFields.map((f) => (
                     <FormField
                       control={form.control}
@@ -143,7 +145,7 @@ const JobCard = ({
                     />
                   ))}
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full mt-4">
                     Generate Job Cards
                   </Button>
                 </AccordionContent>

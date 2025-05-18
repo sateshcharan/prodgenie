@@ -1,5 +1,5 @@
 export class StringService {
-  camelcase(str: string): string {
+  camelCase(str: string): string {
     return (str || '')
       .toLowerCase()
       .replace(/\./g, '')

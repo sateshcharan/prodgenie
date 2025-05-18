@@ -15,6 +15,23 @@ model Org {
   users       User[]
   File        File[]
   inviteCodes InviteCode[]
+  history     History[]
+}
+
+model History {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  job   Job?    @relation(fields: [jobId], references: [id])
+  jobId String?
+
+  Org   Org    @relation(fields: [orgId], references: [id])
+  orgId String
+
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
 }
 
 enum UserType {
@@ -36,6 +53,7 @@ model User {
   File       File[]
   createdAt  DateTime    @default(now())
   InviteCode InviteCode?
+  history    History[]
 }
 
 enum FileType {
@@ -60,11 +78,17 @@ model File {
 }
 
 model InviteCode {
-  code      String    @id
-  org       Org       @relation(fields: [orgId], references: [id])
-  orgId     String
+  code  String @id
+  org   Org    @relation(fields: [orgId], references: [id])
+  orgId String
+
   usedBy    String?   @unique
   user      User?     @relation(fields: [usedBy], references: [id])
   expiresAt DateTime?
   createdAt DateTime  @default(now())
+}
+
+model Job {
+  id      String    @id @default(uuid())
+  history History[]
 }

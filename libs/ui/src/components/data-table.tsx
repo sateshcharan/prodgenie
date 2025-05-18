@@ -1,5 +1,24 @@
 import * as React from 'react';
 import {
+  CheckCircle2Icon,
+  // CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+  ColumnsIcon,
+  GripVerticalIcon,
+  LoaderIcon,
+  MoreVerticalIcon,
+  PlusIcon,
+  TrendingUpIcon,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+
+import {
   DndContext,
   KeyboardSensor,
   MouseSensor,
@@ -33,54 +52,30 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import {
-  CheckCircle2Icon,
-  // CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-  ColumnsIcon,
-  GripVerticalIcon,
-  LoaderIcon,
-  MoreVerticalIcon,
-  PlusIcon,
-  TrendingUpIcon,
-} from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
-import { toast } from 'sonner';
-import { z } from 'zod';
 
 import { useIsMobile } from '../hooks/use-mobile';
-import { Badge } from '../badge';
-import { Button } from '../button';
 import {
+  Badge,
+  Button,
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '../chart';
-import { Checkbox } from '../checkbox';
-import {
+  Checkbox,
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../dropdown-menu';
-import { Input } from '../input';
-import { Label } from '../label';
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../select';
-import { Separator } from '../separator';
-import {
+  Separator,
   Sheet,
   SheetClose,
   SheetContent,
@@ -89,16 +84,17 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '../sheet';
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '../table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../';
 
 export const schema = z.object({
   id: z.number(),

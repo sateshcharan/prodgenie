@@ -1,5 +1,5 @@
 export * from './auth.service.js';
-export * from './crud.service.js';
+export * from '../utils/crud.service.js';
 export * from './file.service.js';
 export * from './folder.service.js';
 export * from './jobCard.service.js';
