@@ -71,10 +71,11 @@ export class PdfService {
   }
 
   static processParsedPdf(data: any, initConfig: any): ParsedPdf {
+
     const stringService = new StringService();
+
     const tables = data.tables;
     const text = data.text;
-
     const expectedBomHeaders = initConfig.bom.header;
     const requiredBomHeaders = initConfig.bom.required;
     const titleBlockHeaders = initConfig.titleBlock;
