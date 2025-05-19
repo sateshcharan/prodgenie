@@ -23,7 +23,10 @@ jobs:
         run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Generate Vercel Build Output
-        run: pnpm dlx vercel build
+        run: VITE_API_URL=${{ secrets.VITE_API_URL }} pnpm dlx vercel build
+
+      # - name: Generate Vercel Build Output
+      #   run: pnpm dlx vercel build
 
       # - name: Deploy to Vercel (via pnpm dlx)
       #   run: pnpm dlx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
