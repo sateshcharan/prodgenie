@@ -103,7 +103,7 @@ export class JobCardService {
     const finalDoc = await this.templateService.combineTemplates(templates);
     const outputPath = await this.pdfService.generatePDF(finalDoc, file.id);
     console.log(`Job card saved to ${outputPath}`);
-    await this.uploadJobCard(outputPath, user.id);
+    await this.uploadJobCard(outputPath, user);
 
     // cleanup temp files after upload
     // await fs.rm('./tmp', { recursive: true });
@@ -126,7 +126,7 @@ export class JobCardService {
     }
   }
 
-  private async uploadJobCard(filePath: string, userId: string): Promise<any> {
+  private async uploadJobCard(filePath: string, user: string): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
     const fileName = filePath.split('/').pop();
     const mimetype = 'application/pdf';
@@ -147,7 +147,7 @@ export class JobCardService {
     return await this.fileService.uploadFile(
       [fakeMulterFile],
       'jobCard',
-      userId
+      user
     );
   }
 

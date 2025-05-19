@@ -74,7 +74,7 @@ const JobCard = ({
         file: { id: fileId },
         jobCardForm,
       };
-      navigate('/dashboard');
+      // navigate('/dashboard');
       await generateJobCard(jobCardData);
 
       toast.success('Your Job Card is being generated. Please wait.');

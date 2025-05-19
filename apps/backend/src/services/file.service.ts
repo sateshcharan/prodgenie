@@ -9,23 +9,17 @@ import { FileStorageService } from '@prodgenie/libs/supabase';
 const storageFileService = new FileStorageService();
 
 export class FileService {
-  async uploadFile(
-    files: Express.Multer.File[],
-    fileType: string,
-    userId: string
-  ) {
+  async uploadFile(files: Express.Multer.File[], fileType: string, user: any) {
     const savedFiles: any[] = [];
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { org: { select: { name: true, id: true } } },
-    });
+
     const folder = user?.org?.name.trim();
     const orgId = user?.org?.id;
+    const userId = user.id;
     if (!folder || !orgId) throw new Error('Organization not found for user');
     for (const file of files) {
       const uploadPath = `${folder}/${fileType}/${file.originalname}`;
       try {
-        await storageFileService.uploadFile(uploadPath, file);
+        await storageFileService.uploadFile(uploadPath, file, fileType, user);
         const savedFile = await prisma.file.create({
           data: {
             name: file.originalname,
@@ -73,20 +67,18 @@ export class FileService {
     }
   }
 
-  async deleteFile(fileId: string, fileType: string, userId: string) {
+  async deleteFile(fileId: string, fileType: string, user: any) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { org: { select: { name: true } } },
-      });
       const folder = user?.org?.name.trim();
+      const userId = user.id;
+      const orgId = user.org.id;
       if (!folder) throw new Error('Organization not found for user');
       const file = await prisma.file.findUnique({
         where: { id: fileId },
       });
       if (!file) throw new Error('File not found');
       const fullPath = file.path; // Trust path from database
-      await storageFileService.deleteFile(fullPath);
+      await storageFileService.deleteFile(fullPath, fileType, user);
       const deletedFile = await prisma.file.delete({
         where: { id: fileId },
       });

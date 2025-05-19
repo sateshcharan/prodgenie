@@ -13,7 +13,7 @@ export class FileStorageService {
     this.bucketName = bucket;
   }
 
-  async uploadFile(uploadPath: string, file: any) {
+  async uploadFile(uploadPath: string, file: any, fileType: any, user: any) {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
       .upload(uploadPath, file.buffer, {
@@ -23,12 +23,14 @@ export class FileStorageService {
 
     if (error) throw new Error(`Upload failed: ${error.message}`);
 
+    const userId = user.id;
+    const orgId = user.org.id;
+
     HistoryService.record({
-      userId: 'testuserid',
-      orgId: 'testorgid',
-      action: 'file uploaded',
-      details: 'test details',
-      jobId: 'test jobId',
+      userId: userId,
+      orgId: orgId,
+      action: `${fileType} uploaded`,
+      details: fileType,
     });
 
     return data;
@@ -45,19 +47,25 @@ export class FileStorageService {
     return data.signedUrl;
   }
 
-  async deleteFile(filePath: string): Promise<any> {
+  async deleteFile(
+    filePath: string,
+    fileType: string,
+    user: any
+  ): Promise<any> {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
       .remove([filePath]);
 
     if (error) throw new Error(`Delete failed: ${error.message}`);
 
+    const userId = user.id;
+    const orgId = user.org.id;
+
     HistoryService.record({
-      userId: 'testuserid',
-      orgId: 'testorgid',
-      action: 'file deleted',
-      details: 'test details',
-      jobId: 'test jobId',
+      userId: userId,
+      orgId: orgId,
+      action: `${fileType} deleted`,
+      details: fileType,
     });
 
     return data;

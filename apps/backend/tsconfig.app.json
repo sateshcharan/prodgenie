@@ -7,13 +7,13 @@
     "rootDir": "src",
     "moduleResolution": "nodenext",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
-    "resolveJsonModule": true, // for json imports
-    "esModuleInterop": true // for json imports
+    // "resolveJsonModule": true, // for json imports
+    // "esModuleInterop": true // for json imports
   },
   "include": [
     "src/**/*.ts",
-    "src/routes/file.routes",
-    "../../libs/db/src/lib/user.service.ts"
+    // "src/routes/file.routes",
+    // "../../libs/db/src/lib/user.service.ts"
   ],
   "exclude": [
     "out-tsc",
