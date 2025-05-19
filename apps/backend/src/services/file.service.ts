@@ -4,9 +4,9 @@ import { Readable } from 'stream';
 
 import { FileType } from '@prisma/client';
 import { prisma } from '@prodgenie/libs/prisma';
-import { StorageFileService } from '@prodgenie/libs/supabase';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
-const storageFileService = new StorageFileService();
+const storageFileService = new FileStorageService();
 
 export class FileService {
   async uploadFile(

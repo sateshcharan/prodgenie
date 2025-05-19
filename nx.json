@@ -1,10 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -74,9 +71,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": [
-        "apps/backend-e2e/**/*"
-      ]
+      "exclude": ["apps/backend-e2e/**/*"]
     },
     {
       "plugin": "@nx/webpack/plugin",
@@ -91,14 +86,15 @@
   ],
   "targetDefaults": {
     "e2e-ci--**/*": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {

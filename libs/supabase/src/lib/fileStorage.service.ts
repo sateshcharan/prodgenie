@@ -1,6 +1,8 @@
 import { supabase } from './supabase.js';
 
-export class StorageFileService {
+import { HistoryService } from '@prodgenie/libs/db';
+
+export class FileStorageService {
   private readonly bucketName: string;
 
   constructor() {
@@ -20,6 +22,15 @@ export class StorageFileService {
       });
 
     if (error) throw new Error(`Upload failed: ${error.message}`);
+
+    HistoryService.record({
+      userId: 'testuserid',
+      orgId: 'testorgid',
+      action: 'file uploaded',
+      details: 'test details',
+      jobId: 'test jobId',
+    });
+
     return data;
   }
 
@@ -40,6 +51,15 @@ export class StorageFileService {
       .remove([filePath]);
 
     if (error) throw new Error(`Delete failed: ${error.message}`);
+
+    HistoryService.record({
+      userId: 'testuserid',
+      orgId: 'testorgid',
+      action: 'file deleted',
+      details: 'test details',
+      jobId: 'test jobId',
+    });
+
     return data;
   }
 }

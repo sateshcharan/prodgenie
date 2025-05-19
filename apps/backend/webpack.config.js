@@ -6,6 +6,7 @@ const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
 const constantsLibPath = resolve(__dirname, '../../libs/constant/src');
 const typesLibPath = resolve(__dirname, '../../libs/types/src');
 const schemaLibPath = resolve(__dirname, '../../libs/schema/src');
+const dbLibPath = resolve(__dirname, '../../libs/db/src');
 
 module.exports = {
   output: {
@@ -18,6 +19,7 @@ module.exports = {
       '@prodgenie/libs/prisma': prismaLibPath,
       '@prodgenie/libs/constant': constantsLibPath,
       '@prodgenie/libs/types': typesLibPath,
+      '@prodgenie/libs/db': dbLibPath,
     },
     extensions: ['.ts', '.js'],
   },

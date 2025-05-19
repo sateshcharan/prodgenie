@@ -7,14 +7,14 @@ import { TemplateService } from './template.service.js';
 import { StringService, CrudService } from '../utils/index.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
-import { StorageFileService } from '@prodgenie/libs/supabase';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
 
 const parser = new Parser();
 
 export class JobCardService {
   private readonly fileService: FileService;
-  private readonly storageFileService: StorageFileService;
+  private readonly fileStorageService: FileStorageService;
   private readonly templateService: TemplateService;
   private readonly pdfService: PdfService;
   private readonly crudService: CrudService;
@@ -22,7 +22,7 @@ export class JobCardService {
 
   constructor() {
     this.fileService = new FileService();
-    this.storageFileService = new StorageFileService();
+    this.fileStorageService = new FileStorageService();
     this.templateService = new TemplateService();
     this.pdfService = new PdfService();
     this.crudService = new CrudService();
@@ -60,7 +60,7 @@ export class JobCardService {
       );
 
       for (const section of sequence.sections) {
-        const sectionUrl = await this.storageFileService.getSignedUrl(
+        const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${user?.org?.name}/${section.path}`
         );
 

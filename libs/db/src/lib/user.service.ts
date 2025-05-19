@@ -1,4 +1,4 @@
-import { prisma } from './prisma.js';
+import { prisma } from '@prodgenie/libs/prisma';
 
 export class UserService {
   async getProfile(userId: string) {

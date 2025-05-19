@@ -13,7 +13,7 @@
   "include": [
     "src/**/*.ts",
     "src/routes/file.routes",
-    "../../libs/prisma/src/lib/user.service.ts"
+    "../../libs/db/src/lib/user.service.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -27,9 +27,6 @@
   ],
   "references": [
     {
-      "path": "../../libs/constant/tsconfig.lib.json"
-    },
-    {
       "path": "../../libs/types/tsconfig.lib.json"
     },
     {
@@ -39,10 +36,13 @@
       "path": "../../libs/schema/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/prisma/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/constant/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/prisma/tsconfig.lib.json"
+      "path": "../../libs/db/tsconfig.lib.json"
     }
   ]
 }

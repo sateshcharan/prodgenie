@@ -18,7 +18,6 @@ class PdfService:
             "edge_min_length": 3,             
             "min_words_vertical": 1,
             "min_words_horizontal": 1,
-            "keep_blank_chars": False
         }
 
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:

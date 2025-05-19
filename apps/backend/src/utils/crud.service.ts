@@ -1,15 +1,15 @@
 import axios from 'axios';
-import { StorageFileService } from '@prodgenie/libs/supabase';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 export class CrudService {
-  private readonly storageFileService: StorageFileService;
+  private readonly fileStorageService: FileStorageService;
 
   constructor() {
-    this.storageFileService = new StorageFileService();
+    this.fileStorageService = new FileStorageService();
   }
 
   async fetchJsonFromSignedUrl(path: string): Promise<any> {
-    const url = await this.storageFileService.getSignedUrl(path);
+    const url = await this.fileStorageService.getSignedUrl(path);
     const { data } = await axios.get(url);
     return data;
   }

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
+
 import api from '../utils/api';
+import OrgUsers from '../components/OrgUsers';
+
 import {
   SectionCards,
   ChartAreaInteractive,
   HistoryTable,
 } from '@prodgenie/libs/ui';
-
-import OrgUsers from '../components/OrgUsers';
 
 const Dashboard = () => {
   const [isOwner, setIsOwner] = useState(false);

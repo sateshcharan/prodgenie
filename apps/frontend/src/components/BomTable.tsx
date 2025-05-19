@@ -52,9 +52,9 @@ const BomTable = ({
           </tr>
         </thead>
         <tbody>
-          {bom.map((item) => (
-            <tr key={item.slNo}>
-              <td className="border px-2 py-2">{item.slNo}</td>
+          {bom.map((item, index) => (
+            <tr key={index}>
+              <td className="border px-2 py-2">{index + 1}</td>
               <td className="border px-2 py-2">{item.description}</td>
               <td className="border px-2 py-2">{item.material}</td>
               <td className="border px-2 py-2">{item.qty}</td>
@@ -74,9 +74,9 @@ const BomTable = ({
         Selected Items: {selectedItems.length}/{bom.length}
       </p>
 
-      <Button className="mt-4" onClick={handleNext}>
+      {/* <Button className="mt-4" onClick={handleNext}>
         Next
-      </Button>
+      </Button> */}
     </div>
   );
 };

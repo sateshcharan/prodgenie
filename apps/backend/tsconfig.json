@@ -13,10 +13,13 @@
       "path": "../../libs/schema"
     },
     {
+      "path": "../../libs/prisma"
+    },
+    {
       "path": "../../libs/constant"
     },
     {
-      "path": "../../libs/prisma"
+      "path": "../../libs/db"
     },
     {
       "path": "./tsconfig.app.json"

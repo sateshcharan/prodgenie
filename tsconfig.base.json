@@ -21,6 +21,8 @@
     "paths": {
       "@prodgenie/libs/constant": ["libs/constant/src/index.ts"],
       "@prodgenie/libs/constant/*": ["libs/constant/src/*"],
+      "@prodgenie/libs/db": ["libs/db/src/index.ts"],
+      "@prodgenie/libs/db/*": ["libs/db/src/*"],
       "@prodgenie/libs/prisma": ["libs/prisma/src/index.ts"],
       "@prodgenie/libs/prisma/*": ["libs/prisma/src/*"],
       "@prodgenie/libs/schema": ["libs/schema/src/index.ts"],

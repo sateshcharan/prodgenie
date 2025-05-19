@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { UserService } from '@prodgenie/libs/prisma';
+import { UserService } from '@prodgenie/libs/db';
 
 const userService = new UserService();
 

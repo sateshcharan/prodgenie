@@ -4,7 +4,6 @@ import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 
 import { StringService, CrudService } from '../utils/index.js';
-// import initConfig from '../config/init.config.json';
 
 import { JobCardItem } from '@prodgenie/libs/types';
 
@@ -62,23 +61,24 @@ export class PdfService {
     });
 
     const crudService = new CrudService();
-    const initConfig = await crudService.fetchJsonFromSignedUrl(
+    const onboardingCongig = await crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/onboarding.json`
     );
 
-    const tables = this.processParsedPdf(await parsedPdf, initConfig);
+    const tables = this.processParsedPdf(await parsedPdf, onboardingCongig);
     return tables;
   }
 
-  static processParsedPdf(data: any, initConfig: any): ParsedPdf {
+  static processParsedPdf(data: any, onboardingCongig: any): ParsedPdf {
 
     const stringService = new StringService();
 
     const tables = data.tables;
     const text = data.text;
-    const expectedBomHeaders = initConfig.bom.header;
-    const requiredBomHeaders = initConfig.bom.required;
-    const titleBlockHeaders = initConfig.titleBlock;
+    
+    const expectedBomHeaders = onboardingCongig.bom.header;
+    const requiredBomHeaders = onboardingCongig.bom.required;
+    const titleBlockHeaders = onboardingCongig.titleBlock;
 
     const bomTable = tables.find((table: any[][]) => {
       if (!Array.isArray(table)) return false;

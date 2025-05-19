@@ -32,6 +32,9 @@
     },
     {
       "path": "./libs/schema"
+    },
+    {
+      "path": "./libs/db"
     }
   ]
 }
