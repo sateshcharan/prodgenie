@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { UserType } from '@prisma/client';
+
+import { UserType } from '@prodgenie/libs/constant';
 
 export const UserSchema = z.object({
   id: z.string().uuid(),

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { FileType } from '@prisma/client';
+
+import { FileType } from '@prodgenie/libs/constant';
 
 export const FileSchema = z.object({
   id: z.string().uuid(),
