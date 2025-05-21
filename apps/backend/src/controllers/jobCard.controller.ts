@@ -9,14 +9,27 @@ export class JobCardController {
     try {
       await jobCardService.generateJobCard({
         user: req.user,
-        file: req.body.file,
         bom: req.body.bom,
         titleBlock: req.body.titleBlock,
-        jobCardForm: req.body.jobCardForm,
+        jobCardForm: {
+          ...req.body.jobCardForm,
+          jobCardDate: new Date().toLocaleDateString('en-GB'),
+        },
       });
       res
         .status(201)
         .json({ success: true, message: 'Job card generation started' });
+    } catch (error: any) {
+      console.error('Error generating job card:', error);
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async getJobCardNumber(req: Request, res: Response) {
+    const org = req?.user?.org;
+    try {
+      const { data } = await jobCardService.getJobCardNumber(org);
+      res.status(200).json({ success: true, data: data });
     } catch (error: any) {
       console.error('Error generating job card:', error);
       res.status(400).json({ success: false, message: error.message });

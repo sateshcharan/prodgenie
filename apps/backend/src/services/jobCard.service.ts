@@ -13,48 +13,43 @@ import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
 const parser = new Parser();
 
 export class JobCardService {
-  private readonly fileService: FileService;
-  private readonly fileStorageService: FileStorageService;
-  private readonly templateService: TemplateService;
-  private readonly pdfService: PdfService;
-  private readonly crudService: CrudService;
-  private readonly stringService: StringService;
-
-  constructor() {
-    this.fileService = new FileService();
-    this.fileStorageService = new FileStorageService();
-    this.templateService = new TemplateService();
-    this.pdfService = new PdfService();
-    this.crudService = new CrudService();
-    this.stringService = new StringService();
-  }
+  private fileService = new FileService();
+  private fileStorageService = new FileStorageService();
+  private templateService = new TemplateService();
+  private pdfService = new PdfService();
+  private crudService = new CrudService();
+  private stringService = new StringService();
 
   async generateJobCard({
     bom,
-    file,
     jobCardForm,
     user,
     titleBlock,
   }: jobCardRequest): Promise<void> {
-    console.log(`Generating job card for File ID: ${file.id}`);
+    console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
-    if (!bom.length) {
-      console.log('bom is empty');
-      return;
-    }
+    if (!bom.length) return console.warn('bom is empty');
 
     const templates: string[] = [];
-
     const formulaConfig = await this.crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/formula.json`
     );
 
+    let manualContext = {
+      jobCardForm,
+      user,
+      titleBlock,
+    };
+
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);
+      manualContext = { ...manualContext, bomItem };
+
       if (!product?.sequencePath) {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
+
       const sequence = await this.crudService.fetchJsonFromSignedUrl(
         product.sequencePath
       );
@@ -68,74 +63,132 @@ export class JobCardService {
           sectionUrl,
           section.name
         );
+        const manualFields = formulaConfig[section.name].fields.manual || {};
+        const computedFieldDefs =
+          formulaConfig[section.name].fields.computed || {};
 
-        // evaluate formulas
-        const { productionQty, joints } = this.evaluateFormulas(
-          bomItem,
-          jobCardForm,
-          formulaConfig
+        const transformedContextMap = Object.fromEntries(
+          Object.entries(manualFields).map(([key, value]) => [
+            key,
+            value.replace(/_/g, '.'),
+          ])
+        );
+
+        const context = this.buildContext(transformedContextMap, manualContext);
+
+        const evalContext = Object.entries({
+          ...context,
+          ...this.stringService.prefixKeys('bomItem', bomItem),
+          ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
+          ...this.stringService.prefixKeys('user', user),
+        }).reduce((acc, [key, value]) => {
+          acc[key] = !isNaN(value as any) ? Number(value) : value;
+          return acc;
+        }, {} as Record<string, any>);
+
+        const computedFields = this.evaluateFormulas(
+          evalContext,
+          computedFieldDefs
         );
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
-          {
-            description: titleBlock.productTitle,
-            drgPartNo: titleBlock.drawingNumber,
-            poNumber: jobCardForm.poNumber,
-            preparedBy: user.name,
-            scheduleDate: jobCardForm.scheduleDate,
-            jobCardNumber: jobCardForm.jobCardNumber,
-            customerName: titleBlock.customerName,
-            jobCardDate: jobCardForm.scheduleDate,
-            lengthID: bomItem.length,
-            widthID: bomItem.width,
-            heightID: bomItem.height,
-            productionQty,
-            joints,
-          }
+          { ...context, ...computedFields }
         );
-
         templates.push(populatedTemplate);
       }
       templates.push(`<div style="page-break-after: always;"></div>`);
+      console.log(`⚠️ Template generated for: ${bomItem.description}`);
     }
 
     const finalDoc = await this.templateService.combineTemplates(templates);
-    const outputPath = await this.pdfService.generatePDF(finalDoc, file.id);
+    const outputPath = await this.pdfService.generatePDF(
+      finalDoc,
+      jobCardForm.jobCardNumber
+    );
     console.log(`Job card saved to ${outputPath}`);
-    await this.uploadJobCard(outputPath, user);
 
-    // cleanup temp files after upload
-    // await fs.rm('./tmp', { recursive: true });
+    await this.uploadJobCard(outputPath, user);
+    // Optionally clean temp files: await fs.rm('./tmp', { recursive: true });
   }
 
   private async identifyProduct(item: BomItem) {
-    const name = `${this.stringService.camelCase(item.description)}.json`;
+    const keyword = this.stringService.camelCase(item.description); // e.g., "partitionLen"
+    const baseKeyword = keyword.replace(
+      /(Len|Wid|Ht|Size|Dim|Length|Width|Height)$/i,
+      ''
+    ); // remove common suffixes
+    const fallbackKeyword = baseKeyword.toLowerCase();
     try {
-      const result = await prisma.file.findFirst({
-        where: { type: 'sequence', name },
+      // 1. Try exact match
+      const exactMatch = await prisma.file.findFirst({
+        where: {
+          type: 'sequence',
+          name: {
+            equals: `${keyword}.json`,
+            mode: 'insensitive',
+          },
+        },
       });
-
-      return {
-        sequenceId: result?.id,
-        sequencePath: result?.path,
-      };
+      if (exactMatch) {
+        return {
+          sequenceId: exactMatch.id,
+          sequencePath: exactMatch.path,
+        };
+      }
+      // 2. Try partial/fuzzy match
+      const partialMatch = await prisma.file.findFirst({
+        where: {
+          type: 'sequence',
+          name: {
+            contains: fallbackKeyword,
+            mode: 'insensitive',
+          },
+        },
+      });
+      if (partialMatch) {
+        return {
+          sequenceId: partialMatch.id,
+          sequencePath: partialMatch.path,
+        };
+      }
+      console.warn(`⚠️ No sequence match for: ${item.description}`);
+      return null;
     } catch (error) {
-      console.error(`❌ Failed to identify product for "${name}":`, error);
+      console.error(
+        `❌ Failed to identify product for "${item.description}":`,
+        error
+      );
       return null;
     }
+  }
+
+  private evaluateFormulas(
+    context: Record<string, any>,
+    computedFields: Record<string, string>
+  ) {
+    //add conditional to check for material and product dependent formulas
+    return Object.fromEntries(
+      Object.entries(computedFields).map(([key, formula]) => {
+        try {
+          return [key, parser.evaluate(formula, context)];
+        } catch (err) {
+          console.warn(`⚠️ Error evaluating ${key}: ${formula}`, err);
+          return [key, null];
+        }
+      })
+    );
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
     const fileName = filePath.split('/').pop();
-    const mimetype = 'application/pdf';
 
     const fakeMulterFile: Express.Multer.File = {
       fieldname: 'file',
       originalname: fileName,
       encoding: '7bit',
-      mimetype,
+      mimetype: 'application/pdf',
       size: fileBuffer.length,
       destination: '',
       filename: fileName,
@@ -144,29 +197,49 @@ export class JobCardService {
       stream: undefined as any,
     };
 
-    return await this.fileService.uploadFile(
-      [fakeMulterFile],
-      'jobCard',
-      user
+    return await this.fileService.uploadFile([fakeMulterFile], 'jobCard', user);
+  }
+
+  async getJobCardNumber(org: { id: string; name: string }) {
+    const latest = await prisma.file.findFirst({
+      where: { orgId: org.id, type: 'jobCard' },
+      orderBy: { createdAt: 'desc' },
+      select: { name: true },
+    });
+    const prefix = `${org.name.slice(0, 3).toUpperCase()}-JC-`;
+    const lastNumber = parseInt(
+      latest?.name?.split('.')[0].split('-')[2] || '0',
+      10
     );
+    const nextNumber = (lastNumber + 1).toString().padStart(4, '0');
+    return { data: `${prefix}${nextNumber}` };
   }
 
   async notifyFrontend(fileId: string): Promise<void> {
     console.log(`✅ Job card generation completed for File ID: ${fileId}`);
   }
 
-  private evaluateFormulas(bomItem: BomItem, jobCardForm: any, formulas: any) {
-    const context = {
-      bomQty: Number(bomItem.qty),
-      jobCardQty: Number(jobCardForm.productionQty),
-      lengthId: Number(bomItem.length),
-      widthId: Number(bomItem.width),
-      heightId: Number(bomItem.height),
-    };
+  getValueFromPath(obj: any, path: string): any {
+    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+  }
 
-    return {
-      productionQty: parser.evaluate(formulas.common.productionQty, context),
-      joints: parser.evaluate(formulas.common.joints, context),
-    };
+  buildContext(map: Record<string, string>, source: Record<string, any>) {
+    return Object.fromEntries(
+      Object.entries(map).map(([key, expression]) => [
+        key,
+        this.evaluateSimpleConcat(expression, source),
+      ])
+    );
+  }
+
+  private evaluateSimpleConcat(
+    expression: string,
+    source: Record<string, any>
+  ): string {
+    return expression
+      .split('+')
+      .map((part) => part.trim())
+      .map((path) => this.getValueFromPath(source, path) ?? '')
+      .join(' ');
   }
 }

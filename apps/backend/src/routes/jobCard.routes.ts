@@ -7,5 +7,6 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 const router: Router = express.Router();
 
 router.post(apiRoutes.jobCard.generate, JobCardController.generateJobCard);
+router.get(apiRoutes.jobCard.getNumber, JobCardController.getJobCardNumber);
 
 export { router };

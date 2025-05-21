@@ -50,5 +50,5 @@ app.use(apiRoutes.orgs.base, orgRoutes);
 
 // Server
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at http://localhost:${port}`);
 });

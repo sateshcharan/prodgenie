@@ -1,4 +1,3 @@
-import { Button } from '@prodgenie/libs/ui';
 import { useBomStore } from '@prodgenie/libs/store';
 
 interface BomItem {
@@ -31,12 +30,6 @@ const BomTable = ({
         ? prev.filter((item) => item !== slNo)
         : [...prev, slNo]
     );
-  };
-
-  // Handles the Next button click
-  const handleNext = () => {
-    const filteredBom = bom.filter((item) => selectedItems.includes(item.slNo));
-    setActiveItem('item-2');
   };
 
   return (
@@ -73,10 +66,6 @@ const BomTable = ({
       <p className="mt-4">
         Selected Items: {selectedItems.length}/{bom.length}
       </p>
-
-      {/* <Button className="mt-4" onClick={handleNext}>
-        Next
-      </Button> */}
     </div>
   );
 };

@@ -65,7 +65,7 @@ const Files = () => {
   });
 
   return (
-    <div className="p-4">
+    <div className="p-4 flex flex-col gap-4">
       {/* Search Bar with Banner */}
       <SearchBanner
         searchTerm={searchTerm}
@@ -89,11 +89,11 @@ const Files = () => {
         {/* Add File Card */}
         <Card
           onClick={handleAddFileClick}
-          className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer hover:bg-white-100"
+          className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer bg-forground hover:bg-gray-100 transition-colors duration-200 min-h-[250px]"
         >
-          <CardContent className="flex flex-col items-center justify-center">
+          <CardContent className="flex flex-col items-center justify-center h-full">
             <div className="text-4xl text-gray-400">+</div>
-            <p className="mt-2 text-gray-600">Add File</p>
+            <p className="mt-2 text-gray-600 text-sm">Add File</p>
           </CardContent>
         </Card>
       </div>

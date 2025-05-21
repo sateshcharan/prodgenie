@@ -21,12 +21,13 @@ import {
   toast,
 } from '@prodgenie/libs/ui';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
-import { jobCardFields } from '@prodgenie/libs/constant';
+import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
 import { jobCardSchema, JobCardFormValues } from '@prodgenie/libs/schema';
 
 import BomTable from './BomTable';
 import { generateJobCard } from '../services/jobCardService';
 import { BomItem } from '@prodgenie/libs/types';
+import { api } from '../utils';
 
 const JobCard = ({
   tables,
@@ -43,6 +44,16 @@ const JobCard = ({
 
   const titleBlock = tables.data?.titleBlock;
   const bom = tables.data?.bom;
+
+  useEffect(() => {
+    const fetchJobCardNo = async () => {
+      const jobCardNo = await api.get(
+        `${apiRoutes.jobCard.base}${apiRoutes.jobCard.getNumber}`
+      );
+      form.setValue('jobCardNumber', jobCardNo.data.data);
+    };
+    fetchJobCardNo();
+  }, []);
 
   // Initialize BOM only once
   useEffect(() => {

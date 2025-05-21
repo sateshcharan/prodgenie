@@ -1,3 +1,6 @@
+import { Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Select,
   SelectContent,
@@ -7,12 +10,8 @@ import {
   SelectValue,
   Button,
 } from '@prodgenie/libs/ui';
-
-import { Globe } from 'lucide-react';
 import { ModeToggle } from '@prodgenie/libs/ui';
-
 import logo from '@prodgenie/libs/ui/assets/logo.png';
-import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const navigate = useNavigate();

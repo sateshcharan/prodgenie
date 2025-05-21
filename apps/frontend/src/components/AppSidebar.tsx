@@ -53,8 +53,10 @@ export default function AppSidebar({
               <Link to="/dashboard">
                 <ArrowUpCircleIcon className="h-5 w-5" />
                 <span className="text-base font-semibold">
-                  {userData?.org?.name.charAt(0).toUpperCase() +
-                    userData?.org?.name.slice(1)}
+                  {userData?.org?.name
+                    ? userData.org.name.charAt(0).toUpperCase() +
+                      userData.org.name.slice(1)
+                    : ''}
                 </span>
               </Link>
             </SidebarMenuButton>

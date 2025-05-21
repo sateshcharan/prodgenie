@@ -35,6 +35,7 @@ export const apiRoutes = {
   jobCard: {
     base: '/api/jobCard',
     generate: '/generate',
+    getNumber: '/getNumber',
   },
 
   payment: {

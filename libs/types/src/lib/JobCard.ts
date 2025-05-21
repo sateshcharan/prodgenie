@@ -7,7 +7,6 @@ type jobCardForm = jobCardFormValues;
 interface jobCardRequest {
   user: any;
   bom: BomItem[];
-  file: { id: string };
   jobCardForm: jobCardForm;
   titleBlock: any;
 }

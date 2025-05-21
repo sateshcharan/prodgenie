@@ -70,15 +70,16 @@ export class PdfService {
   }
 
   static processParsedPdf(data: any, onboardingCongig: any): ParsedPdf {
+    const tables = data.tables;
+    const text = data.text;
+
+    const expectedBomHeaders = onboardingCongig.bom.header;
+    const requiredBomHeaders = onboardingCongig.bom.required;
+    const titleBlockHeaders = onboardingCongig.titleBlock.header;
 
     const stringService = new StringService();
 
-    const tables = data.tables;
-    const text = data.text;
-    
-    const expectedBomHeaders = onboardingCongig.bom.header;
-    const requiredBomHeaders = onboardingCongig.bom.required;
-    const titleBlockHeaders = onboardingCongig.titleBlock;
+    // console.log(tables);
 
     const bomTable = tables.find((table: any[][]) => {
       if (!Array.isArray(table)) return false;
@@ -142,9 +143,11 @@ export class PdfService {
       .map((line: string) => line.trim())
       .filter((line: string | any[]) => line.length > 0);
 
-    for (const header of Object.keys(titleBlockHeaders)) {
+    // console.log(lines);
+
+    for (const header of titleBlockHeaders) {
       const line = lines.find((line: any) =>
-        line.toLowerCase().includes(header.toLowerCase())
+        line.toLowerCase().includes(stringService.camelToNormal(header))
       );
       if (line) {
         titleBlock[header as keyof ParsedPdf['titleBlock']] = line
@@ -154,15 +157,86 @@ export class PdfService {
       }
     }
 
+    // const titleBlockKeywords = [
+    //   'drawing no',
+    //   'dwg no',
+    //   'scale',
+    //   'sheet',
+    //   'revision',
+    //   'date',
+    //   'approved',
+    //   'checked',
+    //   'name',
+    //   'signature',
+    //   'product detail',
+    //   'customer name',
+    // ];
+
+    // const titleBlockTable = tables.find((table: any[][]) => {
+    //   if (!Array.isArray(table)) return false;
+    //   for (const row of table) {
+    //     if (!Array.isArray(row)) continue;
+    //     const joined = row.map((x) => (x || '').toLowerCase()).join(' ');
+    //     const matches = titleBlockKeywords.some((keyword) =>
+    //       joined.includes(keyword)
+    //     );
+    //     if (matches) return true;
+    //   }
+    //   return false;
+    // });
+
+    // const titleBlock: Record<string, string> = {};
+
+    // if (titleBlockTable) {
+    //   for (const row of titleBlockTable) {
+    //     if (!Array.isArray(row)) continue;
+    //     const joinedRow = row
+    //       .map((cell) => (cell || '').trim().toLowerCase())
+    //       .join(' ');
+    //     if (joinedRow.includes('drawing no') || joinedRow.includes('dwg no')) {
+    //       titleBlock.drawingNo = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('scale')) {
+    //       titleBlock.scale = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('sheet')) {
+    //       titleBlock.sheet = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('revision')) {
+    //       titleBlock.revision = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('customer name')) {
+    //       titleBlock.customerName = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('product detail')) {
+    //       titleBlock.productDetail = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('approved') || joinedRow.includes("appv'd")) {
+    //       titleBlock.approved = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('checked') || joinedRow.includes("chk'd")) {
+    //       titleBlock.checked = row.join(' ');
+    //     }
+    //     if (joinedRow.includes("genert'd")) {
+    //       titleBlock.generated = row.join(' ');
+    //     }
+    //     if (joinedRow.includes('name') && joinedRow.includes('signature')) {
+    //       titleBlock.signatures = row.join(' ');
+    //     }
+    //   }
+    // }
+
+    // console.log(titleBlock);
+
     return {
       bom,
       titleBlock,
     };
   }
 
-  async generatePDF(htmlContent: string, fileId: string): Promise<string> {
-    const dirPath = path.join('./tmp/jobcards', fileId);
-    const outputPath = path.join(dirPath, `${fileId}-${Date.now()}.pdf`);
+  async generatePDF(htmlContent: string, jobCardNo: string): Promise<string> {
+    const dirPath = path.join('./tmp/jobcards', jobCardNo);
+    const outputPath = path.join(dirPath, `${jobCardNo}.pdf`);
 
     // Ensure directory exists
     await fs.mkdir(dirPath, { recursive: true });

@@ -1,9 +1,9 @@
 import { Outlet, useParams } from 'react-router-dom';
 
-import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
-
 import { AppSidebar } from '../components';
 import { PrivateHeader } from '../navigation';
+
+import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
 
 const PrivateLayout = () => {
   let { fileType } = useParams();

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
+
 import { handleCheckout } from '../components/HandleCheckout';
-import api from '../utils/api';
+import { api } from '../utils';
+
+import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
 
 const PricingCard = () => {
   const PRICE_IDS = {

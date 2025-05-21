@@ -40,7 +40,7 @@ export default function SignupPage() {
 
         try {
           const { data } = await api.get(
-            `${apiRoutes.orgs.base}/check?orgName=${orgName}`
+            `${apiRoutes.orgs.base}${apiRoutes.orgs.check}?orgName=${orgName}`
           );
           const exists = data.data;
           setOrgExists(exists);

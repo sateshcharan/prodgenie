@@ -1,5 +1,5 @@
-import { Button } from '@prodgenie/libs/ui';
 
+import { Button } from '@prodgenie/libs/ui';
 import { useAuthModalStore } from '@prodgenie/libs/store';
 
 const Hero = () => {
