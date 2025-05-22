@@ -4,7 +4,6 @@ import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 
 import { StringService, CrudService } from '../utils/index.js';
-
 import { JobCardItem } from '@prodgenie/libs/types';
 
 interface ParsedPdf {
@@ -20,243 +19,192 @@ interface ParsedPdf {
 }
 
 export class PdfService {
-  static async extractPdfData(signedUrl: string, user: any): Promise<any> {
-    const pythonScript = path.join(
+  static async extractPdfData(
+    signedUrl: string,
+    user: any
+  ): Promise<ParsedPdf> {
+    const parsedData = await this.runPythonParser(signedUrl);
+    const config = await this.loadOrgConfig(user);
+
+    return this.processParsedPdf(parsedData, config);
+  }
+
+  private static async runPythonParser(signedUrl: string): Promise<any> {
+    const scriptPath = path.join(
       __dirname,
       '../../../apps/pdf-parser/pdfParse.py'
     );
-    const pythonExecutable = path.resolve(
+    const pythonPath = path.join(
       __dirname,
       '../../../apps/pdf-parser/venv/bin/python'
     );
 
-    const parsedPdf = new Promise((resolve, reject) => {
-      let stdoutData = '';
-      let stderrData = '';
+    return new Promise((resolve, reject) => {
+      const python = spawn(pythonPath, [scriptPath, signedUrl]);
+      let stdout = '';
+      let stderr = '';
 
-      const python = spawn(pythonExecutable, [pythonScript, signedUrl]);
-
-      python.stdout.on('data', (data) => {
-        stdoutData += data.toString();
-        // console.log(data.toString());
-      });
-
-      python.stderr.on('data', (data) => {
-        stderrData += data.toString();
-        // console.error(data.toString());
-      });
+      python.stdout.on('data', (data) => (stdout += data.toString()));
+      python.stderr.on('data', (data) => (stderr += data.toString()));
 
       python.on('close', (code) => {
         if (code === 0) {
           try {
-            const parsedOutput = JSON.parse(stdoutData);
-            resolve(parsedOutput);
+            resolve(JSON.parse(stdout));
           } catch (err) {
-            reject('Failed to parse Python JSON: ' + err);
+            reject(`JSON parse error: ${err}`);
           }
         } else {
-          reject('Python script failed: ' + (stderrData || 'Unknown error'));
+          reject(`Python script error: ${stderr || 'Unknown error'}`);
         }
       });
     });
-
-    const crudService = new CrudService();
-    const onboardingCongig = await crudService.fetchJsonFromSignedUrl(
-      `${user?.org?.name}/config/onboarding.json`
-    );
-
-    const tables = this.processParsedPdf(await parsedPdf, onboardingCongig);
-    return tables;
   }
 
-  static processParsedPdf(data: any, onboardingCongig: any): ParsedPdf {
+  private static async loadOrgConfig(user: any): Promise<any> {
+    const crudService = new CrudService();
+    return crudService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
+    );
+  }
+
+  private static processParsedPdf(data: any, config: any): ParsedPdf {
     const tables = data.tables;
     const text = data.text;
 
-    const expectedBomHeaders = onboardingCongig.bom.header;
-    const requiredBomHeaders = onboardingCongig.bom.required;
-    const titleBlockHeaders = onboardingCongig.titleBlock.header;
+    return {
+      bom: this.extractBomTable(tables, config),
+      // titleBlock: this.extractTitleBlock(text, config),
+      titleBlock: this.extractTitleBlockFromTables(tables, config),
+    };
+  }
 
+  private static extractBomTable(tables: any[], config: any): JobCardItem[] {
+    const {
+      bom: { header: expectedHeaders, required: requiredHeaders },
+    } = config;
     const stringService = new StringService();
 
-    // console.log(tables);
+    const bomTable = tables.find((table: any[][]) =>
+      table.some((row) => {
+        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+        return requiredHeaders.every((req) => normalized.includes(req));
+      })
+    );
 
-    const bomTable = tables.find((table: any[][]) => {
-      if (!Array.isArray(table)) return false;
+    if (!bomTable) return [];
 
-      for (const row of table) {
-        if (!Array.isArray(row)) continue;
-        const header = row.map((x) => (x || '').toLowerCase().trim());
-
-        const matchesAll = requiredBomHeaders.every((required) =>
-          header.includes(required)
-        );
-
-        if (matchesAll) return true;
-      }
-
-      return false;
+    const headerIndex = bomTable.findIndex((row) => {
+      const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+      return requiredHeaders.every((req) => normalized.includes(req));
     });
 
-    const bom: ParsedPdf['bom'] = [];
+    if (headerIndex < 0) return [];
 
-    if (bomTable) {
-      // Find the actual header row index inside bomTable
-      const headerIndex = bomTable.findIndex((row: string[]) => {
-        if (!Array.isArray(row)) return false;
-        const header = row.map((x) => (x || '').toLowerCase().trim());
-        return requiredBomHeaders.every((required) =>
-          header.includes(required)
-        );
+    const headerRow = bomTable[headerIndex];
+    const headerMap = Object.fromEntries(
+      headerRow.map((cell, i) => [stringService.camelCase(cell), i])
+    );
+
+    return bomTable.slice(headerIndex + 1).map((row) => {
+      const entry: Record<string, string> = {};
+      expectedHeaders.forEach((header) => {
+        entry[header] = row[headerMap[header]] || '';
       });
+      // console.log(bomTable);
+      return entry as JobCardItem;
+    });
+  }
 
-      if (headerIndex >= 0) {
-        const headerRow = bomTable[headerIndex];
-
-        // Create a mapping of header names to their respective column indexes
-        const headerMapping: { [key: string]: number } = {};
-        headerRow.forEach((header: string, index: number) => {
-          headerMapping[stringService.camelCase(header)] = index;
-        });
-
-        const dataRows = bomTable.slice(headerIndex + 1);
-
-        for (const row of dataRows) {
-          if (Array.isArray(row) && row.length >= headerRow.length) {
-            const bomEntry: Record<string, string> = {};
-
-            expectedBomHeaders.forEach((header) => {
-              bomEntry[header] = row[headerMapping[header]] || '';
-            });
-
-            bom.push(bomEntry);
-          }
-        }
-      }
-    }
-
-    // Extract title block info from text
-    const titleBlock: ParsedPdf['titleBlock'] = {};
-
+  private static extractTitleBlock(
+    text: string,
+    config: any
+  ): ParsedPdf['titleBlock'] {
+    const headers = config.titleBlock.header;
     const lines = text
       .split('\n')
-      .map((line: string) => line.trim())
-      .filter((line: string | any[]) => line.length > 0);
+      .map((line) => line.trim())
+      .filter(Boolean);
 
-    // console.log(lines);
+    const stringService = new StringService();
+    const titleBlock: ParsedPdf['titleBlock'] = {};
 
-    for (const header of titleBlockHeaders) {
-      const line = lines.find((line: any) =>
-        line.toLowerCase().includes(stringService.camelToNormal(header))
+    for (const key of headers) {
+      const line = lines.find((line) =>
+        line.toLowerCase().includes(stringService.camelToNormal(key))
       );
       if (line) {
-        titleBlock[header as keyof ParsedPdf['titleBlock']] = line
+        titleBlock[key as keyof ParsedPdf['titleBlock']] = line
           .split(':')
           .pop()
           ?.trim();
       }
     }
+    console.log(titleBlock);
+    return titleBlock;
+  }
 
-    // const titleBlockKeywords = [
-    //   'drawing no',
-    //   'dwg no',
-    //   'scale',
-    //   'sheet',
-    //   'revision',
-    //   'date',
-    //   'approved',
-    //   'checked',
-    //   'name',
-    //   'signature',
-    //   'product detail',
-    //   'customer name',
-    // ];
+  private static extractTitleBlockFromTables(
+    tables: any[][],
+    config: any
+  ): ParsedPdf['titleBlock'] {
+    const headers = config.titleBlock.header;
+    const stringService = new StringService();
+    const titleBlock: ParsedPdf['titleBlock'] = {};
 
-    // const titleBlockTable = tables.find((table: any[][]) => {
-    //   if (!Array.isArray(table)) return false;
-    //   for (const row of table) {
-    //     if (!Array.isArray(row)) continue;
-    //     const joined = row.map((x) => (x || '').toLowerCase()).join(' ');
-    //     const matches = titleBlockKeywords.some((keyword) =>
-    //       joined.includes(keyword)
-    //     );
-    //     if (matches) return true;
-    //   }
-    //   return false;
-    // });
+    const temp: any[] = [];
 
-    // const titleBlock: Record<string, string> = {};
+    // Flatten and collect all non-empty strings from table rows
+    for (const table of tables) {
+      if (!Array.isArray(table)) continue;
 
-    // if (titleBlockTable) {
-    //   for (const row of titleBlockTable) {
-    //     if (!Array.isArray(row)) continue;
-    //     const joinedRow = row
-    //       .map((cell) => (cell || '').trim().toLowerCase())
-    //       .join(' ');
-    //     if (joinedRow.includes('drawing no') || joinedRow.includes('dwg no')) {
-    //       titleBlock.drawingNo = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('scale')) {
-    //       titleBlock.scale = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('sheet')) {
-    //       titleBlock.sheet = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('revision')) {
-    //       titleBlock.revision = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('customer name')) {
-    //       titleBlock.customerName = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('product detail')) {
-    //       titleBlock.productDetail = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('approved') || joinedRow.includes("appv'd")) {
-    //       titleBlock.approved = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('checked') || joinedRow.includes("chk'd")) {
-    //       titleBlock.checked = row.join(' ');
-    //     }
-    //     if (joinedRow.includes("genert'd")) {
-    //       titleBlock.generated = row.join(' ');
-    //     }
-    //     if (joinedRow.includes('name') && joinedRow.includes('signature')) {
-    //       titleBlock.signatures = row.join(' ');
-    //     }
-    //   }
-    // }
+      for (const row of table) {
+        if (Array.isArray(row)) {
+          temp.push(...row.filter(Boolean));
+        }
+      }
+    }
 
-    // console.log(titleBlock);
+    // Match each header against flattened rows
+    for (const header of headers) {
+      const normalizedHeader = stringService
+        .camelToNormal(header)
+        .toLowerCase();
 
-    return {
-      bom,
-      titleBlock,
-    };
+      const matched = temp.find((item) => {
+        return (
+          item.length < 50 && item.toLowerCase().includes(normalizedHeader)
+        );
+      });
+
+      if (matched) {
+        // Split by either ':' or '.' using regex
+        const parts = matched.split(/[:.]/);
+        const value =
+          parts.length > 1 ? parts.slice(1).join(':').trim() : matched.trim();
+        titleBlock[header as keyof ParsedPdf['titleBlock']] = value;
+      }
+    }
+    return titleBlock;
   }
 
   async generatePDF(htmlContent: string, jobCardNo: string): Promise<string> {
     const dirPath = path.join('./tmp/jobcards', jobCardNo);
     const outputPath = path.join(dirPath, `${jobCardNo}.pdf`);
 
-    // Ensure directory exists
     await fs.mkdir(dirPath, { recursive: true });
 
-    // Launch Puppeteer
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     try {
-      // Set HTML content
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-
-      // Generate PDF
       await page.pdf({
         path: outputPath,
         format: 'A4',
         printBackground: true,
         margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' },
       });
-
       return outputPath;
     } finally {
       await browser.close();

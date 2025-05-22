@@ -98,7 +98,7 @@ export class JobCardService {
         templates.push(populatedTemplate);
       }
       templates.push(`<div style="page-break-after: always;"></div>`);
-      console.log(`⚠️ Template generated for: ${bomItem.description}`);
+      console.log(`Template generated for: ${bomItem.description}`);
     }
 
     const finalDoc = await this.templateService.combineTemplates(templates);

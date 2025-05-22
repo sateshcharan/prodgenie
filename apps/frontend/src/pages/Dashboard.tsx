@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 
 import api from '../utils/api';
 import OrgUsers from '../components/OrgUsers';
+import data from './data.json';
 
 import {
   SectionCards,
   ChartAreaInteractive,
   HistoryTable,
+  DataTable,
 } from '@prodgenie/libs/ui';
 
 const Dashboard = () => {
@@ -34,11 +36,11 @@ const Dashboard = () => {
       {isOwner && (
         <>
           <OrgUsers orgId={orgId} />
-          <SectionCards />
+          {/* <SectionCards /> */}
         </>
       )}
       <div className="px-4 lg:px-6">
-        <ChartAreaInteractive />
+        {/* <ChartAreaInteractive /> */}
         <HistoryTable history={orgHistory} />
       </div>
     </div>

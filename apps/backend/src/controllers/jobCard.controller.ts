@@ -13,7 +13,7 @@ export class JobCardController {
         titleBlock: req.body.titleBlock,
         jobCardForm: {
           ...req.body.jobCardForm,
-          jobCardDate: new Date().toLocaleDateString('en-GB'),
+          jobCardDate: new Date().toISOString().split('T')[0],
         },
       });
       res

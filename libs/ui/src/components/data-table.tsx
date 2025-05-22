@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   CheckCircle2Icon,
-  // CheckCircleIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,

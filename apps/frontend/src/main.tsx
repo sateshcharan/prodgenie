@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@prodgenie/libs/ui';
 import router from './app';
+import GlobalLoader from './components/globalLoader';
 
 import { Toaster } from 'sonner';
 
@@ -14,6 +15,7 @@ root.render(
   <StrictMode>
     <ThemeProvider>
       <RouterProvider router={router} />
+      <GlobalLoader />
       <Toaster richColors position="top-right" />
     </ThemeProvider>
   </StrictMode>

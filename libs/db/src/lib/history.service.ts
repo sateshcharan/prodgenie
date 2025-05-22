@@ -8,14 +8,35 @@ export class HistoryService {
     details?: string;
     jobId?: string | null;
   }) {
-    return prisma.history.create({
-      data: {
-        userId: params.userId,
-        orgId: params.orgId,
-        action: params.action,
-        details: params.details ?? null,
-        jobId: params.jobId ?? null,
-      },
+    const recordsPerOrg = 50;
+    return prisma.$transaction(async (tx) => {
+      const count = await tx.history.count({
+        where: { orgId: params.orgId },
+      });
+
+      if (count >= recordsPerOrg) {
+        const oldest = await tx.history.findFirst({
+          where: { orgId: params.orgId },
+          orderBy: { createdAt: 'asc' },
+          select: { id: true },
+        });
+
+        if (oldest) {
+          await tx.history.delete({
+            where: { id: oldest.id },
+          });
+        }
+      }
+
+      return tx.history.create({
+        data: {
+          userId: params.userId,
+          orgId: params.orgId,
+          action: params.action,
+          details: params.details ?? null,
+          jobId: params.jobId ?? null,
+        },
+      });
     });
   }
 
