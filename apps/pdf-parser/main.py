@@ -8,6 +8,10 @@ app = FastAPI()
 class PDFRequest(BaseModel):
     url: str
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the PDF Parser API!"}
+
 @app.post("/parse")
 async def parse_pdf(data: PDFRequest):
     response = requests.get(data.url)
