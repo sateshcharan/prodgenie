@@ -67,7 +67,7 @@ export class PdfService {
   private static async runPythonParser(signedUrl: string): Promise<any> {
     try {
       const response = await axios.post(
-        process.env.RENDER_PY_URL!, 
+        process.env.RENDER_PY_URL!,
         { url: signedUrl },
         {
           headers: {
@@ -220,7 +220,9 @@ export class PdfService {
 
     await fs.mkdir(dirPath, { recursive: true });
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
     const page = await browser.newPage();
 
     try {

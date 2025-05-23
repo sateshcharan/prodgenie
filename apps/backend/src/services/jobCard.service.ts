@@ -109,7 +109,8 @@ export class JobCardService {
     console.log(`Job card saved to ${outputPath}`);
 
     await this.uploadJobCard(outputPath, user);
-    // Optionally clean temp files: await fs.rm('./tmp', { recursive: true });
+    // Optionally clean temp files:
+    await fs.rm('./tmp', { recursive: true });
   }
 
   private async identifyProduct(item: BomItem) {
