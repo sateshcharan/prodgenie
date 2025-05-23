@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
+import axios from 'axios';
 
 import { StringService, CrudService } from '../utils/index.js';
 import { JobCardItem } from '@prodgenie/libs/types';
@@ -29,36 +30,61 @@ export class PdfService {
     return this.processParsedPdf(parsedData, config);
   }
 
+  // local setup
+  // private static async runPythonParser(signedUrl: string): Promise<any> {
+  //   const scriptPath = path.join(
+  //     __dirname,
+  //     '../../../apps/pdf-parser/pdfParse.py'
+  //   );
+  //   const pythonPath = path.join(
+  //     __dirname,
+  //     '../../../apps/pdf-parser/venv/bin/python'
+  //   );
+
+  //   return new Promise((resolve, reject) => {
+  //     const python = spawn(pythonPath, [scriptPath, signedUrl]);
+  //     let stdout = '';
+  //     let stderr = '';
+
+  //     python.stdout.on('data', (data) => (stdout += data.toString()));
+  //     python.stderr.on('data', (data) => (stderr += data.toString()));
+
+  //     python.on('close', (code) => {
+  //       if (code === 0) {
+  //         try {
+  //           resolve(JSON.parse(stdout));
+  //         } catch (err) {
+  //           reject(`JSON parse error: ${err}`);
+  //         }
+  //       } else {
+  //         reject(`Python script error: ${stderr || 'Unknown error'}`);
+  //       }
+  //     });
+  //   });
+  // }
+
+  // microservice setup
   private static async runPythonParser(signedUrl: string): Promise<any> {
-    const scriptPath = path.join(
-      __dirname,
-      '../../../apps/pdf-parser/pdfParse.py'
-    );
-    const pythonPath = path.join(
-      __dirname,
-      '../../../apps/pdf-parser/venv/bin/python'
-    );
-
-    return new Promise((resolve, reject) => {
-      const python = spawn(pythonPath, [scriptPath, signedUrl]);
-      let stdout = '';
-      let stderr = '';
-
-      python.stdout.on('data', (data) => (stdout += data.toString()));
-      python.stderr.on('data', (data) => (stderr += data.toString()));
-
-      python.on('close', (code) => {
-        if (code === 0) {
-          try {
-            resolve(JSON.parse(stdout));
-          } catch (err) {
-            reject(`JSON parse error: ${err}`);
-          }
-        } else {
-          reject(`Python script error: ${stderr || 'Unknown error'}`);
+    try {
+      const response = await axios.post(
+        process.env.RENDER_PY_URL!, 
+        { url: signedUrl },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 15000, // Optional: 15s timeout to prevent hanging
         }
-      });
-    });
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        `Failed to call Python service: ${
+          error.response?.data || error.message
+        }`
+      );
+    }
   }
 
   private static async loadOrgConfig(user: any): Promise<any> {
