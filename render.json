@@ -9,7 +9,7 @@
       "repository": "https://github.com/sateshcharan/prodgeie",
       "branch": "backend",
       "buildCommand": "corepack enable && pnpm install && pnpm prisma generate && pnpm dlx nx build backend ",
-      "startCommand": "pnpm prisma generate && node apps/backend/dist/main.js",
+      "startCommand": "pnpm prisma generate && npx puppeteer browsers install chrome && node apps/backend/dist/main.js",
       "rootDir": "apps/backend",
       "envVars": [
         {
