@@ -9,6 +9,7 @@ interface jobCardRequest {
   bom: BomItem[];
   jobCardForm: jobCardForm;
   titleBlock: any;
+  signedUrl: string;
 }
 
 export type jobCard = typeof jobCardFields;

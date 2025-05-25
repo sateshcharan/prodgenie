@@ -15,6 +15,7 @@ export class JobCardController {
           ...req.body.jobCardForm,
           jobCardDate: new Date().toISOString().split('T')[0],
         },
+        signedUrl: req.body.signedUrl,
       });
       res
         .status(201)

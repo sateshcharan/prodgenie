@@ -1,12 +1,13 @@
 import { X, Download } from 'lucide-react';
 import PdfThumbnail from './PdfThumbnail';
+import { EditableTitle } from './EditableTitle';
 
 import {
   Card,
   CardHeader,
   CardContent,
   Button,
-  CardTitle,
+  // CardTitle,
 } from '@prodgenie/libs/ui';
 
 interface FileCardProps {
@@ -39,7 +40,11 @@ const FileCard = ({
         <Download className="w-4 h-4" />
       </Button>
 
-      <Button onClick={() => onDelete(card.id)} variant="destructive" size="icon">
+      <Button
+        onClick={() => onDelete(card.id)}
+        variant="destructive"
+        size="icon"
+      >
         <X className="w-4 h-4" />
       </Button>
     </div>
@@ -58,9 +63,12 @@ const FileCard = ({
 
     {/* File Name */}
     <CardHeader className="text-center p-0">
-      <CardTitle className="text-sm truncate ">
-        {card.name.split('.')[0]}
-      </CardTitle>
+      <EditableTitle
+        value={card.name.split('.')[0]}
+        onSave={(newValue) => {
+          console.log('New value:', newValue);
+        }}
+      />
     </CardHeader>
   </Card>
 );

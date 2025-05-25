@@ -45,4 +45,16 @@ export class FileController {
       return res.status(500).json({ message: error.message });
     }
   };
+
+  static renameFileController = async (req: Request, res: Response) => {
+    try {
+      const { fileType, fileId } = req.params;
+      const { newName } = req.body;
+
+      const result = await fileService.renameFile(fileId, newName);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
 }

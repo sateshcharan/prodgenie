@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
+import { PDFDocument, degrees } from 'pdf-lib';
 import axios from 'axios';
 
 import { StringService, CrudService } from '../utils/index.js';
@@ -31,61 +32,60 @@ export class PdfService {
   }
 
   // local setup
-  // private static async runPythonParser(signedUrl: string): Promise<any> {
-  //   const scriptPath = path.join(
-  //     __dirname,
-  //     '../../../apps/pdf-parser/pdfParse.py'
-  //   );
-  //   const pythonPath = path.join(
-  //     __dirname,
-  //     '../../../apps/pdf-parser/venv/bin/python'
-  //   );
+  private static async runPythonParser(signedUrl: string): Promise<any> {
+    const scriptPath = path.join(
+      __dirname,
+      '../../../apps/pdf-parser/pdfParse.py'
+    );
+    const pythonPath = path.join(
+      __dirname,
+      '../../../apps/pdf-parser/venv/bin/python'
+    );
 
-  //   return new Promise((resolve, reject) => {
-  //     const python = spawn(pythonPath, [scriptPath, signedUrl]);
-  //     let stdout = '';
-  //     let stderr = '';
+    return new Promise((resolve, reject) => {
+      const python = spawn(pythonPath, [scriptPath, signedUrl]);
+      let stdout = '';
+      let stderr = '';
 
-  //     python.stdout.on('data', (data) => (stdout += data.toString()));
-  //     python.stderr.on('data', (data) => (stderr += data.toString()));
+      python.stdout.on('data', (data) => (stdout += data.toString()));
+      python.stderr.on('data', (data) => (stderr += data.toString()));
 
-  //     python.on('close', (code) => {
-  //       if (code === 0) {
-  //         try {
-  //           resolve(JSON.parse(stdout));
-  //         } catch (err) {
-  //           reject(`JSON parse error: ${err}`);
-  //         }
-  //       } else {
-  //         reject(`Python script error: ${stderr || 'Unknown error'}`);
-  //       }
-  //     });
-  //   });
-  // }
+      python.on('close', (code) => {
+        if (code === 0) {
+          try {
+            resolve(JSON.parse(stdout));
+          } catch (err) {
+            reject(`JSON parse error: ${err}`);
+          }
+        } else {
+          reject(`Python script error: ${stderr || 'Unknown error'}`);
+        }
+      });
+    });
+  }
 
   // microservice setup
-  private static async runPythonParser(signedUrl: string): Promise<any> {
-    try {
-      const response = await axios.post(
-        process.env.RENDER_PY_URL!, 
-        { url: signedUrl },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: 15000, // Optional: 15s timeout to prevent hanging
-        }
-      );
-
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        `Failed to call Python service: ${
-          error.response?.data || error.message
-        }`
-      );
-    }
-  }
+  // private static async runPythonParser(signedUrl: string): Promise<any> {
+  //   try {
+  //     const response = await axios.post(
+  //       process.env.RENDER_PY_URL!,
+  //       { url: signedUrl },
+  //       {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         timeout: 15000, // Optional: 15s timeout to prevent hanging
+  //       }
+  //     );
+  //     return response.data;
+  //   } catch (error: any) {
+  //     throw new Error(
+  //       `Failed to call Python service: ${
+  //         error.response?.data || error.message
+  //       }`
+  //     );
+  //   }
+  // }
 
   private static async loadOrgConfig(user: any): Promise<any> {
     const crudService = new CrudService();
@@ -217,6 +217,7 @@ export class PdfService {
   async generatePDF(htmlContent: string, jobCardNo: string): Promise<string> {
     const dirPath = path.join('./tmp/jobcards', jobCardNo);
     const outputPath = path.join(dirPath, `${jobCardNo}.pdf`);
+    const drawingPath = path.join('./tmp/drawing.pdf'); // flat path, not inside dirPath
 
     await fs.mkdir(dirPath, { recursive: true });
 
@@ -231,9 +232,46 @@ export class PdfService {
         printBackground: true,
         margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' },
       });
-      return outputPath;
     } finally {
       await browser.close();
     }
+
+    // Merge job card + drawing
+    try {
+      const jobCardBytes = await fs.readFile(outputPath);
+      const drawingBytes = await fs.readFile(drawingPath);
+
+      const jobCardPdf = await PDFDocument.load(jobCardBytes);
+      const drawingPdf = await PDFDocument.load(drawingBytes);
+      const mergedPdf = await PDFDocument.create();
+
+      const jobCardPages = await mergedPdf.copyPages(
+        jobCardPdf,
+        jobCardPdf.getPageIndices()
+      );
+      jobCardPages.forEach((page) => mergedPdf.addPage(page));
+
+      const drawingPages = await mergedPdf.copyPages(
+        drawingPdf,
+        drawingPdf.getPageIndices()
+      );
+      drawingPages.forEach((page) => {
+        const { width, height } = page.getSize();
+
+        // Rotate if landscape (width > height)
+        if (width > height) {
+          page.setRotation(degrees(90));
+        }
+
+        mergedPdf.addPage(page);
+      });
+
+      const mergedBytes = await mergedPdf.save();
+      await fs.writeFile(outputPath, mergedBytes);
+    } catch (err: any) {
+      console.warn('Drawing not appended:', err.message);
+    }
+
+    return outputPath;
   }
 }

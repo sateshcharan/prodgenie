@@ -7,6 +7,7 @@ export const generateJobCard = async ({
   bom,
   titleBlock,
   jobCardForm,
+  signedUrl,
 }: {
   bom: BomItem[];
   file: { id: string };
@@ -17,11 +18,13 @@ export const generateJobCard = async ({
     poNumber: string;
     productionQty: number;
   };
+  signedUrl: string;
 }) => {
   return api.post('/api/jobCard/generate', {
     bom,
     file,
     jobCardForm,
     titleBlock,
+    signedUrl,
   });
 };

@@ -24,5 +24,10 @@ router.delete(
   validateFileType,
   FileController.deleteFileController
 );
+router.put(
+  apiRoutes.files.rename(':fileType', ':fileId'),
+  validateFileType,
+  FileController.renameFileController
+);
 
 export { router };

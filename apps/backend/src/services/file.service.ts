@@ -88,6 +88,21 @@ export class FileService {
     }
   }
 
+  async renameFile(fileId: string, newName: string) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
+    });
+    if (!file) throw new Error('File not found');
+    const oldPath = file.path;
+    const newPath = `${file.path.split('/').slice(0, -1).join('/')}/${newName}`;
+    await storageFileService.renameFile(oldPath, newPath);
+    const updatedFile = await prisma.file.update({
+      where: { id: fileId },
+      data: { path: newPath },
+    });
+    return updatedFile;
+  }
+
   async downloadToTemp(signedUrl: string, filename: string) {
     const tempDir = './tmp';
     if (!fs.existsSync(tempDir)) {

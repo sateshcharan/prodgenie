@@ -25,6 +25,7 @@ export class JobCardService {
     jobCardForm,
     user,
     titleBlock,
+    signedUrl,
   }: jobCardRequest): Promise<void> {
     console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
@@ -40,6 +41,12 @@ export class JobCardService {
       user,
       titleBlock,
     };
+
+    console.log(typeof signedUrl);
+    const drawingFile = await this.fileService.downloadToTemp(
+      signedUrl,
+      'drawing'
+    );
 
     for (const bomItem of bom) {
       const product = await this.identifyProduct(bomItem);

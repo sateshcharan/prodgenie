@@ -70,4 +70,19 @@ export class FileStorageService {
 
     return data;
   }
+
+  async renameFile(
+    oldPath: string,
+    newPath: string
+  ): Promise<{ data: any; error: any }> {
+    const { data, error } = await supabase.storage
+      .from(this.bucketName)
+      .move(oldPath, newPath);
+
+    if (error) {
+      console.error('Rename failed:', error.message);
+    }
+
+    return { data, error };
+  }
 }

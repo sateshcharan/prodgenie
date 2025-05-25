@@ -32,9 +32,11 @@ import { api } from '../utils';
 const JobCard = ({
   tables,
   fileId,
+  signedUrl,
 }: {
   tables: { data?: { bom: BomItem[]; titleBlock?: any } };
   fileId: string;
+  signedUrl: string;
 }) => {
   const navigate = useNavigate();
   const { setBom, setSelectedItems, selectedItems } = useBomStore();
@@ -84,6 +86,7 @@ const JobCard = ({
         titleBlock,
         file: { id: fileId },
         jobCardForm,
+        signedUrl,
       };
       await generateJobCard(jobCardData);
       navigate('/dashboard/jobCard');
