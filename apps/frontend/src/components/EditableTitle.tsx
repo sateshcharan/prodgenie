@@ -1,16 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Pencil, Check } from 'lucide-react';
+import { api } from '../utils';
 
 interface EditableTitleProps {
   value: string;
   onSave?: (newValue: string) => void;
   className?: string;
+  fileType: string;
+  fileId: string;
 }
 
 export const EditableTitle: React.FC<EditableTitleProps> = ({
   value,
   onSave,
   className = '',
+  fileType,
+  fileId,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(value);
@@ -32,12 +37,10 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
     if (newText !== value) onSave?.(newText);
 
     //call api to rename file
-    const response = await fetch(`/api/files/${fileType}/${fileId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ newName: newText }),
+    const response = await api.put(`/api/files/${fileType}`, {
+      newName: newText,
+      fileId: fileId,
     });
-    const data = await response.json();
-    console.log(data);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

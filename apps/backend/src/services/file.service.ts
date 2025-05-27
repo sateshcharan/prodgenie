@@ -54,7 +54,6 @@ export class FileService {
       if (!files.length) {
         return { data: null, error: 'No files found' };
       }
-
       const filesWithUrls = await Promise.all(
         files.map(async (file) => ({
           ...file,
@@ -94,11 +93,15 @@ export class FileService {
     });
     if (!file) throw new Error('File not found');
     const oldPath = file.path;
-    const newPath = `${file.path.split('/').slice(0, -1).join('/')}/${newName}`;
+    const extension = file.name.split('.').pop();
+    const newPath = `${file.path
+      .split('/')
+      .slice(0, -1)
+      .join('/')}/${newName}.${extension}`;
     await storageFileService.renameFile(oldPath, newPath);
     const updatedFile = await prisma.file.update({
       where: { id: fileId },
-      data: { path: newPath },
+      data: { path: newPath, name: newName },
     });
     return updatedFile;
   }

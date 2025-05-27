@@ -26,7 +26,6 @@ export class FileController {
     try {
       const { fileType } = req.params;
       const orgId = req.user?.orgId;
-
       const files = await fileService.listFiles(fileType, orgId);
       return res.status(200).json(files);
     } catch (error: any) {
@@ -48,8 +47,7 @@ export class FileController {
 
   static renameFileController = async (req: Request, res: Response) => {
     try {
-      const { fileType, fileId } = req.params;
-      const { newName } = req.body;
+      const { newName, fileId } = req.body;
 
       const result = await fileService.renameFile(fileId, newName);
       return res.status(200).json(result);

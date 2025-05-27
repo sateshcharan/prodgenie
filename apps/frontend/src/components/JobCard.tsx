@@ -34,7 +34,9 @@ const JobCard = ({
   fileId,
   signedUrl,
 }: {
-  tables: { data?: { bom: BomItem[]; titleBlock?: any } };
+  tables: {
+    data?: { bom: BomItem[]; titleBlock?: any; printingDetails?: any };
+  };
   fileId: string;
   signedUrl: string;
 }) => {
@@ -46,6 +48,7 @@ const JobCard = ({
 
   const titleBlock = tables.data?.titleBlock;
   const bom = tables.data?.bom;
+  const printingDetails = tables.data?.printingDetails;
 
   useEffect(() => {
     const fetchJobCardNo = async () => {
@@ -84,6 +87,7 @@ const JobCard = ({
       const jobCardData = {
         bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,
+        printingDetails,
         file: { id: fileId },
         jobCardForm,
         signedUrl,

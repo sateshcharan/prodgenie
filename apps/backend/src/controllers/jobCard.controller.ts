@@ -11,6 +11,7 @@ export class JobCardController {
         user: req.user,
         bom: req.body.bom,
         titleBlock: req.body.titleBlock,
+        printingDetails: req.body.printingDetails,
         jobCardForm: {
           ...req.body.jobCardForm,
           jobCardDate: new Date().toISOString().split('T')[0],

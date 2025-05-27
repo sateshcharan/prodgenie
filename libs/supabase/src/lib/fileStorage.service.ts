@@ -40,7 +40,6 @@ export class FileStorageService {
     const { data, error } = await supabase.storage
       .from(this.bucketName)
       .createSignedUrl(filePath, 60 * 60);
-
     if (error) throw new Error(`Get signed URL failed: ${error.message}`);
     if (!data?.signedUrl) throw new Error('Signed URL not generated');
 

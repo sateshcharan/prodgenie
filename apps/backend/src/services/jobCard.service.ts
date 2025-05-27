@@ -26,6 +26,7 @@ export class JobCardService {
     user,
     titleBlock,
     signedUrl,
+    printingDetails,
   }: jobCardRequest): Promise<void> {
     console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
@@ -40,9 +41,9 @@ export class JobCardService {
       jobCardForm,
       user,
       titleBlock,
+      printingDetails,
     };
 
-    console.log(typeof signedUrl);
     const drawingFile = await this.fileService.downloadToTemp(
       signedUrl,
       'drawing'
@@ -61,6 +62,11 @@ export class JobCardService {
         product.sequencePath
       );
 
+      // check if sequence has printing details
+      // if (sequence.sections.some((section) => section.name === 'printing')) {
+      //   console.log(manualContext);
+      // }
+
       for (const section of sequence.sections) {
         const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${user?.org?.name}/${section.path}`
@@ -74,6 +80,9 @@ export class JobCardService {
         const computedFieldDefs =
           formulaConfig[section.name].fields.computed || {};
 
+        console.log(manualFields);
+
+        // transform the context map to replace underscores with dots
         const transformedContextMap = Object.fromEntries(
           Object.entries(manualFields).map(([key, value]) => [
             key,

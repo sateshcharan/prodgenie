@@ -10,6 +10,10 @@ interface jobCardRequest {
   jobCardForm: jobCardForm;
   titleBlock: any;
   signedUrl: string;
+  printingDetails: {
+    detail: string;
+    color: string;
+  }[];
 }
 
 export type jobCard = typeof jobCardFields;

@@ -18,6 +18,10 @@ interface ParsedPdf {
     date?: string;
     productTitle?: string;
   };
+  printingDetails?: {
+    detail: string;
+    color: string;
+  }[];
 }
 
 export class PdfService {
@@ -98,11 +102,30 @@ export class PdfService {
     const tables = data.tables;
     const text = data.text;
 
+    const printingDetails = this.extractPrintingDetails(text);
+
     return {
       bom: this.extractBomTable(tables, config),
       // titleBlock: this.extractTitleBlock(text, config),
       titleBlock: this.extractTitleBlockFromTables(tables, config),
+      printingDetails: printingDetails,
     };
+  }
+
+  private static extractPrintingDetails(text: string) {
+    const pattern =
+      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)(?=\r?\n|$)/g;
+    const matches = [];
+    let match;
+
+    while ((match = pattern.exec(text)) !== null) {
+      matches.push({
+        detail: match[1].trim(),
+        color: match[2].trim(),
+      });
+    }
+
+    return matches;
   }
 
   private static extractBomTable(tables: any[], config: any): JobCardItem[] {

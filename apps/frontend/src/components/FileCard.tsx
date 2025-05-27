@@ -63,12 +63,18 @@ const FileCard = ({
 
     {/* File Name */}
     <CardHeader className="text-center p-0">
-      <EditableTitle
-        value={card.name.split('.')[0]}
-        onSave={(newValue) => {
-          console.log('New value:', newValue);
-        }}
-      />
+      {fileType === 'drawing' ? (
+        <EditableTitle
+          value={card.name.split('.')[0]}
+          onSave={(newValue) => {
+            // console.log('New value:', newValue);
+          }}
+          fileId={card.id.toString()}
+          fileType={fileType}
+        />
+      ) : (
+        <div className="text-center p-2">{card.name.split('.')[0]}</div>
+      )}
     </CardHeader>
   </Card>
 );
