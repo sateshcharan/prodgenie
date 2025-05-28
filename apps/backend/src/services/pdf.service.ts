@@ -114,7 +114,8 @@ export class PdfService {
 
   private static extractPrintingDetails(text: string) {
     const pattern =
-      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)(?=\r?\n|$)/g;
+      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)\s*[\r\n]+Printing Location\s*:\s*(.+?)(?=\r?\n|$)/g;
+
     const matches = [];
     let match;
 
@@ -122,6 +123,7 @@ export class PdfService {
       matches.push({
         detail: match[1].trim(),
         color: match[2].trim(),
+        location: match[3].trim(),
       });
     }
 
@@ -129,6 +131,7 @@ export class PdfService {
   }
 
   private static extractBomTable(tables: any[], config: any): JobCardItem[] {
+    console.log(tables);
     const {
       bom: { header: expectedHeaders, required: requiredHeaders },
     } = config;
@@ -160,7 +163,6 @@ export class PdfService {
       expectedHeaders.forEach((header) => {
         entry[header] = row[headerMap[header]] || '';
       });
-      // console.log(bomTable);
       return entry as JobCardItem;
     });
   }

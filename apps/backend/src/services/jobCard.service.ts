@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { Parser } from 'expr-eval';
+import get from 'lodash/get';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -9,6 +10,7 @@ import { StringService, CrudService } from '../utils/index.js';
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
+import { date } from 'zod';
 
 const parser = new Parser();
 
@@ -62,11 +64,6 @@ export class JobCardService {
         product.sequencePath
       );
 
-      // check if sequence has printing details
-      // if (sequence.sections.some((section) => section.name === 'printing')) {
-      //   console.log(manualContext);
-      // }
-
       for (const section of sequence.sections) {
         const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${user?.org?.name}/${section.path}`
@@ -79,8 +76,6 @@ export class JobCardService {
         const manualFields = formulaConfig[section.name].fields.manual || {};
         const computedFieldDefs =
           formulaConfig[section.name].fields.computed || {};
-
-        console.log(manualFields);
 
         // transform the context map to replace underscores with dots
         const transformedContextMap = Object.fromEntries(
@@ -240,12 +235,34 @@ export class JobCardService {
   }
 
   buildContext(map: Record<string, string>, source: Record<string, any>) {
-    return Object.fromEntries(
-      Object.entries(map).map(([key, expression]) => [
-        key,
-        this.evaluateSimpleConcat(expression, source),
-      ])
-    );
+    const output: Record<string, any> = {};
+
+    for (const [key, expression] of Object.entries(map)) {
+      const arrayMatch = expression.match(/^(.*)\[\](?:\.(.*))?$/);
+
+      if (arrayMatch) {
+        const arrPath = arrayMatch[1]; // e.g. "printingDetails"
+        const subPath = arrayMatch[2]; // e.g. "name" or undefined
+
+        const arr = get(source, arrPath);
+
+        if (Array.isArray(arr)) {
+          if (subPath) {
+            output[key] = arr.map((item) =>
+              this.evaluateSimpleConcat(subPath, item)
+            );
+          } else {
+            output[key] = arr;
+          }
+        } else {
+          output[key] = [];
+        }
+      } else {
+        output[key] = this.evaluateSimpleConcat(expression, source);
+      }
+    }
+
+    return output;
   }
 
   private evaluateSimpleConcat(

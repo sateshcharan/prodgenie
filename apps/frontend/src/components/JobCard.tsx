@@ -93,7 +93,7 @@ const JobCard = ({
         signedUrl,
       };
       await generateJobCard(jobCardData);
-      navigate('/dashboard/jobCard');
+      // navigate('/dashboard/jobCard');
 
       toast.success('Your Job Card is being generated. Please wait.');
       setActiveItem('item-2');

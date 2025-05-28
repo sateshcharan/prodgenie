@@ -6,15 +6,48 @@ export class TemplateService {
     try {
       const absolutePath = path.resolve(templatePath);
       const templateContent = await fs.readFile(absolutePath, 'utf-8');
-      const populated = templateContent.replace(/{{(.*?)}}/g, (_, key) => {
+
+      // First, handle array block sections
+      let populated = templateContent.replace(
+        /{{#(.*?)\[\]}}([\s\S]*?){{\/\1\[\]}}/g,
+        (_, arrayKey, innerTemplate) => {
+          const arr = item[arrayKey];
+          if (!Array.isArray(arr)) return '';
+
+          return arr
+            .map((obj) =>
+              innerTemplate.replace(/{{(.*?)}}/g, (_, field) => {
+                return obj[field.trim()] ?? '';
+              })
+            )
+            .join('\n');
+        }
+      );
+
+      // Then, handle single value keys
+      populated = populated.replace(/{{(.*?)}}/g, (_, key) => {
         const value = item[key.trim()];
-        return value;
+        return value !== undefined ? value : '';
       });
+
       return populated;
     } catch (error) {
       console.error(`Error reading template: ${error}`);
       return '';
     }
+
+    // try {
+    //   const absolutePath = path.resolve(templatePath);
+    //   const templateContent = await fs.readFile(absolutePath, 'utf-8');
+    //   const populated = templateContent.replace(/{{(.*?)}}/g, (_, key) => {
+    //     const value = item[key.trim()];
+    //     return value;
+    //   });
+    //   return populated;
+    // } catch (error) {
+    //   console.error(`Error reading template: ${error}`);
+    //   return '';
+    // }
   }
 
   async combineTemplates(templates: string[]): Promise<string> {
