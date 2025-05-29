@@ -3,6 +3,12 @@ import requests
 import pdfplumber
 import io
 import json
+import argparse
+
+try:
+    import camelot
+except ImportError:
+    camelot = None
 
 class PdfService:
 
@@ -10,24 +16,29 @@ class PdfService:
     def extract_tables_from_pdf(pdf_bytes: bytes) -> list:
         all_tables = []
         table_settings = {
-            "vertical_strategy": "lines",     
-            "horizontal_strategy": "lines",   
-            "intersection_tolerance": 5,      
-            "snap_tolerance": 3,              
-            "join_tolerance": 3,              
-            "edge_min_length": 3,             
+            "vertical_strategy": "lines",
+            "horizontal_strategy": "lines",
+            "intersection_tolerance": 5,
+            "snap_tolerance": 3,
+            "join_tolerance": 3,
+            "edge_min_length": 3,
             "min_words_vertical": 1,
             "min_words_horizontal": 1,
         }
 
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
             for page in pdf.pages:
-                # tables = page.extract_tables(table_settings=table_settings)
-                tables = page.extract_tables()
+                tables = page.extract_tables(table_settings=table_settings)
                 if tables:
-                    # all_tables.extend(tables)
                     all_tables.append(tables)
         return all_tables
+
+    @staticmethod
+    def extract_with_camelot(pdf_path: str) -> list:
+        if not camelot:
+            raise ImportError("Camelot not installed. Try: pip install camelot-py[cv]")
+        tables = camelot.read_pdf(pdf_path, pages='all', flavor='lattice')
+        return [t.data for t in tables]
 
     @staticmethod
     def extract_text_from_pdf(pdf_bytes: bytes) -> str:
@@ -40,30 +51,38 @@ class PdfService:
         return text
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python pdfParse.py <signed_url>", flush=True)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Parse a PDF using multiple methods.")
+    parser.add_argument("signed_url", help="Signed URL of the PDF file")
+    parser.add_argument("--method", choices=["pdfplumber", "camelot"], default="pdfplumber")
+    args = parser.parse_args()
 
-    signed_url = sys.argv[1]
-    response = requests.get(signed_url)
-
+    response = requests.get(args.signed_url)
     if response.status_code != 200:
         print(f"Failed to download PDF: {response.status_code}", flush=True)
         sys.exit(1)
 
     pdf_bytes = response.content
+    pdf_path = "/tmp/input.pdf"
+    with open(pdf_path, "wb") as f:
+        f.write(pdf_bytes)
 
-    tables = PdfService.extract_tables_from_pdf(pdf_bytes)
+    try:
+        if args.method == "pdfplumber":
+            tables = PdfService.extract_tables_from_pdf(pdf_bytes)
+        elif args.method == "camelot":
+            tables = PdfService.extract_with_camelot(pdf_path)
+        else:
+            tables = []
+    except Exception as e:
+        print(json.dumps({"error": str(e)}), flush=True)
+        sys.exit(1)
+
     text = PdfService.extract_text_from_pdf(pdf_bytes)
-    
 
-    result = {
+    print(json.dumps({
         "tables": tables,
         "text": text
-    }
-
-    # Print the result JSON
-    print(json.dumps(result), flush=True)
+    }, indent=2), flush=True)
 
 if __name__ == "__main__":
     main()

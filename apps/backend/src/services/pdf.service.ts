@@ -43,20 +43,28 @@ export class PdfService {
       __dirname,
       '../../../apps/pdf-parser/pdfParse.py'
     );
-    // const pythonPath = path.join(
-    //   __dirname,
-    //   '../../../apps/pdf-parser/venv/bin/python'
-    // );
-    const pythonPath = '/opt/venv/bin/python3';
+    const pythonPath = path.join(
+      __dirname,
+      '../../../apps/pdf-parser/venv/bin/python'
+    );
+    // const pythonPath = '/opt/venv/bin/python3';
+
+    const method = 'pdfplumber'; //pdfplumber || camelot
 
     return new Promise((resolve, reject) => {
-      const python = spawn(pythonPath, [scriptPath, signedUrl]);
+      const python = spawn(pythonPath, [
+        scriptPath,
+        signedUrl,
+        '--method',
+        method,
+      ]);
+
       let stdout = '';
       let stderr = '';
 
       python.stdout.on('data', (data) => {
         stdout += data.toString();
-        // console.log(stdout);
+        console.log(stdout);
       });
       python.stderr.on('data', (data) => {
         stderr += data.toString();
@@ -127,12 +135,8 @@ export class PdfService {
 
     const bomTable = tables.find((table: any[][]) =>
       table.some((row) => {
-        console.log(table);
-        // const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-        const normalized = row.map((cell) =>
-          // return cell.toLowerCase().trim() || '';
-          typeof cell === 'string' ? cell.toLowerCase().trim() : ''
-        );
+        // console.log(table);
+        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
 
         return requiredHeaders.every((req) => normalized.includes(req));
       })
@@ -161,33 +165,33 @@ export class PdfService {
     });
   }
 
-  private static extractTitleBlock(
-    text: string,
-    config: any
-  ): ParsedPdf['titleBlock'] {
-    const headers = config.titleBlock.header;
-    const lines = text
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
+  // private static extractTitleBlock(
+  //   text: string,
+  //   config: any
+  // ): ParsedPdf['titleBlock'] {
+  //   const headers = config.titleBlock.header;
+  //   const lines = text
+  //     .split('\n')
+  //     .map((line) => line.trim())
+  //     .filter(Boolean);
 
-    const stringService = new StringService();
-    const titleBlock: ParsedPdf['titleBlock'] = {};
+  //   const stringService = new StringService();
+  //   const titleBlock: ParsedPdf['titleBlock'] = {};
 
-    for (const key of headers) {
-      const line = lines.find((line) =>
-        line.toLowerCase().includes(stringService.camelToNormal(key))
-      );
-      if (line) {
-        titleBlock[key as keyof ParsedPdf['titleBlock']] = line
-          .split(':')
-          .pop()
-          ?.trim();
-      }
-    }
-    console.log(titleBlock);
-    return titleBlock;
-  }
+  //   for (const key of headers) {
+  //     const line = lines.find((line) =>
+  //       line.toLowerCase().includes(stringService.camelToNormal(key))
+  //     );
+  //     if (line) {
+  //       titleBlock[key as keyof ParsedPdf['titleBlock']] = line
+  //         .split(':')
+  //         .pop()
+  //         ?.trim();
+  //     }
+  //   }
+  //   console.log(titleBlock);
+  //   return titleBlock;
+  // }
 
   private static extractTitleBlockFromTables(
     tables: any[][],
