@@ -43,10 +43,11 @@ export class PdfService {
       __dirname,
       '../../../apps/pdf-parser/pdfParse.py'
     );
-    const pythonPath = path.join(
-      __dirname,
-      '../../../apps/pdf-parser/venv/bin/python'
-    );
+    // const pythonPath = path.join(
+    //   __dirname,
+    //   '../../../apps/pdf-parser/venv/bin/python'
+    // );
+    const pythonPath = '/opt/venv/bin/python';
 
     return new Promise((resolve, reject) => {
       const python = spawn(pythonPath, [scriptPath, signedUrl]);
@@ -126,12 +127,13 @@ export class PdfService {
 
     const bomTable = tables.find((table: any[][]) =>
       table.some((row) => {
+        console.log(table);
         // const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-        const normalized = row.map((cell) => {
-          console.log(cell);
-          return cell.toLowerCase().trim() || '';
-        });
-        
+        const normalized = row.map((cell) =>
+          // return cell.toLowerCase().trim() || '';
+          typeof cell === 'string' ? cell.toLowerCase().trim() : ''
+        );
+
         return requiredHeaders.every((req) => normalized.includes(req));
       })
     );
