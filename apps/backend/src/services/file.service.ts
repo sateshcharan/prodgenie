@@ -121,7 +121,7 @@ export class FileService {
       ? `${filename}${extension.startsWith('.') ? extension : `.${extension}`}`
       : filename;
 
-    const tempFilePath = path.join(tempDir, filenameWithExt);
+    const tempFilePath = path.join(tempDir, filenameWithExt.toLowerCase());
     const response = await fetch(signedUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch file: ${response.statusText}`);

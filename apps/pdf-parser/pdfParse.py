@@ -25,8 +25,8 @@ class PdfService:
                 # tables = page.extract_tables(table_settings=table_settings)
                 tables = page.extract_tables()
                 if tables:
-                    all_tables.extend(tables)
-                    # all_tables.append(tables)
+                    # all_tables.extend(tables)
+                    all_tables.append(tables)
         return all_tables
 
     @staticmethod

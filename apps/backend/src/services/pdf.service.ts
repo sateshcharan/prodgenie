@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
@@ -21,6 +22,7 @@ interface ParsedPdf {
   printingDetails?: {
     detail: string;
     color: string;
+    location: string;
   }[];
 }
 
@@ -51,8 +53,14 @@ export class PdfService {
       let stdout = '';
       let stderr = '';
 
-      python.stdout.on('data', (data) => (stdout += data.toString()));
-      python.stderr.on('data', (data) => (stderr += data.toString()));
+      python.stdout.on('data', (data) => {
+        stdout += data.toString();
+        // console.log(stdout);
+      });
+      python.stderr.on('data', (data) => {
+        stderr += data.toString();
+        // console.log(stderr);
+      });
 
       python.on('close', (code) => {
         if (code === 0) {
@@ -102,36 +110,15 @@ export class PdfService {
     const tables = data.tables;
     const text = data.text;
 
-    const printingDetails = this.extractPrintingDetails(text);
-
     return {
       bom: this.extractBomTable(tables, config),
       // titleBlock: this.extractTitleBlock(text, config),
       titleBlock: this.extractTitleBlockFromTables(tables, config),
-      printingDetails: printingDetails,
+      printingDetails: this.extractPrintingDetails(text),
     };
   }
 
-  private static extractPrintingDetails(text: string) {
-    const pattern =
-      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)\s*[\r\n]+Printing Location\s*:\s*(.+?)(?=\r?\n|$)/g;
-
-    const matches = [];
-    let match;
-
-    while ((match = pattern.exec(text)) !== null) {
-      matches.push({
-        detail: match[1].trim(),
-        color: match[2].trim(),
-        location: match[3].trim(),
-      });
-    }
-
-    return matches;
-  }
-
   private static extractBomTable(tables: any[], config: any): JobCardItem[] {
-    console.log(tables);
     const {
       bom: { header: expectedHeaders, required: requiredHeaders },
     } = config;
@@ -139,7 +126,12 @@ export class PdfService {
 
     const bomTable = tables.find((table: any[][]) =>
       table.some((row) => {
-        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+        // const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+        const normalized = row.map((cell) => {
+          console.log(cell);
+          return cell.toLowerCase().trim() || '';
+        });
+        
         return requiredHeaders.every((req) => normalized.includes(req));
       })
     );
@@ -225,6 +217,7 @@ export class PdfService {
       const matched = temp.find((item) => {
         return (
           item.length < 50 && item.toLowerCase().includes(normalizedHeader)
+          // item.length < 50 && item.includes(normalizedHeader)
         );
       });
 
@@ -239,18 +232,37 @@ export class PdfService {
     return titleBlock;
   }
 
+  private static extractPrintingDetails(text: string) {
+    const pattern =
+      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)\s*[\r\n]+Printing Location\s*:\s*(.+?)(?=\r?\n|$)/g;
+
+    const matches = [];
+    let match;
+
+    while ((match = pattern.exec(text)) !== null) {
+      matches.push({
+        detail: match[1].trim(),
+        color: match[2].trim(),
+        location: match[3].trim(),
+      });
+    }
+
+    return matches;
+  }
+
   async generatePDF(htmlContent: string, jobCardNo: string): Promise<string> {
     const dirPath = path.join('./tmp/jobcards', jobCardNo);
     const outputPath = path.join(dirPath, `${jobCardNo}.pdf`);
-    const drawingPath = path.join('./tmp/drawing.pdf'); // flat path, not inside dirPath
+    const drawingPath = path.join('./tmp/drawing.pdf');
 
+    // Ensure the directory exists
     await fs.mkdir(dirPath, { recursive: true });
 
     const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
     try {
+      const page = await browser.newPage();
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
       await page.pdf({
         path: outputPath,
         format: 'A4',
@@ -261,40 +273,42 @@ export class PdfService {
       await browser.close();
     }
 
-    // Merge job card + drawing
+    // Merge with drawing.pdf if it exists
     try {
-      const jobCardBytes = await fs.readFile(outputPath);
-      const drawingBytes = await fs.readFile(drawingPath);
+      if (existsSync(drawingPath)) {
+        const jobCardPdf = await PDFDocument.load(
+          await fs.readFile(outputPath)
+        );
+        const drawingPdf = await PDFDocument.load(
+          await fs.readFile(drawingPath)
+        );
 
-      const jobCardPdf = await PDFDocument.load(jobCardBytes);
-      const drawingPdf = await PDFDocument.load(drawingBytes);
-      const mergedPdf = await PDFDocument.create();
+        const mergedPdf = await PDFDocument.create();
 
-      const jobCardPages = await mergedPdf.copyPages(
-        jobCardPdf,
-        jobCardPdf.getPageIndices()
-      );
-      jobCardPages.forEach((page) => mergedPdf.addPage(page));
+        const jobCardPages = await mergedPdf.copyPages(
+          jobCardPdf,
+          jobCardPdf.getPageIndices()
+        );
+        jobCardPages.forEach((page) => mergedPdf.addPage(page));
 
-      const drawingPages = await mergedPdf.copyPages(
-        drawingPdf,
-        drawingPdf.getPageIndices()
-      );
-      drawingPages.forEach((page) => {
-        const { width, height } = page.getSize();
+        const drawingPages = await mergedPdf.copyPages(
+          drawingPdf,
+          drawingPdf.getPageIndices()
+        );
+        drawingPages.forEach((page) => {
+          const { width, height } = page.getSize();
+          if (width > height) {
+            page.setRotation(degrees(90));
+          }
+          mergedPdf.addPage(page);
+        });
 
-        // Rotate if landscape (width > height)
-        if (width > height) {
-          page.setRotation(degrees(90));
-        }
-
-        mergedPdf.addPage(page);
-      });
-
-      const mergedBytes = await mergedPdf.save();
-      await fs.writeFile(outputPath, mergedBytes);
+        await fs.writeFile(outputPath, await mergedPdf.save());
+      } else {
+        console.warn(`Drawing not appended: File not found at ${drawingPath}`);
+      }
     } catch (err: any) {
-      console.warn('Drawing not appended:', err.message);
+      console.warn('Error merging drawing:', err.message);
     }
 
     return outputPath;

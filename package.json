@@ -50,6 +50,7 @@
     "expr-eval": "^2.0.2",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
+    "framer-motion": "^12.15.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",

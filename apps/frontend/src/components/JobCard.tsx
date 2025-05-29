@@ -60,14 +60,23 @@ const JobCard = ({
     fetchJobCardNo();
   }, []);
 
-  // Initialize BOM only once
+  // // Initialize BOM only once
+  // useEffect(() => {
+  //   if (tables?.data?.bom?.length) {
+  //     setBom(tables.data.bom);
+  //     // Initial state for selected items (default all items selected)
+  //     setSelectedItems(tables.data.bom.map((item) => item.slNo));
+  //   }
+  // }, [tables, setBom, setSelectedItems]);
+
   useEffect(() => {
     if (tables?.data?.bom?.length) {
       setBom(tables.data.bom);
-      // Initial state for selected items (default all items selected)
       setSelectedItems(tables.data.bom.map((item) => item.slNo));
+    } else {
+      setSelectedItems([]); // reset when there's no BOM
     }
-  }, [tables, setBom, setSelectedItems]);
+  }, [fileId, tables?.data?.bom]);
 
   const form = useForm<JobCardFormValues>({
     resolver: zodResolver(jobCardSchema),
