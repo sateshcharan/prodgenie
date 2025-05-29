@@ -22,12 +22,14 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install -r apps/pdf-parser/requirements.txt
 
-# Add PNPM global binary path
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Install concurrently
 RUN pnpm add -g concurrently
+
+# Expose the backend port
+EXPOSE 3000
 
 # Launch both services
 CMD ["sh", "-c", "concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]

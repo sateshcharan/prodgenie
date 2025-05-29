@@ -47,7 +47,7 @@ export class PdfService {
     //   __dirname,
     //   '../../../apps/pdf-parser/venv/bin/python'
     // );
-    const pythonPath = '/opt/venv/bin/python';
+    const pythonPath = '/opt/venv/bin/python3';
 
     return new Promise((resolve, reject) => {
       const python = spawn(pythonPath, [scriptPath, signedUrl]);
