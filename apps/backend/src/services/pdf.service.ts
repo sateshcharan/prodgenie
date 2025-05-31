@@ -34,6 +34,8 @@ export class PdfService {
     const parsedData = await this.runPythonParser(signedUrl);
     const config = await this.loadOrgConfig(user);
 
+    console.log(parsedData, config);
+
     return this.processParsedPdf(parsedData, config);
   }
 
@@ -47,24 +49,19 @@ export class PdfService {
       __dirname,
       '../../../apps/pdf-parser/venv/bin/python'
     );
+
+    // for dockerized setup
     // const pythonPath = '/opt/venv/bin/python3';
 
-    const method = 'pdfplumber'; //pdfplumber || camelot
-
     return new Promise((resolve, reject) => {
-      const python = spawn(pythonPath, [
-        scriptPath,
-        signedUrl,
-        '--method',
-        method,
-      ]);
+      const python = spawn(pythonPath, [scriptPath, signedUrl]);
 
       let stdout = '';
       let stderr = '';
 
       python.stdout.on('data', (data) => {
         stdout += data.toString();
-        console.log(stdout);
+        // console.log(stdout);
       });
       python.stderr.on('data', (data) => {
         stderr += data.toString();
@@ -110,24 +107,98 @@ export class PdfService {
 
   private static async loadOrgConfig(user: any): Promise<any> {
     const crudService = new CrudService();
-    return crudService.fetchJsonFromSignedUrl(
+
+    const onboardingConfig = await crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/onboarding.json`
     );
+
+    const bomConfig = {
+      header: {
+        expected: onboardingConfig.bom.header.expected,
+        required: onboardingConfig.bom.header.required,
+      },
+    };
+
+    const titleBlockConfig = {
+      header: {
+        expected: onboardingConfig.titleBlock,
+        required: onboardingConfig.titleBlock,
+      },
+    };
+
+    const printingDetailsConfig = {
+      header: {
+        expected: onboardingConfig.printingDetails.header.expected,
+        required: onboardingConfig.printingDetails.header.required,
+      },
+    };
+
+    return { bomConfig, titleBlockConfig, printingDetailsConfig };
   }
 
   private static processParsedPdf(data: any, config: any): ParsedPdf {
     const tables = data.tables;
     const text = data.text;
 
+    console.log(bom);
+
+    const bom = this.extractBomFromTable(tables, config.bomConfig);
+    const titleBlock = this.extractTitleBlockFromTables(
+      tables,
+      config.titleBlockConfig
+    );
+    const printingDetails = this.extractPrintingDetails(
+      text,
+      config.printingDetailsConfig
+    );
+    // const bom = this.extractBomFromText(text, config);
+
     return {
-      bom: this.extractBomTable(tables, config),
-      // titleBlock: this.extractTitleBlock(text, config),
-      titleBlock: this.extractTitleBlockFromTables(tables, config),
-      printingDetails: this.extractPrintingDetails(text),
+      bom: bom,
+      titleBlock: titleBlock,
+      printingDetails: printingDetails,
     };
   }
 
-  private static extractBomTable(tables: any[], config: any): JobCardItem[] {
+  private static extractFromTable(tables: any[][], config: any) {
+    const {
+      header: { expected: expectedHeaders, required: requiredHeaders },
+    } = config;
+
+    const stringService = new StringService();
+
+    const Table = tables.find((table: any[][]) =>
+      table.some((row) => {
+        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+        return requiredHeaders.every((req) => normalized.includes(req));
+      })
+    );
+
+    if (!Table) return [];
+
+    const headerIndex = Table.findIndex((row) => {
+      const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+      return requiredHeaders.every((req) => normalized.includes(req));
+    });
+
+    if (headerIndex < 0) return [];
+
+    const headerRow = Table[headerIndex];
+    const headerMap = Object.fromEntries(
+      headerRow.map((cell, i) => [stringService.camelCase(cell), i])
+    );
+
+    return Table.slice(headerIndex + 1).map((row) => {
+      return Object.fromEntries(
+        Object.entries(headerMap).map(([key, index]) => [key, row[index]])
+      );
+    });
+  }
+
+  private static extractBomFromTable(
+    tables: any[],
+    config: any
+  ): JobCardItem[] {
     const {
       bom: { header: expectedHeaders, required: requiredHeaders },
     } = config;
@@ -135,9 +206,7 @@ export class PdfService {
 
     const bomTable = tables.find((table: any[][]) =>
       table.some((row) => {
-        // console.log(table);
         const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-
         return requiredHeaders.every((req) => normalized.includes(req));
       })
     );
@@ -163,6 +232,64 @@ export class PdfService {
       });
       return entry as JobCardItem;
     });
+  }
+
+  private static extractBomFromText(text: string, config: any): JobCardItem[] {
+    const {
+      bom: { header: expectedHeaders, required: requiredHeaders },
+    } = config;
+    const stringService = new StringService();
+
+    const lines = text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    // Step 1: Locate header line
+    const headerLineIndex = lines.findIndex((line) => {
+      const normalized = line.toLowerCase();
+      return requiredHeaders.every((req) => normalized.includes(req));
+    });
+
+    if (headerLineIndex === -1) return [];
+
+    const headerLine = lines[headerLineIndex]
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const headerTokens = headerLine.split(' ');
+
+    // Build header map based on expected header names and their order
+    const headerMap: Record<string, number> = {};
+    expectedHeaders.forEach((header) => {
+      const index = headerTokens.findIndex((token) =>
+        token.includes(header.toLowerCase())
+      );
+      if (index !== -1) headerMap[header] = index;
+    });
+
+    // Step 2: Parse data rows
+    const dataLines = lines.slice(headerLineIndex + 1);
+
+    const rows: JobCardItem[] = [];
+    for (const line of dataLines) {
+      const cells = line.split(/\s+/);
+      if (cells.length < 4) continue; // likely not a valid row
+
+      const entry: Record<string, string> = {};
+      expectedHeaders.forEach((header) => {
+        const i = headerMap[header];
+        entry[header] = i !== undefined ? cells[i] || '' : '';
+      });
+
+      // Add row only if at least one key field is non-empty
+      if (Object.values(entry).some((v) => v)) {
+        rows.push(entry as JobCardItem);
+      }
+    }
+
+    return rows;
   }
 
   // private static extractTitleBlock(
@@ -238,7 +365,7 @@ export class PdfService {
     return titleBlock;
   }
 
-  private static extractPrintingDetails(text: string) {
+  private static extractPrintingDetails(text: string, config: any) {
     const pattern =
       /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)\s*[\r\n]+Printing Location\s*:\s*(.+?)(?=\r?\n|$)/g;
 
