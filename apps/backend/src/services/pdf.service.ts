@@ -82,12 +82,11 @@ export class PdfService {
 
   private static async loadOrgConfig(user: any): Promise<any> {
     const crudService = new CrudService();
+    const setupConfig: Record<string, any> = {};
 
     const onboardingConfig = await crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/onboarding.json`
     );
-
-    const setupConfig: Record<string, any> = {};
 
     Object.entries(onboardingConfig.setup).forEach(([key, value]) => {
       setupConfig[`${key}Config`] = value;
@@ -111,7 +110,6 @@ export class PdfService {
       config.titleBlockConfig
     );
 
-    console.log(titleBlock);
     const bom = this.extractBomFromTables(tables, config.bomConfig);
 
     return {
@@ -201,8 +199,6 @@ export class PdfService {
         );
       });
 
-      console.log(header, matched);
-
       if (matched) {
         // Split by either ':' or '.' using regex
         const parts = matched.split(/[:.]/);
@@ -219,22 +215,33 @@ export class PdfService {
     const {
       header: { expected: expectedHeaders, required: requiredHeaders },
     } = config;
-
-    const pattern =
-      /Printing Detail\s*:\s*(.+?)\s*[\r\n]+Printing Colour\s*:\s*(.+?)\s*[\r\n]+Printing Location\s*:\s*(.+?)(?=\r?\n|$)/g;
-
     const matches = [];
     let match;
 
-    while ((match = pattern.exec(text)) !== null) {
-      matches.push({
-        detail: match[1].trim(),
-        color: match[2].trim(),
-        location: match[3].trim(),
-      });
-    }
+    const pattern = this.buildRegexFromHeaders(expectedHeaders);
 
+    while ((match = pattern.exec(text)) !== null) {
+      const entry: Record<string, string> = {};
+      expectedHeaders.forEach((header, index) => {
+        entry[header] = match[index + 1] || '';
+      });
+      matches.push(entry);
+    }
     return matches;
+  }
+
+  private static buildRegexFromHeaders(headers: string[]): RegExp {
+    const fieldPattern = headers
+      .map((field) => {
+        // Convert camelCase to spaced Title Case for matching, e.g., printingDetail -> Printing Detail
+        const label = field
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (c) => c.toUpperCase());
+        return `${label}\\s*:\\s*(.+?)\\s*`;
+      })
+      .join('[\\r\\n]+');
+
+    return new RegExp(`${fieldPattern}(?=\\r?\\n|$)`, 'g');
   }
 
   private static extractFromTable(tables: any[][], config: any) {
