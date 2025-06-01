@@ -29,7 +29,8 @@ class PdfService:
 
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
             for page in pdf.pages:
-                tables = page.extract_tables(table_settings=table_settings)
+                # tables = page.extract_tables(table_settings=table_settings)
+                tables = page.extract_tables()
                 if tables:
                     all_tables.append(tables)
         return all_tables
@@ -71,12 +72,12 @@ def main():
 
     try:
         tables = PdfService.extract_tables_with_pdfplumber(pdf_bytes)
+        text = PdfService.extract_text_with_pdfplumber(pdf_bytes)
 
     except Exception as e:
         print(json.dumps({"error": str(e)}), flush=True)
         sys.exit(1)
 
-    text = PdfService.extract_text_with_pdfplumber(pdf_bytes)
 
     print(json.dumps({"tables": tables, "text": text}, indent=2), flush=True)
 
