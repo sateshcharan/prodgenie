@@ -8,6 +8,7 @@ import axios, { head } from 'axios';
 
 import { StringService, CrudService } from '../utils/index.js';
 import { JobCardItem } from '@prodgenie/libs/types';
+import { table } from 'console';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -101,21 +102,19 @@ export class PdfService {
     const tables = data.tables;
     const text = data.text;
 
-    const printingDetails = this.extractPrintingDetails(
-      text,
-      config.printingDetailConfig
-    );
-    const titleBlock = this.extractTitleBlockFromTables(
-      tables,
-      config.titleBlockConfig
-    );
-
     const bom = this.extractBomFromTables(tables, config.bomConfig);
+    console.log(bom);
 
     return {
       bom,
-      titleBlock,
-      printingDetails,
+      titleBlock: this.extractTitleBlockFromTables(
+        tables,
+        config.titleBlockConfig
+      ),
+      printingDetails: this.extractPrintingDetails(
+        text,
+        config.printingDetailConfig
+      ),
     };
   }
 
@@ -128,22 +127,51 @@ export class PdfService {
     } = config;
     const stringService = new StringService();
 
-    const bomTable = tables.find((table: any[][]) =>
-      table.some((row) => {
-        const normalized = row.map((cell) => {
-          return (cell || '').toLowerCase().trim();
-        });
-        return requiredHeaders.every((req) => normalized.includes(req));
-      })
-    );
+    // Recursively clean table
+    function cleanTable(table: any): any {
+      if (Array.isArray(table)) {
+        const cleaned = table
+          .map(cleanTable)
+          .filter(
+            (row) =>
+              !(
+                Array.isArray(row) &&
+                row.every((cell) => cell === null || cell === '')
+              ) &&
+              row !== null &&
+              row !== ''
+          );
+
+        // Optional flatten [ ['value'] ] to 'value'
+        // if (
+        //   cleaned.length === 1 &&
+        //   Array.isArray(cleaned[0]) &&
+        //   cleaned[0].length === 1
+        // ) {
+        //   return cleaned[0][0];
+        // }
+        return cleaned;
+      }
+      return table;
+    }
+
+    // Clean every table individually
+    tables = tables.map(cleanTable);
+
+    const bomTable = tables.find((table: any[][]) => {
+      console.log(table); //properly table received here
+      return table.some((row) => {
+        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+        return requiredHeaders.every((req) =>
+          normalized.some((cell) => cell.includes(req.toLowerCase()))
+        );
+      });
+    });
 
     if (!bomTable) return [];
 
     const headerIndex = bomTable.findIndex((row) => {
-      // const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-      const normalized = row.map((cell) => {
-        return (cell || '').toLowerCase().trim();
-      });
+      const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
       return requiredHeaders.every((req) => normalized.includes(req));
     });
 
@@ -192,19 +220,41 @@ export class PdfService {
         .camelToNormal(header)
         .toLowerCase();
 
-      const matched = temp.find((item) => {
-        return (
-          // item.length < 50 && item.toLowerCase().includes(normalizedHeader)
-          item.length < 50 && item.includes(normalizedHeader)
-        );
-      });
+      const matchedRow = temp.find(
+        (row) =>
+          Array.isArray(row) &&
+          row
+            .filter(
+              (cell): cell is string =>
+                typeof cell === 'string' && cell.trim() !== ''
+            )
+            .some(
+              (cell) =>
+                cell.length < 50 &&
+                cell.toLowerCase().includes(normalizedHeader)
+            )
+      );
 
-      if (matched) {
-        // Split by either ':' or '.' using regex
-        const parts = matched.split(/[:.]/);
-        const value =
-          parts.length > 1 ? parts.slice(1).join(':').trim() : matched.trim();
-        titleBlock[header as keyof ParsedPdf['titleBlock']] = value;
+      if (matchedRow) {
+        // Flatten and clean the row before processing
+        const flatRow = matchedRow.filter(
+          (cell): cell is string =>
+            typeof cell === 'string' && cell.trim() !== ''
+        );
+
+        // Find the matching cell again to extract the value
+        const matchingCell = flatRow.find((cell) =>
+          cell.toLowerCase().includes(normalizedHeader)
+        );
+
+        if (matchingCell) {
+          const parts = matchingCell.split(/[:.]/);
+          const value =
+            parts.length > 1
+              ? parts.slice(1).join(':').trim()
+              : matchingCell.trim();
+          titleBlock[header as keyof ParsedPdf['titleBlock']] = value;
+        }
       }
     }
 
