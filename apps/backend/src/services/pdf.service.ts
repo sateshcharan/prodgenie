@@ -9,6 +9,7 @@ import axios, { head } from 'axios';
 import { StringService, CrudService } from '../utils/index.js';
 import { JobCardItem } from '@prodgenie/libs/types';
 import { table } from 'console';
+import { title } from 'process';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -20,11 +21,7 @@ interface ParsedPdf {
     date?: string;
     productTitle?: string;
   };
-  printingDetails?: {
-    detail: string;
-    color: string;
-    location: string;
-  }[];
+  printingDetails?: any;
 }
 
 export class PdfService {
@@ -34,7 +31,6 @@ export class PdfService {
   ): Promise<ParsedPdf> {
     const parsedData = await this.runPythonParser(signedUrl);
     const config = await this.loadOrgConfig(user);
-
     return this.processParsedPdf(parsedData, config);
   }
 
@@ -99,35 +95,6 @@ export class PdfService {
   }
 
   private static processParsedPdf(data: any, config: any): ParsedPdf {
-    const tables = data.tables;
-    const text = data.text;
-
-    const bom = this.extractBomFromTables(tables, config.bomConfig);
-    console.log(bom);
-
-    return {
-      bom,
-      titleBlock: this.extractTitleBlockFromTables(
-        tables,
-        config.titleBlockConfig
-      ),
-      printingDetails: this.extractPrintingDetails(
-        text,
-        config.printingDetailConfig
-      ),
-    };
-  }
-
-  private static extractBomFromTables(
-    tables: any[][],
-    config: any
-  ): JobCardItem[] {
-    const {
-      header: { expected: expectedHeaders, required: requiredHeaders },
-    } = config;
-    const stringService = new StringService();
-
-    // Recursively clean table
     function cleanTable(table: any): any {
       if (Array.isArray(table)) {
         const cleaned = table
@@ -141,54 +108,193 @@ export class PdfService {
               row !== null &&
               row !== ''
           );
-
-        // Optional flatten [ ['value'] ] to 'value'
-        // if (
-        //   cleaned.length === 1 &&
-        //   Array.isArray(cleaned[0]) &&
-        //   cleaned[0].length === 1
-        // ) {
-        //   return cleaned[0][0];
-        // }
         return cleaned;
       }
       return table;
     }
 
-    // Clean every table individually
-    tables = tables.map(cleanTable);
+    const text = data.text;
+    const tables = data.tables.map(cleanTable);
 
-    const bomTable = tables.find((table: any[][]) => {
-      console.log(table); //properly table received here
-      return table.some((row) => {
-        const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-        return requiredHeaders.every((req) =>
-          normalized.some((cell) => cell.includes(req.toLowerCase()))
+    return {
+      bom: this.extractBomFromTables(tables, config.bomConfig),
+      titleBlock: this.extractTitleBlockFromTables(
+        tables,
+        config.titleBlockConfig
+      ),
+      printingDetails: this.extractPrintingDetails(
+        text,
+        config.printingDetailConfig
+      ),
+    };
+  }
+
+  // private static extractBomFromTables(
+  //   tables: any[][],
+  //   config: any
+  // ): JobCardItem[] {
+  //   const {
+  //     header: { expected: expectedHeaders, required: requiredHeaders },
+  //   } = config;
+  //   const stringService = new StringService();
+
+  //   const bomTable = tables.find((table: any[][]) => {
+  //     console.log(table);
+  //     return table.some((row) => {
+  //       const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+  //       return requiredHeaders.every((req) =>
+  //         normalized.some((cell) => cell.includes(req.toLowerCase()))
+  //       );
+  //     });
+  //   });
+
+  //   if (!bomTable) return [];
+
+  //   const headerIndex = bomTable.findIndex((row) => {
+  //     const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
+  //     return requiredHeaders.every((req) => normalized.includes(req));
+  //   });
+
+  //   if (headerIndex < 0) return [];
+
+  //   const headerRow = bomTable[headerIndex];
+  //   const headerMap = Object.fromEntries(
+  //     headerRow.map((cell, i) => [stringService.camelCase(cell), i])
+  //   );
+
+  //   return bomTable.slice(headerIndex + 1).map((row) => {
+  //     const entry: Record<string, string> = {};
+  //     expectedHeaders.forEach((header) => {
+  //       entry[header] = row[headerMap[header]] || '';
+  //     });
+  //     return entry as JobCardItem;
+  //   });
+  // }
+
+  private static extractBomFromTables(
+    tables: any[][][],
+    config: any
+  ): JobCardItem[] {
+    const {
+      header: { expected: expectedHeaders, required: requiredHeaders },
+    } = config;
+    const stringService = new StringService();
+
+    const MATCH_THRESHOLD = 0.75;
+
+    let bestTable: any[][] = [];
+    let bestHeaderRowIndex = -1;
+    let bestScore = 0;
+
+    // const normalize = (input: any) =>
+    //   input.toLowerCase().replace(/\s+/g, ' ').trim();
+
+    tables.forEach((table, tableIndex) => {
+      if (!Array.isArray(table) || table.length === 0) return;
+
+      let tableBestScore = 0;
+      let tableBestHeaderIndex = -1;
+
+      table.forEach((row, rowIndex) => {
+        if (!Array.isArray(row) || row.length < 2) {
+          // console.log(`⚠️ Skipping row ${rowIndex}: too few columns`);
+          return;
+        }
+
+        if ((row[0] || '').toString().length > 100) {
+          // console.log(`⚠️ Skipping row ${rowIndex}: first cell too long`);
+          return;
+        }
+
+        const normalizedHeaders = row[0].map((title) =>
+          stringService.camelCase(title)
         );
+
+        let matchCount = 0;
+
+        requiredHeaders.forEach((required) => {
+          const scores = normalizedHeaders.map((cell) =>
+            stringService.similarityScore(required, cell)
+          );
+          const maxScore = Math.max(...scores);
+          if (maxScore >= MATCH_THRESHOLD) matchCount++;
+        });
+
+        const score = matchCount / requiredHeaders.length;
+
+        if (score > tableBestScore) {
+          tableBestScore = score;
+          tableBestHeaderIndex = rowIndex;
+        }
       });
+
+      // console.log(
+      //   `Table ${tableIndex} scored: ${(tableBestScore * 100).toFixed(2)}%`
+      // );
+
+      // Now update global best if this table is better
+      if (tableBestScore > bestScore) {
+        bestScore = tableBestScore;
+        bestTable = table;
+        bestHeaderRowIndex = tableBestHeaderIndex;
+      }
     });
 
-    if (!bomTable) return [];
+    // const headerRow = bestTable[bestHeaderRowIndex];
 
-    const headerIndex = bomTable.findIndex((row) => {
-      const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-      return requiredHeaders.every((req) => normalized.includes(req));
+    // // Map expected headers to their best matching index using fuzzy matching
+    // const headerMap: Record<string, number> = {};
+    // expectedHeaders.forEach((expected) => {
+    //   let bestMatchIndex = -1;
+    //   let bestMatchScore = 0;
+
+    //   headerRow.forEach((cell, index) => {
+    //     const score = stringService.similarityScore(
+    //       expected,
+    //       stringService.camelCase(cell)
+    //     );
+    //     if (score > bestMatchScore) {
+    //       bestMatchScore = score;
+    //       bestMatchIndex = index;
+    //     }
+    //   });
+
+    //   if (bestMatchScore >= MATCH_THRESHOLD) {
+    //     headerMap[expected] = bestMatchIndex;
+    //   }
+    // });
+
+    // Extract valid BOM rows after the header
+    // const bomRows = bestTable
+    //   .slice(bestHeaderRowIndex + 1)
+    //   .filter(
+    //     (row) =>
+    //       Array.isArray(row) &&
+    //       row.some((cell) => (cell || '').toString().trim() !== '')
+    //   );
+
+    // const bomItems = bomRows.map((row) => {
+    //   const entry: Record<string, string> = {};
+    //   expectedHeaders.forEach((header) => {
+    //     const colIndex = headerMap[header];
+    //     entry[header] =
+    //     colIndex !== undefined ? (row[colIndex] || '').toString().trim() : '';
+    //   });
+
+    //   return entry as JobCardItem;
+    // });
+
+    // console.log(`✅ Extracted ${bomItems.length} BOM item(s)`);
+    // return bomItems;
+
+    const bom = bestTable[bestHeaderRowIndex].slice(1).map((row) => {
+      return expectedHeaders.reduce((obj, header, i) => {
+        obj[header] = row[i];
+        return obj;
+      }, {});
     });
 
-    if (headerIndex < 0) return [];
-
-    const headerRow = bomTable[headerIndex];
-    const headerMap = Object.fromEntries(
-      headerRow.map((cell, i) => [stringService.camelCase(cell), i])
-    );
-
-    return bomTable.slice(headerIndex + 1).map((row) => {
-      const entry: Record<string, string> = {};
-      expectedHeaders.forEach((header) => {
-        entry[header] = row[headerMap[header]] || '';
-      });
-      return entry as JobCardItem;
-    });
+    return bom;
   }
 
   private static extractTitleBlockFromTables(
@@ -272,9 +378,9 @@ export class PdfService {
 
     while ((match = pattern.exec(text)) !== null) {
       const entry: Record<string, string> = {};
-      expectedHeaders.forEach((header, index) => {
-        entry[header] = match[index + 1] || '';
-      });
+      expectedHeaders.forEach(
+        (header, index) => (entry[header] = match[index + 1] || '')
+      );
       matches.push(entry);
     }
     return matches;
