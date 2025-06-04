@@ -183,15 +183,12 @@ export class JobCardService {
     context: Record<string, any>,
     computedFields: Record<string, string>
   ) {
-    console.log(context);
-    //add conditional to check for material and product dependent formulas
-    // check for key(calc) in context
-    // to compute dependent fields run if it checksout for depField as value
-    this.evaluateDepFields(context);
-
     return Object.fromEntries(
       Object.entries(computedFields).map(([key, formula]) => {
         try {
+          if (formula === 'depField') {
+            return [key, this.evaluateDepFields(context, key)];
+          }
           return [key, parser.evaluate(formula, context)];
         } catch (err) {
           console.warn(`⚠️ Error evaluating ${key}: ${formula}`, err);
@@ -201,20 +198,21 @@ export class JobCardService {
     );
   }
 
-  private evaluateDepFields(context: Record<string, any>) {
+  private evaluateDepFields(context: Record<string, any>, key: string) {
     // if present, fetch material and product.sequence data from onboarding context
     // evaluate product.sequence
 
-    // console.log(
-    //   context.sectionName,
-    //   context.onboardingConfig.material[
-    //     context.bomItem_material.toLowerCase().replace(/\s/g, '')
-    //   ],
-    //   context.onboardingConfig.product[
-    //     context.bomItem_description.toLowerCase()
-    //   ]
-    // );
-    return null;
+    console.log(
+      context.sectionName,
+      key,
+      context.onboardingConfig.material[
+        context.bomItem_material.toLowerCase().replace(/\s/g, '')
+      ],
+      context.onboardingConfig.product[
+        context.bomItem_description.toLowerCase()
+      ]
+    );
+    return "depField evaluated";
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {
