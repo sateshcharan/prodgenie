@@ -12,7 +12,6 @@ export class TemplateService {
         /{{#(.*?)\[\]}}([\s\S]*?){{\/\1\[\]}}/g,
         (_, arrayKey, innerTemplate) => {
           const arr = item[arrayKey];
-          console.log(arr);
           if (!Array.isArray(arr)) return '';
 
           return arr

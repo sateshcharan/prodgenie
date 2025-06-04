@@ -42,8 +42,13 @@ const JobCard = ({
 }) => {
   const navigate = useNavigate();
   const { setBom, setSelectedItems, selectedItems } = useBomStore();
-  const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
-    useJobCardStore();
+  const {
+    setJobCardNumber,
+    setScheduleDate,
+    setPoNumber,
+    setProductionQty,
+    setRmBoardSize,
+  } = useJobCardStore();
   const [activeItem, setActiveItem] = useState('item-1');
 
   const titleBlock = tables.data?.titleBlock;
@@ -92,6 +97,10 @@ const JobCard = ({
       setScheduleDate(new Date(jobCardForm.scheduleDate));
       setPoNumber(jobCardForm.poNumber);
       setProductionQty(jobCardForm.productionQty);
+      setRmBoardSize({
+        length: jobCardForm.rmBoardSize.length,
+        width: jobCardForm.rmBoardSize.width,
+      });
 
       const jobCardData = {
         bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
@@ -150,7 +159,7 @@ const JobCard = ({
                       key={f.name}
                       name={f.name as keyof JobCardFormValues}
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="pt-4">
                           <FormLabel>{f.label}</FormLabel>
                           <FormControl>
                             <Input
@@ -171,6 +180,53 @@ const JobCard = ({
                       )}
                     />
                   ))}
+
+                  <div className="flex flex-col pt-4">
+                    <FormLabel className="w-full">RM Board Size</FormLabel>
+                    <div className="flex">
+                      <FormField
+                        control={form.control}
+                        name="rmBoardSize.length"
+                        render={({ field }) => (
+                          <FormItem className="w-1/2 pr-2">
+                            <FormLabel>Length (mm)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="e.g. 1300"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="rmBoardSize.width"
+                        render={({ field }) => (
+                          <FormItem className="w-1/2 pl-2">
+                            <FormLabel>Width (mm)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="e.g. 1100"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <Button type="submit" className="w-full mt-4">
                     Generate Job Cards

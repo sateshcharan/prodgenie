@@ -38,6 +38,9 @@ export class JobCardService {
     const formulaConfig = await this.crudService.fetchJsonFromSignedUrl(
       `${user?.org?.name}/config/formula.json`
     );
+    const onboardingConfig = await this.crudService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
+    );
 
     let manualContext = {
       jobCardForm,
@@ -88,6 +91,8 @@ export class JobCardService {
         const context = this.buildContext(transformedContextMap, manualContext);
 
         const evalContext = Object.entries({
+          sectionName: section.name,
+          onboardingConfig,
           ...context,
           ...this.stringService.prefixKeys('bomItem', bomItem),
           ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
@@ -178,7 +183,12 @@ export class JobCardService {
     context: Record<string, any>,
     computedFields: Record<string, string>
   ) {
+    console.log(context);
     //add conditional to check for material and product dependent formulas
+    // check for key(calc) in context
+    // to compute dependent fields run if it checksout for depField as value
+    this.evaluateDepFields(context);
+
     return Object.fromEntries(
       Object.entries(computedFields).map(([key, formula]) => {
         try {
@@ -189,6 +199,22 @@ export class JobCardService {
         }
       })
     );
+  }
+
+  private evaluateDepFields(context: Record<string, any>) {
+    // if present, fetch material and product.sequence data from onboarding context
+    // evaluate product.sequence
+
+    // console.log(
+    //   context.sectionName,
+    //   context.onboardingConfig.material[
+    //     context.bomItem_material.toLowerCase().replace(/\s/g, '')
+    //   ],
+    //   context.onboardingConfig.product[
+    //     context.bomItem_description.toLowerCase()
+    //   ]
+    // );
+    return null;
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {

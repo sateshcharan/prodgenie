@@ -17,14 +17,10 @@ class PdfService:
     def extract_tables_with_pdfplumber(pdf_bytes: bytes) -> list:
         all_tables = []
         table_settings = {
-            "vertical_strategy": "lines",
-            "horizontal_strategy": "lines",
-            "intersection_tolerance": 5,
-            "snap_tolerance": 3,
-            "join_tolerance": 3,
-            "edge_min_length": 3,
-            "min_words_vertical": 1,
-            "min_words_horizontal": 1,
+            "vertical_strategy": "text",
+            "horizontal_strategy": "text",
+            "text_x_tolerance": 5,
+            "text_y_tolerance": 5,
         }
 
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
@@ -77,7 +73,6 @@ def main():
     except Exception as e:
         print(json.dumps({"error": str(e)}), flush=True)
         sys.exit(1)
-
 
     print(json.dumps({"tables": tables, "text": text}, indent=2), flush=True)
 
