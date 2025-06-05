@@ -199,57 +199,94 @@ export class JobCardService {
     );
   }
 
-  private evaluateDepFields(context: Record<string, any>, depField: string) {
-    const {
-      sectionName,
-      onboardingConfig,
-      bomItem_material,
-      bomItem_description,
-    } = context;
+  // private evaluateDepFields(context: Record<string, any>, depField: string) {
+  //   const {
+  //     sectionName,
+  //     onboardingConfig,
+  //     bomItem_material,
+  //     bomItem_description,
+  //   } = context;
+  //   const materialThickness =
+  //     onboardingConfig.material[
+  //       bomItem_material.toLowerCase().replace(/\s/g, '')
+  //     ];
+  //   const depFieldFormula =
+  //     onboardingConfig.product[bomItem_description.toLowerCase()].depField[
+  //       depField
+  //     ];
+  //   const commonFieldFormulas =
+  //     onboardingConfig.product[bomItem_description.toLowerCase()].common;
+  //   const productFormulas = { ...commonFieldFormulas, depFieldFormula };
+  //   const depFieldContext = { ...context, materialThickness };
+  //   const evaluated: Record<string, number> = { ...depFieldContext };
+
+  //   const evaluateField = (key: string) => {
+  //     if (evaluated[key] !== undefined) return evaluated[key];
+
+  //     const expr = productFormulas[key];
+  //     if (!expr) throw new Error(`Expression for "${key}" not found`);
+
+  //     // Replace JS-style ternary with mathjs-compatible if needed
+  //     const safeExpr = expr.replace(/\?/g, ' ? ').replace(/:/g, ' : ');
+
+  //     // Replace variables in the expression with evaluated values
+  //     const compiled = parse(safeExpr);
+  //     const result = compiled.evaluate(evaluated);
+  //     evaluated[key] = result;
+  //     return result;
+  //   };
+
+  //   // Evaluate all fields
+  //   Object.keys(productFormulas).forEach((key) => evaluateField(key));
+
+  //   return evaluated.depFieldFormula;
+  // }
+
+  private evaluateDepFields(
+    context: Record<string, any>,
+    depField: string
+  ): number | string {
+    const { onboardingConfig, bomItem_material, bomItem_description } = context;
+
+    const normalizeKey = (str: string) => str.toLowerCase().replace(/\s/g, '');
 
     const materialThickness =
-      onboardingConfig.material[
-        bomItem_material.toLowerCase().replace(/\s/g, '')
-      ];
+      onboardingConfig.material[normalizeKey(bomItem_material)];
+    const productConfig =
+      onboardingConfig.product[normalizeKey(bomItem_description)];
+    const { common = {}, depField: depFields = {} } = productConfig;
 
-    const depFieldFormula =
-      onboardingConfig.product[bomItem_description.toLowerCase()].depField[
-        depField
-      ];
+    const depFieldExpr = depFields[depField];
+    if (!depFieldExpr)
+      throw new Error(`depField expression for "${depField}" not found`);
 
-    const commonFieldFormulas =
-      onboardingConfig.product[bomItem_description.toLowerCase()].common;
+    const formulas = { ...common };
+    const evaluated: Record<string, number> = { ...context, materialThickness };
 
-    const productFormulas = { ...commonFieldFormulas, depFieldFormula };
-
-    const depFieldContext = { ...context, materialThickness };
-
-    const evaluated: Record<string, number> = { ...depFieldContext };
-
-    const evaluateField = (key: string) => {
+    const evaluateField = (key: string): number => {
       if (evaluated[key] !== undefined) return evaluated[key];
-
-      const expr = productFormulas[key];
+      const expr = formulas[key];
       if (!expr) throw new Error(`Expression for "${key}" not found`);
-
-      // Replace JS-style ternary with mathjs-compatible if needed
       const safeExpr = expr.replace(/\?/g, ' ? ').replace(/:/g, ' : ');
-
-      // Replace variables in the expression with evaluated values
-      const compiled = parse(safeExpr);
-      const result = compiled.evaluate(evaluated);
+      const result = evaluate(safeExpr, evaluated);
       evaluated[key] = result;
       return result;
     };
 
-    // Evaluate all fields
-    Object.keys(productFormulas).forEach((key) => evaluateField(key));
+    Object.keys(formulas).forEach(evaluateField);
 
-    console.log(evaluated);
+    // Handle string interpolation for depField (e.g. "${flatLen} x ${flatWid}")
+    const template = depFieldExpr;
+    const interpolated = template.replace(/\$\{(\w+)\}/g, (_, varName) => {
+      const val = evaluated[varName];
+      if (val === undefined)
+        throw new Error(
+          `Variable "${varName}" not found for template substitution`
+        );
+      return val.toString();
+    });
 
-    // console.log(sectionName, materialThickness, depFieldFormula);
-
-    return evaluated.depFieldFormula;
+    return interpolated;
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {
