@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import { Parser } from 'expr-eval';
 import get from 'lodash/get';
+import { evaluate, parse } from 'mathjs';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -198,21 +199,57 @@ export class JobCardService {
     );
   }
 
-  private evaluateDepFields(context: Record<string, any>, key: string) {
-    // if present, fetch material and product.sequence data from onboarding context
-    // evaluate product.sequence
+  private evaluateDepFields(context: Record<string, any>, depField: string) {
+    const {
+      sectionName,
+      onboardingConfig,
+      bomItem_material,
+      bomItem_description,
+    } = context;
 
-    console.log(
-      context.sectionName,
-      key,
-      context.onboardingConfig.material[
-        context.bomItem_material.toLowerCase().replace(/\s/g, '')
-      ],
-      context.onboardingConfig.product[
-        context.bomItem_description.toLowerCase()
-      ]
-    );
-    return "depField evaluated";
+    const materialThickness =
+      onboardingConfig.material[
+        bomItem_material.toLowerCase().replace(/\s/g, '')
+      ];
+
+    const depFieldFormula =
+      onboardingConfig.product[bomItem_description.toLowerCase()].depField[
+        depField
+      ];
+
+    const commonFieldFormulas =
+      onboardingConfig.product[bomItem_description.toLowerCase()].common;
+
+    const productFormulas = { ...commonFieldFormulas, depFieldFormula };
+
+    const depFieldContext = { ...context, materialThickness };
+
+    const evaluated: Record<string, number> = { ...depFieldContext };
+
+    const evaluateField = (key: string) => {
+      if (evaluated[key] !== undefined) return evaluated[key];
+
+      const expr = productFormulas[key];
+      if (!expr) throw new Error(`Expression for "${key}" not found`);
+
+      // Replace JS-style ternary with mathjs-compatible if needed
+      const safeExpr = expr.replace(/\?/g, ' ? ').replace(/:/g, ' : ');
+
+      // Replace variables in the expression with evaluated values
+      const compiled = parse(safeExpr);
+      const result = compiled.evaluate(evaluated);
+      evaluated[key] = result;
+      return result;
+    };
+
+    // Evaluate all fields
+    Object.keys(productFormulas).forEach((key) => evaluateField(key));
+
+    console.log(evaluated);
+
+    // console.log(sectionName, materialThickness, depFieldFormula);
+
+    return evaluated.depFieldFormula;
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {

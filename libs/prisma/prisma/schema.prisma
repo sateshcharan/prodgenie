@@ -18,6 +18,13 @@ model Org {
   history     History[]
 }
 
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
 model History {
   id     String @id @default(uuid())
   user   User   @relation(fields: [userId], references: [id])
@@ -30,8 +37,9 @@ model History {
   orgId String
 
   action    String
+  status    JobStatus @default(pending)
   details   String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 enum UserType {
