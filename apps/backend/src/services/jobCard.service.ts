@@ -30,7 +30,7 @@ export class JobCardService {
     titleBlock,
     signedUrl,
     printingDetails,
-  }: jobCardRequest): Promise<void> {
+  }: jobCardRequest) {
     console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
     if (!bom.length) return console.warn('bom is empty');
@@ -125,7 +125,8 @@ export class JobCardService {
     );
     console.log(`Job card saved to ${outputPath}`);
 
-    await this.uploadJobCard(outputPath, user);
+    const jobCardUrl = await this.uploadJobCard(outputPath, user);
+    return jobCardUrl;
     // Optionally clean temp files: await fs.rm('./tmp', { recursive: true });
   }
 
@@ -306,7 +307,13 @@ export class JobCardService {
       stream: undefined as any,
     };
 
-    return await this.fileService.uploadFile([fakeMulterFile], 'jobCard', user);
+    const jobCard = await this.fileService.uploadFile(
+      [fakeMulterFile],
+      'jobCard',
+      user
+    );
+
+    return await this.fileStorageService.getSignedUrl(jobCard[0].path);
   }
 
   async getJobCardNumber(org: { id: string; name: string }) {

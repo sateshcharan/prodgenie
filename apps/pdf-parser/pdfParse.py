@@ -5,6 +5,11 @@ import io
 import json
 import argparse
 
+from pdf2image import convert_from_path
+import pytesseract
+from PIL import Image
+import io
+
 try:
     import camelot
 except ImportError:
@@ -17,16 +22,32 @@ class PdfService:
     def extract_tables_with_pdfplumber(pdf_bytes: bytes) -> list:
         all_tables = []
         table_settings = {
-            "vertical_strategy": "text",
-            "horizontal_strategy": "text",
-            "text_x_tolerance": 5,
-            "text_y_tolerance": 5,
+            "vertical_strategy": "lines",
+            "horizontal_strategy": "lines",
+            # "explicit_vertical_lines": [],
+            # "explicit_horizontal_lines": [],
+            # "snap_tolerance": 3,
+            # "snap_x_tolerance": 3,
+            # "snap_y_tolerance": 3,
+            # "join_tolerance": 3,
+            # "join_x_tolerance": 3,
+            # "join_y_tolerance": 3,
+            # "edge_min_length": 3,
+            # "min_words_vertical": 3,
+            # "min_words_horizontal": 1,
+            # "intersection_tolerance": 3,
+            # "intersection_x_tolerance": 3,
+            # "intersection_y_tolerance": 3,
+            # "text_tolerance": 3,
+            # "text_x_tolerance": 3,
+            # "text_y_tolerance": 3,
+            # "text_*": 3,
         }
 
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
             for page in pdf.pages:
                 # tables = page.extract_tables(table_settings=table_settings)
-                tables = page.extract_tables()
+                tables = page.extract_tables(table_settings=table_settings)
                 if tables:
                     all_tables.append(tables)
         return all_tables
@@ -47,6 +68,36 @@ class PdfService:
                 if page_text:
                     text += page_text + "\n"
         return text
+
+    # @staticmethod
+    # def extract_text_with_pytesseract(pdf_path: str) -> str:
+
+    #     images = convert_from_path(pdf_path, dpi=300)
+
+    #     # Run OCR on each page and collect results
+    #     ocr_results = []
+    #     for page_number, image in enumerate(images, start=1):
+    #         text = pytesseract.image_to_string(image)
+    #         ocr_results.append((page_number, text))
+
+    #     ocr_results[:1]  # Show only first page OCR result for preview
+    #     return ocr_results
+
+    # @staticmethod
+    # def extract_tables_with_pytesseract(pdf_path: str) -> List[str]:
+    #     images = convert_from_path(pdf_path, dpi=300)
+
+    #     # Extract "tables" from each page using OCR
+    #     table_results = []
+    #     custom_oem_psm_config = r"--oem 3 --psm 6"  # OCR Engine Mode + Assume a single uniform block of text
+
+    #     for page_number, image in enumerate(images, start=1):
+    #         # OCR to string
+    #         raw_text = pytesseract.image_to_string(image, config=custom_oem_psm_config)
+    #         # You can optionally add regex/filters here to isolate tabular-looking sections
+    #         table_results.append((page_number, raw_text))
+
+    #     return table_results
 
 
 def main():
@@ -69,6 +120,8 @@ def main():
     try:
         tables = PdfService.extract_tables_with_pdfplumber(pdf_bytes)
         text = PdfService.extract_text_with_pdfplumber(pdf_bytes)
+        # tables = PdfService.extract_tables_with_pytesseract(pdf_bytes)
+        # text = PdfService.extract_text_with_pytesseract(pdf_path)
 
     except Exception as e:
         print(json.dumps({"error": str(e)}), flush=True)

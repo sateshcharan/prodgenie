@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
@@ -19,6 +19,7 @@ import {
   Card,
   CardContent,
   toast,
+  Separator,
 } from '@prodgenie/libs/ui';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
@@ -28,20 +29,25 @@ import BomTable from './BomTable';
 import { generateJobCard } from '../services/jobCardService';
 import { BomItem } from '@prodgenie/libs/types';
 import { api } from '../utils';
+import TitleBlock from './TitleBlock';
+import PrintingDetail from './PrintingDetail';
 
 const JobCard = ({
   tables,
   fileId,
   signedUrl,
+  setJobCardUrl,
 }: {
   tables: {
-    data?: { bom: BomItem[]; titleBlock?: any; printingDetails?: any };
+    data?: { bom: BomItem[]; titleBlock: any; printingDetails?: any };
   };
   fileId: string;
   signedUrl: string;
+  setJobCardUrl: (url: string) => void;
 }) => {
   const navigate = useNavigate();
-  const { setBom, setSelectedItems, selectedItems } = useBomStore();
+  const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
+    useBomStore();
   const {
     setJobCardNumber,
     setScheduleDate,
@@ -65,18 +71,10 @@ const JobCard = ({
     fetchJobCardNo();
   }, []);
 
-  // // Initialize BOM only once
-  // useEffect(() => {
-  //   if (tables?.data?.bom?.length) {
-  //     setBom(tables.data.bom);
-  //     // Initial state for selected items (default all items selected)
-  //     setSelectedItems(tables.data.bom.map((item) => item.slNo));
-  //   }
-  // }, [tables, setBom, setSelectedItems]);
-
   useEffect(() => {
     if (tables?.data?.bom?.length) {
       setBom(tables.data.bom);
+      setTitleBlock(tables.data.titleBlock);
       setSelectedItems(tables.data.bom.map((item) => item.slNo));
     } else {
       setSelectedItems([]); // reset when there's no BOM
@@ -110,7 +108,8 @@ const JobCard = ({
         jobCardForm,
         signedUrl,
       };
-      await generateJobCard(jobCardData);
+      const jobCard = await generateJobCard(jobCardData);
+      setJobCardUrl(jobCard.data.url);
       // navigate('/dashboard/jobCard');
 
       toast.success('Your Job Card is being generated. Please wait.');
@@ -138,12 +137,23 @@ const JobCard = ({
                 <AccordionTrigger className="hover:no-underline p-4  bg-secondary rounded-lg">
                   Select Items
                 </AccordionTrigger>
-                <AccordionContent className="p-4">
+                <AccordionContent className="p-4 flex flex-col gap-4">
                   <BomTable
                     bom={bom || []}
                     fileId={fileId}
                     setActiveItem={setActiveItem}
                   />
+
+                  <Separator />
+
+                  <TitleBlock titleBlock={titleBlock} fileId={fileId} />
+
+                  {printingDetails && (
+                    <>
+                      <Separator />
+                      <PrintingDetail printingDetails={printingDetails} />
+                    </>
+                  )}
                 </AccordionContent>
               </AccordionItem>
 

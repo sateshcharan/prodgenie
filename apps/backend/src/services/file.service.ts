@@ -38,6 +38,29 @@ export class FileService {
     return savedFiles;
   }
 
+  async updateFile(fileId: string, update: any) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
+    });
+    if (!file) throw new Error('File not found');
+
+    const existingData = file.data || {};
+
+    const mergedData = {
+      ...existingData,
+      ...update,
+    };
+
+    const updatedFile = await prisma.file.update({
+      where: { id: fileId },
+      data: {
+        data: mergedData,
+      },
+    });
+
+    return updatedFile;
+  }
+
   async listFiles(
     fileType: string,
     orgId: string

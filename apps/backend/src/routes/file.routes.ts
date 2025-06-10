@@ -29,5 +29,9 @@ router.put(
   validateFileType,
   FileController.renameFileController
 );
+router.patch(
+  apiRoutes.files.update(':fileId'),
+  FileController.updateFileController
+);
 
 export { router };

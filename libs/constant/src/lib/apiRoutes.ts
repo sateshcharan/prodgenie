@@ -17,6 +17,7 @@ export const apiRoutes = {
     list: (fileType: string) => `/${fileType}/list`,
     delete: (fileType: string, fileId: string) => `/${fileType}/${fileId}`,
     rename: (fileType: string) => `/${fileType}`,
+    update: (fileId: string) => `/${fileId}`,
   },
 
   users: {

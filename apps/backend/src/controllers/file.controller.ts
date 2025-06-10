@@ -22,6 +22,24 @@ export class FileController {
     }
   };
 
+  static updateFileController = async (req: Request, res: Response) => {
+    try {
+      const user = req.user;
+      const { fileId } = req.params;
+      const data = req.body;
+      // const files = req.files as Express.Multer.File[];
+
+      if (!data) {
+        return res.status(400).json({ message: 'No files uploaded' });
+      }
+
+      const result = await fileService.updateFile(fileId, data);
+      return res.status(201).json(result);
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
   static listFilesController = async (req: Request, res: Response) => {
     try {
       const { fileType } = req.params;

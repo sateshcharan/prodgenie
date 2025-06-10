@@ -28,7 +28,7 @@ app.use(
   cors({
     origin: ['http://localhost:4200', 'https://prodgenie.vercel.app'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );

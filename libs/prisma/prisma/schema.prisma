@@ -79,6 +79,7 @@ model File {
   type   FileType
   userId String
   orgId  String
+  data   Json?
 
   user      User     @relation(fields: [userId], references: [id])
   org       Org      @relation(fields: [orgId], references: [id])

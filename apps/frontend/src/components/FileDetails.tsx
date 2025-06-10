@@ -10,9 +10,10 @@ const FileDetails = () => {
     fileType: string;
   };
   const location = useLocation();
-  const signedUrl = location.state?.signedUrl;
+  const [signedUrl, setSignedUrl] = useState(location.state?.signedUrl);
   const [tables, setTables] = useState(null);
   const fileName = signedUrl.split('?')[0].split('/').pop().split('.')[0];
+  const [jobCardUrl, setJobCardUrl] = useState('');
 
   useEffect(() => {
     if (!signedUrl) {
@@ -28,17 +29,25 @@ const FileDetails = () => {
     }
   }, [signedUrl, fileId]);
 
-  return (
-    <div className="relative w-screen h-screen">
-      <h1 className="p-4 font-semibold">File Name: {fileName}</h1>
-      <div className="relative w-full h-full">
-        <iframe src={signedUrl} className="w-full h-full" />
-        {tables && (
-          <div className="absolute top-5 left-5 bg-white rounded-lg  ">
-            <JobCard tables={tables} fileId={fileId} signedUrl={signedUrl} />
-          </div>
-        )}
+  return fileType === 'drawing' ? (
+    <div className="grid grid-cols-[auto,1fr] w-full h-screen">
+      {tables && (
+        <div className="p-4 bg-white rounded-lg overflow-auto">
+          <JobCard
+            tables={tables}
+            fileId={fileId}
+            signedUrl={signedUrl}
+            setJobCardUrl={setSignedUrl}
+          />
+        </div>
+      )}
+      <div>
+        <iframe src={signedUrl} className="w-full h-full" title="PDF Preview" />
       </div>
+    </div>
+  ) : (
+    <div>
+      <iframe src={signedUrl} className="w-full h-screen" title="PDF Preview" />
     </div>
   );
 };

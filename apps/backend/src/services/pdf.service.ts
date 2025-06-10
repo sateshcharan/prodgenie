@@ -8,8 +8,6 @@ import axios, { head } from 'axios';
 
 import { StringService, CrudService } from '../utils/index.js';
 import { JobCardItem } from '@prodgenie/libs/types';
-import { table } from 'console';
-import { title } from 'process';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -31,6 +29,7 @@ export class PdfService {
   ): Promise<ParsedPdf> {
     const parsedData = await this.runPythonParser(signedUrl);
     const config = await this.loadOrgConfig(user);
+
     return this.processParsedPdf(parsedData, config);
   }
 
@@ -56,11 +55,11 @@ export class PdfService {
 
       python.stdout.on('data', (data) => {
         stdout += data.toString();
-        // console.log(stdout);
+        console.log(stdout);
       });
       python.stderr.on('data', (data) => {
         stderr += data.toString();
-        // console.log(stderr);
+        console.log(stderr);
       });
 
       python.on('close', (code) => {

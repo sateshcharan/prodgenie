@@ -7,6 +7,7 @@ export class HistoryService {
     action: string;
     details?: string;
     jobId?: string | null;
+    status?: string;
   }) {
     const recordsPerOrg = 50;
     return prisma.$transaction(async (tx) => {
