@@ -5,3 +5,5 @@ export * from './org.controller.js';
 export * from './payment.controller.js';
 export * from './pdf.controller.js';
 export * from './user.controller.js';
+export * from './thumbnail.controller.js';
+export * from './sequence.controller.js';

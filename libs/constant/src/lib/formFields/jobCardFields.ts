@@ -27,4 +27,23 @@ export const jobCardFields = [
     defaultValue: '',
     type: 'text',
   },
+  // {
+  //   section: 'Board Size',
+  //   fields: [
+  //     {
+  //       name: 'rmBoardSize.length',
+  //       label: 'RM Board Size Length (mm)',
+  //       placeholder: 'eg: 1300',
+  //       defaultValue: 0,
+  //       type: 'number',
+  //     },
+  //     {
+  //       name: 'rmBoardSize.width',
+  //       label: 'RM Board Size Width (mm)',
+  //       placeholder: 'eg: 1000',
+  //       defaultValue: 0,
+  //       type: 'number',
+  //     },
+  //   ],
+  // },
 ];

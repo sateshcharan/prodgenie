@@ -10,7 +10,6 @@ import {
   Button,
 } from '..';
 import { Clock, Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { fail } from 'assert';
 
 type History = {
   id: string;

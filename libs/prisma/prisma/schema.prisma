@@ -10,12 +10,14 @@ datasource db {
 model Org {
   id        String   @id @default(uuid())
   name      String   @unique
+  credits   Float    @default(0)
   createdAt DateTime @default(now())
 
   users       User[]
-  File        File[]
+  files       File[]
   inviteCodes InviteCode[]
   history     History[]
+  jobs        Job[]
 }
 
 enum JobStatus {
@@ -33,7 +35,7 @@ model History {
   job   Job?    @relation(fields: [jobId], references: [id])
   jobId String?
 
-  Org   Org    @relation(fields: [orgId], references: [id])
+  org   Org    @relation(fields: [orgId], references: [id])
   orgId String
 
   action    String
@@ -49,19 +51,22 @@ enum UserType {
 }
 
 model User {
-  id       String  @id @default(uuid())
+  id       String    @id @default(uuid())
   name     String?
-  email    String  @unique
+  email    String    @unique
   password String
+  type     UserType?
+  orgId    String?
+  org      Org?      @relation(fields: [orgId], references: [id])
 
-  type  UserType?
-  orgId String?
-  org   Org?      @relation(fields: [orgId], references: [id])
+  files     File[]
+  createdAt DateTime  @default(now())
+  history   History[]
+  jobs      Job[]
 
-  File       File[]
-  createdAt  DateTime    @default(now())
-  InviteCode InviteCode?
-  history    History[]
+  inviteCode     InviteCode? @relation("UserInviteCode")
+  InviteCode     InviteCode? @relation(fields: [inviteCodeCode], references: [code])
+  inviteCodeCode String?
 }
 
 enum FileType {
@@ -73,17 +78,19 @@ enum FileType {
 }
 
 model File {
-  id     String   @id @default(uuid())
-  name   String
-  path   String
-  type   FileType
-  userId String
-  orgId  String
-  data   Json?
+  id        String   @id @default(uuid())
+  name      String
+  path      String
+  type      FileType
+  userId    String
+  orgId     String
+  data      Json?
+  thumbnail String?
 
   user      User     @relation(fields: [userId], references: [id])
   org       Org      @relation(fields: [orgId], references: [id])
   createdAt DateTime @default(now())
+  jobs      Job[]
 }
 
 model InviteCode {
@@ -92,12 +99,28 @@ model InviteCode {
   orgId String
 
   usedBy    String?   @unique
-  user      User?     @relation(fields: [usedBy], references: [id])
+  user      User?     @relation("UserInviteCode", fields: [usedBy], references: [id])
   expiresAt DateTime?
   createdAt DateTime  @default(now())
+  User      User[]
 }
 
 model Job {
-  id      String    @id @default(uuid())
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  orgId String
+  org   Org    @relation(fields: [orgId], references: [id])
+
+  fileId String
+  file   File   @relation(fields: [fileId], references: [id])
+
+  jobCardNumber Int
+  config        Json
+  jobStatus     JobStatus @default(pending)
+  creditsUsed   Float
+  createdAt     DateTime  @default(now())
+
   history History[]
 }

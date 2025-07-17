@@ -26,6 +26,9 @@ export class FolderService {
       paths.push(`${orgName}/${fileType}/.init`);
     }
 
+    //other than filetype
+    paths.push(`${orgName}/thumbnail/.init`);
+
     for (const path of paths) {
       const { error } = await supabase.storage
         .from(this.bucketName)

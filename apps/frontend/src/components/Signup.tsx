@@ -1,17 +1,20 @@
+import debounce from 'lodash.debounce';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import debounce from 'lodash.debounce';
 
 import { api } from '../utils';
 
 import { AuthForm, toast } from '@prodgenie/libs/ui';
 import { apiRoutes, signupFields } from '@prodgenie/libs/constant';
 import { signupSchema } from '@prodgenie/libs/schema';
+// import { StringService } from '@prodgenie/libs/services';
 
 export default function SignupPage() {
   const navigate = useNavigate();
   const [orgExists, setOrgExists] = useState(false);
   const [fields, setFields] = useState(signupFields);
+
+  // const stringService = new StringService();
 
   const handleSignup = async (data: any) => {
     try {
@@ -69,6 +72,7 @@ export default function SignupPage() {
 
   const handleFieldChange = (fieldName: string, value: string) => {
     if (fieldName === 'orgName') {
+      // debouncedCheckOrgExists(stringService.camelCase(value));
       debouncedCheckOrgExists(value);
     }
   };

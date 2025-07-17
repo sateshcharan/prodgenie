@@ -6,12 +6,13 @@
     "types": ["node", "express"],
     "rootDir": "src",
     "moduleResolution": "nodenext",
-    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
     // "resolveJsonModule": true, // for json imports
     // "esModuleInterop": true // for json imports
   },
   "include": [
-    "src/**/*.ts",
+    "src/**/*.ts"
+    // "src/worker/worker.js",
     // "src/routes/file.routes",
     // "../../libs/db/src/lib/user.service.ts"
   ],
@@ -27,6 +28,12 @@
   ],
   "references": [
     {
+      "path": "../../libs/frontend-services/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/server-services/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/types/tsconfig.lib.json"
     },
     {
@@ -36,13 +43,16 @@
       "path": "../../libs/schema/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/prisma/tsconfig.lib.json"
-    },
-    {
       "path": "../../libs/constant/tsconfig.lib.json"
     },
     {
       "path": "../../libs/db/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/prisma/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/queues/tsconfig.lib.json"
     }
   ]
 }

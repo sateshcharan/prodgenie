@@ -1,5 +1,8 @@
+import { Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
+
 import { api } from '../utils';
+
 import {
   Button,
   Card,
@@ -8,7 +11,6 @@ import {
   AvatarImage,
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { Copy } from 'lucide-react';
 
 interface OrgUsersProps {
   orgId: string;

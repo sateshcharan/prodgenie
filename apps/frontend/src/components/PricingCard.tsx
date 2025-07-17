@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 
-import { handleCheckout } from '../components/HandleCheckout';
-import { api } from '../utils';
-
 import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
+import { useAuthModalStore } from '@prodgenie/libs/store';
 
 const PricingCard = () => {
   const PRICE_IDS = {
@@ -25,12 +23,9 @@ const PricingCard = () => {
     'monthly'
   );
 
-  const handleCheckout = async (priceId: string) => {
-    // const response = await api.post('/api/payment/stripe/session', {
-    //   priceId,
-    // });
-
-    console.log('Going to checkout with', priceId);
+  const { openModal } = useAuthModalStore();
+  const handleClick = () => {
+    openModal('signup');
   };
 
   return (
@@ -70,7 +65,7 @@ const PricingCard = () => {
               'Basic drawing import',
               'Email support',
             ]}
-            onClick={() => handleCheckout(PRICE_IDS.starter[billingCycle])}
+            onClick={handleClick}
           />
 
           {/* Pro */}
@@ -84,7 +79,7 @@ const PricingCard = () => {
               'Standard integrations',
               'Priority email support',
             ]}
-            onClick={() => handleCheckout(PRICE_IDS.pro[billingCycle])}
+            onClick={handleClick}
           />
 
           {/* Enterprise */}
@@ -98,7 +93,7 @@ const PricingCard = () => {
               'Dedicated account manager',
               '24/7 phone support',
             ]}
-            onClick={() => handleCheckout(PRICE_IDS.enterprise[billingCycle])}
+            onClick={handleClick}
           />
         </div>
       </div>

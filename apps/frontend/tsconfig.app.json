@@ -37,18 +37,23 @@
     "../ui/src/components/FolderDropZone.tsx"
   ],
   "references": [
-    { "path": "../../libs/types/tsconfig.lib.json" },
-    {
-      "path": "../../libs/utils/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/store/tsconfig.lib.json"
-    },
     {
       "path": "../../libs/schema/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/types/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/frontend-services/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/constant/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store/tsconfig.lib.json"
     },
     {
       "path": "../../libs/ui/tsconfig.lib.json"

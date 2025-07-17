@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "nx": {
-    "name": "frontend"
+    "name": "@prodgenie/frontend"
   }
 }

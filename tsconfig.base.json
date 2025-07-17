@@ -23,10 +23,20 @@
       "@prodgenie/libs/constant/*": ["libs/constant/src/*"],
       "@prodgenie/libs/db": ["libs/db/src/index.ts"],
       "@prodgenie/libs/db/*": ["libs/db/src/*"],
+      "@prodgenie/libs/frontend-services": [
+        "libs/frontend-services/src/index.ts"
+      ],
+      "@prodgenie/libs/frontend-services/*": ["libs/frontend-services/src/*"],
       "@prodgenie/libs/prisma": ["libs/prisma/src/index.ts"],
       "@prodgenie/libs/prisma/*": ["libs/prisma/src/*"],
+      "@prodgenie/libs/queues": ["libs/queues/src/index.ts"],
+      "@prodgenie/libs/queues/*": ["libs/queues/src/*"],
+      "@prodgenie/libs/redis": ["libs/redis/src/index.ts"],
+      "@prodgenie/libs/redis/*": ["libs/redis/src/*"],
       "@prodgenie/libs/schema": ["libs/schema/src/index.ts"],
       "@prodgenie/libs/schema/*": ["libs/schema/src/*"],
+      "@prodgenie/libs/server-services": ["libs/server-services/src/index.ts"],
+      "@prodgenie/libs/server-services/*": ["libs/server-services/src/*"],
       "@prodgenie/libs/store": ["libs/store/src/index.ts"],
       "@prodgenie/libs/store/*": ["libs/store/src/*"],
       "@prodgenie/libs/supabase": ["libs/supabase/src/index.ts"],
@@ -36,7 +46,9 @@
       "@prodgenie/libs/ui": ["libs/ui/src"],
       "@prodgenie/libs/ui/*": ["libs/ui/src/*"],
       "@prodgenie/libs/utils": ["libs/utils/src"],
-      "@prodgenie/libs/utils/*": ["libs/utils/src/*"]
+      "@prodgenie/libs/utils/*": ["libs/utils/src/*"],
+      "@prodgenie/libs/worker": ["libs/worker/src/index.ts"],
+      "@prodgenie/libs/worker/*": ["libs/worker/src/*"]
     }
   }
 }

@@ -2,20 +2,23 @@
   "files": [],
   "include": [],
   "references": [
-    { 
-      "path": "../../libs/types" 
+    {
+      "path": "../../libs/schema"
+    },
+    {
+      "path": "../../libs/types"
     },
     {
       "path": "../../libs/utils"
     },
     {
-      "path": "../../libs/store"
-    },
-    {
-      "path": "../../libs/schema"
+      "path": "../../libs/frontend-services"
     },
     {
       "path": "../../libs/constant"
+    },
+    {
+      "path": "../../libs/store"
     },
     {
       "path": "../../libs/ui"

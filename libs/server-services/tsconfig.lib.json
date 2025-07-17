@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../constant/tsconfig.lib.json"
+    },
+    {
+      "path": "../supabase/tsconfig.lib.json"
+    }
+  ]
+}

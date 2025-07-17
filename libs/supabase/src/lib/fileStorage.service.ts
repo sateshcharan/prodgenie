@@ -1,6 +1,5 @@
 import { supabase } from './supabase.js';
-
-import { HistoryService } from '@prodgenie/libs/db';
+// import { HistoryService } from '@prodgenie/libs/db';
 
 export class FileStorageService {
   private readonly bucketName: string;
@@ -14,36 +13,61 @@ export class FileStorageService {
   }
 
   async uploadFile(uploadPath: string, file: any, fileType: any, user: any) {
-    const { data, error } = await supabase.storage
-      .from(this.bucketName)
-      .upload(uploadPath, file.buffer, {
-        upsert: true,
-        contentType: file.mimetype,
-      });
+    if (!file || !file.buffer || !Buffer.isBuffer(file.buffer)) {
+      console.error('Invalid file buffer:', file);
+      throw new Error('Invalid file provided for upload');
+    }
 
-    if (error) throw new Error(`Upload failed: ${error.message}`);
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .upload(uploadPath, file.buffer, {
+          upsert: true,
+          contentType: file.mimetype,
+        });
 
-    const userId = user.id;
-    const orgId = user.org.id;
+      if (error) {
+        console.error('Supabase upload error:', error.message);
+        throw new Error(`Upload failed: ${error.message}`);
+      }
 
-    HistoryService.record({
-      userId: userId,
-      orgId: orgId,
-      action: `${fileType} uploaded`,
-      details: fileType,
-    });
+      // const userId = user?.id;
+      // const orgId = user?.org?.id;
 
-    return data;
+      // HistoryService.record({
+      //   userId,
+      //   orgId,
+      //   action: `${fileType} uploaded`,
+      //   details: fileType,
+      // });
+
+      return data;
+    } catch (err: any) {
+      console.error('Upload operation failed:', err.code || '', err.message);
+      throw err;
+    }
   }
 
   async getSignedUrl(filePath: string): Promise<string> {
-    const { data, error } = await supabase.storage
-      .from(this.bucketName)
-      .createSignedUrl(filePath, 60 * 60);
-    if (error) throw new Error(`Get signed URL failed: ${error.message}`);
-    if (!data?.signedUrl) throw new Error('Signed URL not generated');
+    if (!filePath) throw new Error('File path not provided');
 
-    return data.signedUrl;
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .createSignedUrl(filePath, 60 * 60);
+
+      if (error) {
+        console.error('Supabase signed URL error:', error.message);
+        throw new Error(`Get signed URL failed: ${error.message}`);
+      }
+
+      if (!data?.signedUrl) throw new Error('Signed URL not generated');
+
+      return data.signedUrl;
+    } catch (err: any) {
+      console.error('Get signed URL failed:', err.code || '', err.message);
+      throw err;
+    }
   }
 
   async deleteFile(
@@ -51,37 +75,75 @@ export class FileStorageService {
     fileType: string,
     user: any
   ): Promise<any> {
-    const { data, error } = await supabase.storage
-      .from(this.bucketName)
-      .remove([filePath]);
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .remove([filePath]);
 
-    if (error) throw new Error(`Delete failed: ${error.message}`);
+      if (error) {
+        console.error('Supabase delete error:', error.message);
+        throw new Error(`Delete failed: ${error.message}`);
+      }
 
-    const userId = user.id;
-    const orgId = user.org.id;
+      // const userId = user?.id;
+      // const orgId = user?.org?.id;
 
-    HistoryService.record({
-      userId: userId,
-      orgId: orgId,
-      action: `${fileType} deleted`,
-      details: fileType,
-    });
+      // HistoryService.record({
+      //   userId,
+      //   orgId,
+      //   action: `${fileType} deleted`,
+      //   details: fileType,
+      // });
 
-    return data;
+      return data;
+    } catch (err: any) {
+      console.error('Delete operation failed:', err.code || '', err.message);
+      throw err;
+    }
   }
 
   async renameFile(
     oldPath: string,
     newPath: string
   ): Promise<{ data: any; error: any }> {
-    const { data, error } = await supabase.storage
-      .from(this.bucketName)
-      .move(oldPath, newPath);
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .move(oldPath, newPath);
 
-    if (error) {
-      console.error('Rename failed:', error.message);
+      if (error) {
+        console.error('Supabase rename error:', error.message);
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      console.error('Rename operation failed:', err.code || '', err.message);
+      throw err;
     }
+  }
 
-    return { data, error };
+  async replaceFile(
+    oldPath: string,
+    newFile: any,
+    fileType: string,
+    user: any
+  ): Promise<{ path: string }> {
+    try {
+      // Delete the old file from storage
+      await this.deleteFile(oldPath, fileType, user);
+
+      // Upload the new file and get its new path
+      const { path } = await this.uploadFile(oldPath, newFile, fileType, user);
+
+      // Return only what the caller expects
+      return { path };
+    } catch (err: any) {
+      console.error(
+        '❌ Replace operation failed:',
+        err.code || '',
+        err.message
+      );
+      throw new Error('Failed to replace file');
+    }
   }
 }

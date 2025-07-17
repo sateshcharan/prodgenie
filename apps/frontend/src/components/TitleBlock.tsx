@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Pencil, Check } from 'lucide-react';
-import { Button } from '@prodgenie/libs/ui'; // shadcn/ui
+import { Pencil, Check, Plus } from 'lucide-react';
+import { Button, Input } from '@prodgenie/libs/ui';
 import { api } from '../utils';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
@@ -12,6 +12,8 @@ interface TitleBlockProps {
 const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableBlock, setEditableBlock] = useState(titleBlock);
+  const [newKey, setNewKey] = useState('');
+  const [newValue, setNewValue] = useState('');
 
   const handleChange = (key: string, value: string) => {
     setEditableBlock((prev) => ({
@@ -20,30 +22,15 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
     }));
   };
 
-  // const updateLocalStorageData = (fileId: string, updatedData: any) => {
-  //   const key = `tables-${fileId}`;
-
-  //   // Get existing data or empty object
-  //   const cached = localStorage.getItem(key);
-  //   let parsedData = {};
-
-  //   try {
-  //     parsedData = cached ? JSON.parse(cached) : {};
-  //   } catch (e) {
-  //     console.warn(`Failed to parse localStorage for ${key}`, e);
-  //   }
-
-  //   // Merge updated data into existing cache
-  //   const mergedData = {
-  //     ...parsedData.data,
-  //     ...updatedData,
-  //   };
-
-  //   console.log(mergedData)
-
-  //   // Save back to localStorage
-  //   localStorage.setItem(key, JSON.stringify(mergedData));
-  // };
+  const handleAddField = () => {
+    if (!newKey.trim()) return;
+    setEditableBlock((prev) => ({
+      ...prev,
+      [newKey.trim()]: newValue,
+    }));
+    setNewKey('');
+    setNewValue('');
+  };
 
   const handleConfirm = async () => {
     const updatedData = { titleBlock: editableBlock };
@@ -51,9 +38,6 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
       `${apiRoutes.files.base}/${fileId}`,
       updatedData
     );
-
-    // updateLocalStorageData(fileId, updatedData);
-
     setIsEditing(false);
   };
 
@@ -85,6 +69,29 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
             )}
           </div>
         ))}
+
+        {isEditing && (
+          <div className="flex gap-2 items-center mt-2">
+            <Input
+              placeholder="New Field Key"
+              value={newKey}
+              onChange={(e) => setNewKey(e.target.value)}
+            />
+            <Input
+              placeholder="New Field Value"
+              value={newValue}
+              onChange={(e) => setNewValue(e.target.value)}
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleAddField}
+              className="flex items-center gap-1"
+            >
+              <Plus size={14} /> Add
+            </Button>
+          </div>
+        )}
       </div>
 
       {isEditing && (

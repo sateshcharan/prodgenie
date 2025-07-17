@@ -6,22 +6,17 @@ export class PdfController {
   static async extractPdfData(req: Request, res: Response) {
     const user = req.user;
 
-    try {
-      const tables = await PdfService.extractPdfData(req.body.signedUrl, user);
+    const tables = await PdfService.extractPdfData(req.body.signedUrl, user);
 
-      await prisma.file.update({
-        where: {
-          id: req.body.fileId,
-        },
-        data: {
-          data: tables,
-        },
-      });
+    await prisma.file.update({
+      where: {
+        id: req.body.fileId,
+      },
+      data: {
+        data: tables,
+      },
+    });
 
-      res.status(201).json({ success: true, data: tables });
-    } catch (error: any) {
-      console.error('PDF extract error:', error);
-      res.status(400).json({ success: false, message: error.message });
-    }
+    res.status(201).json({ success: true, data: tables });
   }
 }

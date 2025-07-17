@@ -3,8 +3,12 @@ import { RouteObject } from 'react-router-dom';
 import { Dashboard } from '../pages';
 import { PrivateLayout } from '../layouts';
 import PrivateRoute from './PrivateRoute';
-import { Files, FileDetails } from '../components';
-import { fileDetailsLoader, fileDatasLoader } from '../loaders';
+import { Files, FileDetails, FileBuilder, FormulaBuilder } from '../components';
+import {
+  fileDetailsLoader,
+  fileDatasLoader,
+  fileBuilderLoader,
+} from '../loaders';
 
 const dashboardRoutes: RouteObject[] = [
   {
@@ -20,6 +24,11 @@ const dashboardRoutes: RouteObject[] = [
     path: ':fileType/:fileId',
     element: <FileDetails />,
     loader: fileDetailsLoader,
+  },
+  {
+    path: ':fileType/builder',
+    element: <FileBuilder />,
+    loader: fileBuilderLoader,
   },
 ];
 

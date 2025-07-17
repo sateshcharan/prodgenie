@@ -6,7 +6,13 @@ interface DialogStore {
   close: () => void;
 }
 
-export const useDialogStore = create<DialogStore>((set) => ({
+export const useAddDialogStore = create<DialogStore>((set) => ({
+  isOpen: false,
+  open: () => set({ isOpen: true }),
+  close: () => set({ isOpen: false }),
+}));
+
+export const useEditDialogStore = create<DialogStore>((set) => ({
   isOpen: false,
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),

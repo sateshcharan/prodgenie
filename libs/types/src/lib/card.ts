@@ -1,7 +1,8 @@
 interface CardItem {
-  id: number;
+  id: string;
   name: string;
   path: string;
+  thumbnail: string;
   userId: string;
   createdAt: string;
 }

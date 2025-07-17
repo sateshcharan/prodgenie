@@ -1,27 +1,31 @@
 import fs from 'fs/promises';
+import { randomUUID } from 'crypto';
 import { Parser } from 'expr-eval';
+import { Readable } from 'stream';
+import { evaluate } from 'mathjs';
 import get from 'lodash/get';
-import { evaluate, parse } from 'mathjs';
+
+import { prisma } from '@prodgenie/libs/prisma';
+import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
+import { FileHelperService } from '@prodgenie/libs/server-services';
+import { StringService } from '@prodgenie/libs/frontend-services';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
 import { TemplateService } from './template.service.js';
-import { StringService, CrudService } from '../utils/index.js';
-
-import { prisma } from '@prodgenie/libs/prisma';
-import { FileStorageService } from '@prodgenie/libs/supabase';
-import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
-import { date } from 'zod';
+import { ThumbnailService } from './thumbnail.service.js';
 
 const parser = new Parser();
 
 export class JobCardService {
   private fileService = new FileService();
   private fileStorageService = new FileStorageService();
+  private fileHelperService = new FileHelperService();
   private templateService = new TemplateService();
   private pdfService = new PdfService();
-  private crudService = new CrudService();
   private stringService = new StringService();
+  private thumbnailService = new ThumbnailService();
 
   async generateJobCard({
     bom,
@@ -31,28 +35,36 @@ export class JobCardService {
     signedUrl,
     printingDetails,
   }: jobCardRequest) {
-    console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
-
     if (!bom.length) return console.warn('bom is empty');
 
-    const templates: string[] = [];
-    const formulaConfig = await this.crudService.fetchJsonFromSignedUrl(
-      `${user?.org?.name}/config/formula.json`
-    );
-    const onboardingConfig = await this.crudService.fetchJsonFromSignedUrl(
-      `${user?.org?.name}/config/onboarding.json`
-    );
+    console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
+    const templates: string[] = [];
+    const orgId = user?.org?.id;
+
+    const orgCredits = user?.org?.credits;
+
+    //check org credits
+    // if (orgCredits < 10) {
+    //   throw new Error('Not enough credits upgrade your plan');
+    // }
+
+    const materialConfig = await this.fetchOrgConfig(orgId, 'material.json');
+    const standardConfig = await this.fetchOrgConfig(orgId, 'standard.json');
+    const bomConfig = await this.fetchOrgConfig(orgId, 'bom.json');
+
+    const keyword_currentDate = new Date().toISOString().split('T')[0];
     let manualContext = {
       jobCardForm,
       user,
       titleBlock,
       printingDetails,
+      keyword_currentDate,
     };
 
-    const drawingFile = await this.fileService.downloadToTemp(
+    const drawingFile = await this.fileHelperService.downloadToTemp(
       signedUrl,
-      'drawing'
+      'drawing.pdf'
     );
 
     for (const bomItem of bom) {
@@ -64,7 +76,9 @@ export class JobCardService {
         continue;
       }
 
-      const sequence = await this.crudService.fetchJsonFromSignedUrl(
+      const sequenceData = product?.sequenceData;
+
+      const sequence = await this.fileHelperService.fetchJsonFromSignedUrl(
         product.sequencePath
       );
 
@@ -73,27 +87,46 @@ export class JobCardService {
           `${user?.org?.name}/${section.path}`
         );
 
-        const template = await this.fileService.downloadToTemp(
+        const templateData = await prisma.file.findFirst({
+          where: {
+            type: 'template',
+            name: `${section.name}.htm`,
+          },
+          select: {
+            data: true,
+          },
+        });
+
+        if (!templateData) {
+          console.warn(`⚠️ Missing template for: ${section.name}`);
+          continue;
+        }
+
+        const templateDataJson = templateData?.data[section.name];
+        const template = await this.fileHelperService.downloadToTemp(
           sectionUrl,
           section.name
         );
-        const manualFields = formulaConfig[section.name].fields.manual || {};
-        const computedFieldDefs =
-          formulaConfig[section.name].fields.computed || {};
 
-        // transform the context map to replace underscores with dots
-        const transformedContextMap = Object.fromEntries(
-          Object.entries(manualFields).map(([key, value]) => [
-            key,
-            value.replace(/_/g, '.'),
-          ])
+        const manualFields = templateDataJson.fields.manual || {};
+        const computedFieldDefs = templateDataJson.fields.computed || {};
+
+        const context = this.buildContext(
+          Object.fromEntries(
+            Object.entries(manualFields).map(([key, value]: any) => [
+              key,
+              value.replace(/_/g, '.'),
+            ])
+          ),
+          manualContext
         );
-
-        const context = this.buildContext(transformedContextMap, manualContext);
 
         const evalContext = Object.entries({
           sectionName: section.name,
-          onboardingConfig,
+          materialConfig,
+          standardConfig,
+          sequenceData,
+          bomConfig,
           ...context,
           ...this.stringService.prefixKeys('bomItem', bomItem),
           ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
@@ -112,6 +145,7 @@ export class JobCardService {
           template,
           { ...context, ...computedFields }
         );
+
         templates.push(populatedTemplate);
       }
       templates.push(`<div style="page-break-after: always;"></div>`);
@@ -126,8 +160,27 @@ export class JobCardService {
     console.log(`Job card saved to ${outputPath}`);
 
     const jobCardUrl = await this.uploadJobCard(outputPath, user);
+
+    // Deduct 10 credits
+    // await prisma.org.update({
+    //   where: { id: orgId },
+    //   data: { credits: { decrement: 10 } },
+    // });
+
+    await fs.rm('./tmp', { recursive: true });
+
     return jobCardUrl;
-    // Optionally clean temp files: await fs.rm('./tmp', { recursive: true });
+  }
+
+  private async fetchOrgConfig(orgId: string, name: string) {
+    const configFile = await prisma.file.findFirst({
+      where: { orgId, name, type: 'config' },
+      select: { path: true },
+    });
+
+    return await this.fileHelperService.fetchJsonFromSignedUrl(
+      `${configFile?.path}`
+    );
   }
 
   private async identifyProduct(item: BomItem) {
@@ -137,6 +190,7 @@ export class JobCardService {
       ''
     ); // remove common suffixes
     const fallbackKeyword = baseKeyword.toLowerCase();
+
     try {
       // 1. Try exact match
       const exactMatch = await prisma.file.findFirst({
@@ -148,12 +202,15 @@ export class JobCardService {
           },
         },
       });
+
       if (exactMatch) {
         return {
           sequenceId: exactMatch.id,
           sequencePath: exactMatch.path,
+          sequenceData: exactMatch.data,
         };
       }
+
       // 2. Try partial/fuzzy match
       const partialMatch = await prisma.file.findFirst({
         where: {
@@ -164,12 +221,15 @@ export class JobCardService {
           },
         },
       });
+
       if (partialMatch) {
         return {
           sequenceId: partialMatch.id,
           sequencePath: partialMatch.path,
+          sequenceData: partialMatch.data,
         };
       }
+
       console.warn(`⚠️ No sequence match for: ${item.description}`);
       return null;
     } catch (error) {
@@ -188,7 +248,7 @@ export class JobCardService {
     return Object.fromEntries(
       Object.entries(computedFields).map(([key, formula]) => {
         try {
-          if (formula === 'depField') {
+          if (formula === 'keyword_depField') {
             return [key, this.evaluateDepFields(context, key)];
           }
           return [key, parser.evaluate(formula, context)];
@@ -200,101 +260,102 @@ export class JobCardService {
     );
   }
 
-  // private evaluateDepFields(context: Record<string, any>, depField: string) {
-  //   const {
-  //     sectionName,
-  //     onboardingConfig,
-  //     bomItem_material,
-  //     bomItem_description,
-  //   } = context;
-  //   const materialThickness =
-  //     onboardingConfig.material[
-  //       bomItem_material.toLowerCase().replace(/\s/g, '')
-  //     ];
-  //   const depFieldFormula =
-  //     onboardingConfig.product[bomItem_description.toLowerCase()].depField[
-  //       depField
-  //     ];
-  //   const commonFieldFormulas =
-  //     onboardingConfig.product[bomItem_description.toLowerCase()].common;
-  //   const productFormulas = { ...commonFieldFormulas, depFieldFormula };
-  //   const depFieldContext = { ...context, materialThickness };
-  //   const evaluated: Record<string, number> = { ...depFieldContext };
-
-  //   const evaluateField = (key: string) => {
-  //     if (evaluated[key] !== undefined) return evaluated[key];
-
-  //     const expr = productFormulas[key];
-  //     if (!expr) throw new Error(`Expression for "${key}" not found`);
-
-  //     // Replace JS-style ternary with mathjs-compatible if needed
-  //     const safeExpr = expr.replace(/\?/g, ' ? ').replace(/:/g, ' : ');
-
-  //     // Replace variables in the expression with evaluated values
-  //     const compiled = parse(safeExpr);
-  //     const result = compiled.evaluate(evaluated);
-  //     evaluated[key] = result;
-  //     return result;
-  //   };
-
-  //   // Evaluate all fields
-  //   Object.keys(productFormulas).forEach((key) => evaluateField(key));
-
-  //   return evaluated.depFieldFormula;
-  // }
-
   private evaluateDepFields(
     context: Record<string, any>,
     depField: string
   ): number | string {
-    const { onboardingConfig, bomItem_material, bomItem_description } = context;
+    const {
+      sequenceData,
+      materialConfig,
+      bomItem_material,
+      bomItem_description,
+    } = context;
 
     const normalizeKey = (str: string) => str.toLowerCase().replace(/\s/g, '');
 
-    const materialThickness =
-      onboardingConfig.material[normalizeKey(bomItem_material)];
-    const productConfig =
-      onboardingConfig.product[normalizeKey(bomItem_description)];
-    const { common = {}, depField: depFields = {} } = productConfig;
+    const materialThickness = materialConfig[normalizeKey(bomItem_material)];
 
+    const prodConfig = sequenceData[normalizeKey(bomItem_description)];
+    const { common = {}, depField: depFields = {} } = prodConfig;
     const depFieldExpr = depFields[depField];
+
     if (!depFieldExpr)
       throw new Error(`depField expression for "${depField}" not found`);
 
-    const formulas = { ...common };
-    const evaluated: Record<string, number> = { ...context, materialThickness };
+    const evaluated: Record<string, any> = { ...context, materialThickness };
 
-    const evaluateField = (key: string): number => {
-      if (evaluated[key] !== undefined) return evaluated[key];
-      const expr = formulas[key];
-      if (!expr) throw new Error(`Expression for "${key}" not found`);
-      const safeExpr = expr.replace(/\?/g, ' ? ').replace(/:/g, ' : ');
-      const result = evaluate(safeExpr, evaluated);
-      evaluated[key] = result;
-      return result;
-    };
+    // Match all ${...} references in the depField expression
+    const referencedKeys = Array.from(
+      depFieldExpr.matchAll(/\$\{(\w+)\}/g),
+      (match: any) => match[1]
+    );
 
-    Object.keys(formulas).forEach(evaluateField);
+    // Recursively resolve each referenced key
+    for (const key of referencedKeys) {
+      if (evaluated[key] === undefined) {
+        evaluated[key] = this.resolveField(key, common, context, evaluated);
+      }
+    }
 
-    // Handle string interpolation for depField (e.g. "${flatLen} x ${flatWid}")
-    const template = depFieldExpr;
-    const interpolated = template.replace(/\$\{(\w+)\}/g, (_, varName) => {
-      const val = evaluated[varName];
-      if (val === undefined)
-        throw new Error(
-          `Variable "${varName}" not found for template substitution`
-        );
+    // Replace ${...} placeholders with resolved values
+    const result = depFieldExpr.replace(/\$\{(\w+)\}/g, (_, key: string) => {
+      const val = evaluated[key];
+      if (val === undefined) {
+        throw new Error(`Missing value for ${key}`);
+      }
       return val.toString();
     });
 
-    return interpolated;
+    return result;
+
+    // for (const key of Object.keys(common)) {
+    //   if (evaluated[key] === undefined) {
+    //     const safeExpr = common[key].replace(/\?/g, ' ? ').replace(/:/g, ' : ');
+    //     evaluated[key] = evaluate(safeExpr, evaluated);
+    //   }
+    // }
+
+    // Handle string interpolation for depField (e.g. "${flatLen} x ${flatWid}")
+    // return depFieldExpr.replace(/\$\{(\w+)\}/g, (_: any, varName: any) => {
+    //   const val = evaluated[varName];
+    //   if (val === undefined)
+    //     throw new Error(
+    //       `Variable "${varName}" not found in depField interpolation`
+    //     );
+    //   return val.toString();
+    // });
+  }
+
+  private resolveField(
+    key: string,
+    formulas: Record<string, string>,
+    context: Record<string, any>,
+    cache: Record<string, any>
+  ): any {
+    if (cache[key] !== undefined) return cache[key];
+    const expr = formulas[key];
+    if (!expr) throw new Error(`Formula for "${key}" not found`);
+
+    // Replace ${...} recursively
+    const resolvedExpr = expr.replace(/\$\{(\w+)\}/g, (_, varName) => {
+      return this.resolveField(varName, formulas, context, cache);
+    });
+
+    try {
+      const result = evaluate(resolvedExpr, { ...context, ...cache });
+      cache[key] = result;
+      return result;
+    } catch (err) {
+      console.warn(`Failed to evaluate ${key}:`, resolvedExpr, err);
+      return null;
+    }
   }
 
   private async uploadJobCard(filePath: string, user: string): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
     const fileName = filePath.split('/').pop();
-
     const fakeMulterFile: Express.Multer.File = {
+      id: randomUUID(),
       fieldname: 'file',
       originalname: fileName,
       encoding: '7bit',
@@ -313,6 +374,24 @@ export class JobCardService {
       user
     );
 
+    const thumbnailBuffer = await this.thumbnailService.generate(
+      fakeMulterFile,
+      'jobCard'
+    );
+    const thumbnailFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: `${jobCard[0].id}_thumbnail.png`,
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: thumbnailBuffer.length,
+      buffer: thumbnailBuffer,
+      destination: '',
+      filename: '',
+      path: '',
+      stream: Readable.from(thumbnailBuffer),
+    };
+
+    await this.thumbnailService.set(thumbnailFile, jobCard[0].id, user);
     return await this.fileStorageService.getSignedUrl(jobCard[0].path);
   }
 
@@ -322,6 +401,7 @@ export class JobCardService {
       orderBy: { createdAt: 'desc' },
       select: { name: true },
     });
+
     const prefix = `${org.name.slice(0, 3).toUpperCase()}-JC-`;
     const lastNumber = parseInt(
       latest?.name?.split('.')[0].split('-')[2] || '0',
@@ -341,32 +421,20 @@ export class JobCardService {
 
   buildContext(map: Record<string, string>, source: Record<string, any>) {
     const output: Record<string, any> = {};
-
     for (const [key, expression] of Object.entries(map)) {
       const arrayMatch = expression.match(/^(.*)\[\](?:\.(.*))?$/);
-
       if (arrayMatch) {
-        const arrPath = arrayMatch[1]; // e.g. "printingDetails"
-        const subPath = arrayMatch[2]; // e.g. "name" or undefined
-
+        const [_, arrPath, subPath] = arrayMatch;
         const arr = get(source, arrPath);
-
-        if (Array.isArray(arr)) {
-          if (subPath) {
-            output[key] = arr.map((item) =>
-              this.evaluateSimpleConcat(subPath, item)
-            );
-          } else {
-            output[key] = arr;
-          }
-        } else {
-          output[key] = [];
-        }
+        output[key] = Array.isArray(arr)
+          ? subPath
+            ? arr.map((item) => this.evaluateSimpleConcat(subPath, item))
+            : arr
+          : [];
       } else {
         output[key] = this.evaluateSimpleConcat(expression, source);
       }
     }
-
     return output;
   }
 

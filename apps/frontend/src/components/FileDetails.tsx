@@ -3,6 +3,7 @@ import { useLocation, useLoaderData } from 'react-router-dom';
 
 import JobCard from './JobCard';
 import { parsePdfFromUrl } from '../services/pdfService';
+import { ExcelHTMLViewer } from '../utils';
 
 const FileDetails = () => {
   const { fileId, fileType } = useLoaderData() as {
@@ -30,7 +31,11 @@ const FileDetails = () => {
   }, [signedUrl, fileId]);
 
   return fileType === 'drawing' ? (
-    <div className="grid grid-cols-[auto,1fr] w-full h-screen">
+    <div
+      className={`grid ${
+        tables ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'
+      } w-full h-screen`}
+    >
       {tables && (
         <div className="p-4 bg-white rounded-lg overflow-auto">
           <JobCard
@@ -45,6 +50,10 @@ const FileDetails = () => {
         <iframe src={signedUrl} className="w-full h-full" title="PDF Preview" />
       </div>
     </div>
+  ) : fileType === 'template' ? (
+    <ExcelHTMLViewer url={signedUrl} />
+  ) : fileType === 'sequence' ? (
+    <ExcelHTMLViewer url={signedUrl} />
   ) : (
     <div>
       <iframe src={signedUrl} className="w-full h-screen" title="PDF Preview" />

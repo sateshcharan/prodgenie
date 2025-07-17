@@ -1,11 +1,18 @@
 import { api } from '../utils';
 
+import { apiRoutes } from '@prodgenie/libs/constant';
+
 export const fetchFilesByType = async (fileType: string) => {
-  const { data } = await api.get(`/api/files/${fileType}/list`);
+  const { data } = await api.get(`${apiRoutes.files.base}/${fileType}/list`);
   return data?.data || [];
 };
 
-export const deleteFile = async (fileType: string, fileId: number) => {
+export const getThumbnail = async (fileId: string) => {
+  const { data } = await api.get(`/api/thumbnail/get/${fileId}`);
+  return data?.data?.path;
+};
+
+export const deleteFile = async (fileType: string, fileId: string) => {
   await api.delete(`/api/files/${fileType}/${fileId}`);
 };
 

@@ -1,6 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Pencil, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+
 import { api } from '../utils';
+
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 interface EditableTitleProps {
   value: string;
@@ -37,7 +40,7 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
     if (newText !== value) onSave?.(newText);
 
     //call api to rename file
-    const response = await api.put(`/api/files/${fileType}`, {
+    const response = await api.put(`${apiRoutes.files.base}/${fileType}`, {
       newName: newText,
       fileId: fileId,
     });

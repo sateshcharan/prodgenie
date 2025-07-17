@@ -35,6 +35,21 @@
     },
     {
       "path": "./libs/db"
+    },
+    {
+      "path": "./libs/workers"
+    },
+    {
+      "path": "./libs/queues"
+    },
+    {
+      "path": "./libs/redis"
+    },
+    {
+      "path": "./libs/frontend-services"
+    },
+    {
+      "path": "./libs/server-services"
     }
   ]
 }

@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { set, useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { FormProvider, useForm } from 'react-hook-form';
+
+import { api } from '../utils';
+import BomTable from './BomTable';
+import TitleBlock from './TitleBlock';
+import PrintingDetail from './PrintingDetail';
+import { generateJobCard } from '../services/jobCardService';
 
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   FormField,
   FormItem,
   FormLabel,
@@ -21,99 +27,175 @@ import {
   toast,
   Separator,
 } from '@prodgenie/libs/ui';
+import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
-import { jobCardSchema, JobCardFormValues } from '@prodgenie/libs/schema';
+import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
 
-import BomTable from './BomTable';
-import { generateJobCard } from '../services/jobCardService';
-import { BomItem } from '@prodgenie/libs/types';
-import { api } from '../utils';
-import TitleBlock from './TitleBlock';
-import PrintingDetail from './PrintingDetail';
+interface JobCardProps {
+  tables: {
+    data?: {
+      bom: BomItem[];
+      titleBlock: any;
+      printingDetails?: any;
+    };
+  };
+  fileId: string;
+  signedUrl: string;
+  setJobCardUrl: (url: string) => void;
+}
 
 const JobCard = ({
   tables,
   fileId,
   signedUrl,
   setJobCardUrl,
-}: {
-  tables: {
-    data?: { bom: BomItem[]; titleBlock: any; printingDetails?: any };
-  };
-  fileId: string;
-  signedUrl: string;
-  setJobCardUrl: (url: string) => void;
-}) => {
-  const navigate = useNavigate();
+}: JobCardProps) => {
   const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
     useBomStore();
-  const {
-    setJobCardNumber,
-    setScheduleDate,
-    setPoNumber,
-    setProductionQty,
-    setRmBoardSize,
-  } = useJobCardStore();
-  const [activeItem, setActiveItem] = useState('item-1');
+  const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
+    useJobCardStore();
 
+  const [activeTab, setActiveTab] = useState('select');
+  const [isLoading, setIsLoading] = useState(true);
+  const { jobCardData, setJobCardData } = useJobCardStore();
+
+  const bom = tables.data?.bom || [];
   const titleBlock = tables.data?.titleBlock;
-  const bom = tables.data?.bom;
   const printingDetails = tables.data?.printingDetails;
 
   useEffect(() => {
+    if (bom.length) {
+      setBom(bom);
+      setTitleBlock(titleBlock);
+      setSelectedItems(bom.map((item) => item.slNo));
+    } else {
+      setSelectedItems([]);
+    }
+  }, [fileId, bom]);
+
+  useEffect(() => {
     const fetchJobCardNo = async () => {
-      const jobCardNo = await api.get(
-        `${apiRoutes.jobCard.base}${apiRoutes.jobCard.getNumber}`
-      );
-      form.setValue('jobCardNumber', jobCardNo.data.data);
+      try {
+        const jobCardNo = await api.get(
+          `${apiRoutes.jobCard.base}${apiRoutes.jobCard.getNumber}`
+        );
+        form.setValue('jobCardNumber', jobCardNo.data.data);
+      } catch (err) {
+        toast.error('Failed to fetch job card number.');
+      }
     };
     fetchJobCardNo();
   }, []);
 
   useEffect(() => {
-    if (tables?.data?.bom?.length) {
-      setBom(tables.data.bom);
-      setTitleBlock(tables.data.titleBlock);
-      setSelectedItems(tables.data.bom.map((item) => item.slNo));
-    } else {
-      setSelectedItems([]); // reset when there's no BOM
+    const sequences = bom.map((b) => b.description);
+    const getTemplateFieldsFromSequence = async (sequences: any[]) => {
+      try {
+        const responses = await Promise.all(
+          sequences.map(async (sequence) => {
+            const res = await api.get(
+              `${apiRoutes.sequence.base}/getJobCardDataFromSequence/${sequence}`
+            );
+            return res.data;
+          })
+        );
+        setJobCardData(...responses);
+      } catch (err) {
+        console.error('Error fetching job card data:', err);
+      }
+    };
+    if (Array.isArray(sequences) && sequences.length > 0) {
+      getTemplateFieldsFromSequence(sequences);
     }
-  }, [fileId, tables?.data?.bom]);
+  }, [bom]);
 
-  const form = useForm<JobCardFormValues>({
-    resolver: zodResolver(jobCardSchema),
-    defaultValues: jobCardFields.reduce((acc, field) => {
+  // ⏳ Dynamic schema and fields
+  const dynamicFields = jobCardData[0]?.fields;
+  const dynamicSchema = (function (z) {
+    return eval(jobCardData[0]?.schema);
+  })(z); // dangerous execuction
+
+  const mergedSchema = useMemo(() => {
+    if (!dynamicSchema) return jobCardSchema;
+    return jobCardSchema.merge(dynamicSchema);
+  }, [dynamicSchema]);
+
+  const staticDefaults = useMemo(() => {
+    return jobCardFields.reduce((acc, field) => {
       acc[field.name] = field.defaultValue;
       return acc;
-    }, {} as JobCardFormValues),
+    }, {} as jobCardFormValues);
+  }, []);
+
+  const dynamicDefaults = useMemo(() => {
+    if (!dynamicFields?.fields) return {};
+    return dynamicFields.fields.reduce((acc, field) => {
+      const [parent, child] = field.name.split('.');
+      acc[parent] = acc[parent] || {};
+      acc[parent][child] = field.defaultValue;
+      return acc;
+    }, {} as any);
+  }, [dynamicFields]);
+
+  const form = useForm<jobCardFormValues>({
+    resolver: zodResolver(mergedSchema),
+    defaultValues: {
+      ...staticDefaults,
+      ...dynamicDefaults,
+    },
   });
 
-  const onSubmit = async (jobCardForm: JobCardFormValues) => {
+  // ✅ Ensure defaults reset once jobCardData is ready
+  useEffect(() => {
+    if (dynamicFields?.fields) {
+      form.reset({
+        ...staticDefaults,
+        ...dynamicDefaults,
+      });
+      setIsLoading(false); // ✅ schema + defaults ready
+    }
+  }, [dynamicFields]);
+
+  const onSubmit = async (jobCardForm: jobCardFormValues) => {
     try {
       setJobCardNumber(jobCardForm.jobCardNumber);
       setScheduleDate(new Date(jobCardForm.scheduleDate));
       setPoNumber(jobCardForm.poNumber);
       setProductionQty(jobCardForm.productionQty);
-      setRmBoardSize({
-        length: jobCardForm.rmBoardSize.length,
-        width: jobCardForm.rmBoardSize.width,
-      });
+
+      function flattenObject(
+        obj: Record<string, any>,
+        parentKey = '',
+        result: Record<string, any> = {}
+      ): Record<string, any> {
+        for (const key in obj) {
+          const value = obj[key];
+          const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            flattenObject(value, fullKey, result);
+          } else {
+            result[fullKey] = value;
+          }
+        }
+        return result;
+      }
 
       const jobCardData = {
-        bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
+        bom: bom.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,
         printingDetails,
         file: { id: fileId },
-        jobCardForm,
+        jobCardForm: jobCardForm,
         signedUrl,
       };
+
       const jobCard = await generateJobCard(jobCardData);
       setJobCardUrl(jobCard.data.url);
-      // navigate('/dashboard/jobCard');
 
       toast.success('Your Job Card is being generated. Please wait.');
-      setActiveItem('item-2');
+      setActiveTab('form');
     } catch (err) {
       console.error(err);
       toast.error('Failed to generate Job Card. Please try again.');
@@ -125,64 +207,56 @@ const JobCard = ({
       <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <Accordion
-              type="single"
-              collapsible
-              value={activeItem}
-              onValueChange={(value) => setActiveItem(value)}
-              className="w-[400px] space-y-4"
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full space-y-4"
             >
-              {/* Item Selection Section */}
-              <AccordionItem value="item-1">
-                <AccordionTrigger className="hover:no-underline p-4  bg-secondary rounded-lg">
-                  Select Items
-                </AccordionTrigger>
-                <AccordionContent className="p-4 flex flex-col gap-4">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="select">Bom Details</TabsTrigger>
+                <TabsTrigger value="form">Job Card Details</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="select">
+                <div className="p-4 flex flex-col gap-4">
                   <BomTable
-                    bom={bom || []}
+                    bom={bom}
                     fileId={fileId}
-                    setActiveItem={setActiveItem}
+                    setActiveItem={() => setActiveTab('form')}
                   />
-
                   <Separator />
-
                   <TitleBlock titleBlock={titleBlock} fileId={fileId} />
-
                   {printingDetails && (
                     <>
                       <Separator />
                       <PrintingDetail printingDetails={printingDetails} />
                     </>
                   )}
-                </AccordionContent>
-              </AccordionItem>
+                </div>
+              </TabsContent>
 
-              {/* Job Card Form Section */}
-              <AccordionItem value="item-2" className="border-none">
-                <AccordionTrigger className="hover:no-underline py-4 px-6 bg-secondary rounded-lg">
-                  Please enter Job Card details
-                </AccordionTrigger>
-                <AccordionContent className="p-4">
-                  {jobCardFields.map((f) => (
+              <TabsContent value="form">
+                <div className="p-4">
+                  {jobCardFields.map((item) => (
                     <FormField
                       control={form.control}
-                      key={f.name}
-                      name={f.name as keyof JobCardFormValues}
+                      key={item.name}
+                      name={item.name as keyof jobCardFormValues}
                       render={({ field }) => (
                         <FormItem className="pt-4">
-                          <FormLabel>{f.label}</FormLabel>
+                          <FormLabel>{item.label}</FormLabel>
                           <FormControl>
                             <Input
-                              type={f.type}
-                              placeholder={f.placeholder}
-                              {...field}
-                              onChange={(e) => {
-                                const value =
-                                  f.type === 'number'
+                              type={item.type}
+                              placeholder={item.placeholder}
+                              value={field.value ?? ''}
+                              onChange={(e) =>
+                                field.onChange(
+                                  item.type === 'number'
                                     ? Number(e.target.value)
-                                    : e.target.value;
-                                field.onChange(value);
-                              }}
+                                    : e.target.value
+                                )
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -191,59 +265,46 @@ const JobCard = ({
                     />
                   ))}
 
-                  <div className="flex flex-col pt-4">
-                    <FormLabel className="w-full">RM Board Size</FormLabel>
-                    <div className="flex">
-                      <FormField
-                        control={form.control}
-                        name="rmBoardSize.length"
-                        render={({ field }) => (
-                          <FormItem className="w-1/2 pr-2">
-                            <FormLabel>Length (mm)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="e.g. 1300"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="rmBoardSize.width"
-                        render={({ field }) => (
-                          <FormItem className="w-1/2 pl-2">
-                            <FormLabel>Width (mm)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="e.g. 1100"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+                  <FormProvider {...form}>
+                    {jobCardData.map((fields, idx) => (
+                      <div className="space-y-4" key={idx}>
+                        {fields?.fields?.map((f) => (
+                          <FormField
+                            control={form.control}
+                            key={f.name}
+                            name={f.name as any}
+                            render={({ field }) => (
+                              <FormItem className="pt-4">
+                                <FormLabel>{f.label}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type={f.type}
+                                    placeholder={f.placeholder}
+                                    value={field.value ?? ''}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        f.type === 'number'
+                                          ? Number(e.target.value)
+                                          : e.target.value
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </FormProvider>
 
                   <Button type="submit" className="w-full mt-4">
                     Generate Job Cards
                   </Button>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </div>
+              </TabsContent>
+            </Tabs>
           </form>
         </Form>
       </CardContent>

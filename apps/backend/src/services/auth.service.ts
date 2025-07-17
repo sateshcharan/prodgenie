@@ -2,61 +2,106 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-import { prisma } from '@prodgenie/libs/prisma';
-import { signupSchema } from '@prodgenie/libs/schema';
 import { FolderService } from './folder.service.js';
 
+import { prisma } from '@prodgenie/libs/prisma';
+import { signupSchema } from '@prodgenie/libs/schema';
+
 const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
-const saltRounds = parseInt(process.env.SALT_ROUNDS || '10', 10);
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
+
 const folderService = new FolderService();
+
+if (!SECRET_KEY) {
+  throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
+}
+
+interface SignupOwnerPayload {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  orgName: string;
+}
+
+interface SignupInvitePayload {
+  email: string;
+  password: string;
+  name: string;
+  inviteCode: string;
+}
 
 export class AuthService {
   /**
    * Signup a user and create a new organization (Owner/ADMIN)
    */
-  static async signupOwner({ email, password, orgName }: any) {
-    const parseResult = signupSchema.safeParse({
+  static async signupOwner({
+    name,
+    email,
+    password,
+    confirmPassword,
+    orgName,
+  }: SignupOwnerPayload) {
+    const result = signupSchema.safeParse({
+      name,
       email,
       password,
+      confirmPassword,
       orgName,
     });
-    if (!parseResult.success) throw new Error(parseResult.error.message);
 
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    if (!result.success) {
+      const formatted = result.error.issues.map((i) => i.message).join(', ');
+      throw new Error(`Validation failed: ${formatted}`);
+    }
 
-    // Scaffold folders for the organization
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Scaffold storage folder for the new organization
     await folderService.scaffoldFolder(orgName);
 
-    const org = await prisma.org.findUnique({
+    // Create org if not exists (optional safety)
+    const org = await prisma.org.upsert({
       where: { name: orgName },
+      update: {},
+      create: { name: orgName },
     });
 
-    // Create the user and associate the org
-    return prisma.user.create({
+    // Create user with org association
+    const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: orgName,
+        name,
         type: 'OWNER',
         orgId: org.id,
       },
     });
+
+    //create admin user
+    const adminUser = await prisma.user.create({
+      data: {
+        email: `admin@${orgName}.com`,
+        password: await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS),
+        name: 'admin',
+        type: 'ADMIN',
+        orgId: org.id,
+      },
+    });
+
+    return user;
   }
 
   /**
-   * Signup a user using an invite code (Member)
+   * Signup using invite code (Member)
    */
   static async signupWithInvite({
     email,
     password,
     name,
     inviteCode,
-  }: {
-    email: string;
-    password: string;
-    name: string;
-    inviteCode: string;
-  }) {
+  }: SignupInvitePayload) {
     const invite = await prisma.inviteCode.findUnique({
       where: { code: inviteCode },
       include: { org: true },
@@ -66,7 +111,7 @@ export class AuthService {
       throw new Error('Invalid or expired invite code');
     }
 
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await prisma.user.create({
       data: {
@@ -78,7 +123,6 @@ export class AuthService {
       },
     });
 
-    // Optionally mark invite as used (optional)
     await prisma.inviteCode.update({
       where: { code: inviteCode },
       data: { usedBy: user.id },
@@ -88,25 +132,27 @@ export class AuthService {
   }
 
   /**
-   * Generate a JWT token
+   * Generate JWT for authentication
    */
-  static generateToken(payload: { id: string; email: string }) {
+  static generateToken(payload: { id: string; email: string }): string {
     return jwt.sign(payload, SECRET_KEY, {
       expiresIn: '1h',
     });
   }
 
   /**
-   * Generate a unique invite code for an org
+   * Generate a short-lived invite code for an org
    */
   static async generateInviteCode(orgId: string, expiresInHours = 24) {
-    const code = crypto.randomUUID().slice(0, 8);
+    const code = crypto.randomUUID().slice(0, 8); // simple 8-char code
+
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
     return prisma.inviteCode.create({
       data: {
         code,
         orgId,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * expiresInHours),
+        expiresAt,
       },
     });
   }

@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Card,
   CardHeader,
@@ -15,6 +16,7 @@ type SectionCardProps = {
   trend: string;
   trendDirection: 'up' | 'down';
   subtext: string;
+  button?: React.ReactNode;
 };
 
 export function SectionCard({
@@ -24,6 +26,7 @@ export function SectionCard({
   trend,
   trendDirection,
   subtext,
+  button,
 }: SectionCardProps) {
   const TrendIcon = trendDirection === 'up' ? TrendingUpIcon : TrendingDownIcon;
   const trendColor =
@@ -36,7 +39,7 @@ export function SectionCard({
         <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
           {value}
         </CardTitle>
-        <div className="absolute right-4 top-4">
+        <div className="absolute right-4 top-4 ">
           <Badge
             variant="outline"
             className={`flex gap-1 rounded-lg text-xs ${trendColor}`}
@@ -44,6 +47,7 @@ export function SectionCard({
             <TrendIcon className="size-3" />
             {trend}
           </Badge>
+          {button && <div className="mt-2">{button}</div>}
         </div>
       </CardHeader>
       <CardFooter className="flex-col items-start gap-1 text-sm">

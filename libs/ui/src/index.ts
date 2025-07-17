@@ -23,6 +23,8 @@ export * from './drawer';
 export * from './dropdown-menu';
 export * from './table';
 export * from './tabs';
+export * from './popover';
+export * from './command';
 
 //components
 export * from './components/pricing-card';
@@ -30,8 +32,12 @@ export * from './components/auth-form';
 export * from './components/toast';
 export * from './components/FileDropzone';
 export * from './components/DialogDropZone';
+export * from './components/DialogEditFile';
 export * from './components/theme-provider';
 export * from './components/mode-toggle';
+export * from './components/nav-configurations';
+export * from './components/nav-builder';
+export * from './components/section-card';
 
 //dashboard components
 export * from './components/chart-area-interactive';
@@ -40,7 +46,6 @@ export * from './components/nav-documents';
 export * from './components/nav-main';
 export * from './components/nav-secondary';
 export * from './components/nav-user';
-export * from './components/section-cards';
 export * from './components/site-header';
 export * from './components/HistoryTable';
 

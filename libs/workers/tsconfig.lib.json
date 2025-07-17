@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "emitDeclarationOnly": false,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../server-services/tsconfig.lib.json"
+    },
+    {
+      "path": "../prisma/tsconfig.lib.json"
+    },
+    {
+      "path": "../redis/tsconfig.lib.json"
+    }
+  ]
+}

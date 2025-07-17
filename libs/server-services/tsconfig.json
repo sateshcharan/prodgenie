@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../constant"
+    },
+    {
+      "path": "../supabase"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

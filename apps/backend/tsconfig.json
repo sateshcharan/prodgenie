@@ -4,6 +4,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/frontend-services"
+    },
+    {
+      "path": "../../libs/server-services"
+    },
+    {
       "path": "../../libs/types"
     },
     {
@@ -13,13 +19,16 @@
       "path": "../../libs/schema"
     },
     {
-      "path": "../../libs/prisma"
-    },
-    {
       "path": "../../libs/constant"
     },
     {
       "path": "../../libs/db"
+    },
+    {
+      "path": "../../libs/prisma"
+    },
+    {
+      "path": "../../libs/queues"
     },
     {
       "path": "./tsconfig.app.json"

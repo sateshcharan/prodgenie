@@ -1,7 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-import { Readable } from 'stream';
-
 import { FileType } from '@prisma/client';
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
@@ -9,19 +5,26 @@ import { FileStorageService } from '@prodgenie/libs/supabase';
 const storageFileService = new FileStorageService();
 
 export class FileService {
-  async uploadFile(files: Express.Multer.File[], fileType: string, user: any) {
+  async uploadFile(filesWithId: any[], fileType: string, user: any) {
     const savedFiles: any[] = [];
-
-    const folder = user?.org?.name.trim();
     const orgId = user?.org?.id;
-    const userId = user.id;
-    if (!folder || !orgId) throw new Error('Organization not found for user');
-    for (const file of files) {
-      const uploadPath = `${folder}/${fileType}/${file.originalname}`;
+    const userId = user?.id;
+    const folder = user?.org?.name?.trim();
+
+    if (!folder || !orgId || !userId) {
+      throw new Error('Organization or user information is missing');
+    }
+
+    for (const file of filesWithId) {
+      const extension = file.originalname.split('.').pop();
+      const uploadPath = `${folder}/${fileType}/${file.id}.${extension}`;
+
       try {
         await storageFileService.uploadFile(uploadPath, file, fileType, user);
+
         const savedFile = await prisma.file.create({
           data: {
+            id: file.id,
             name: file.originalname,
             path: uploadPath,
             userId,
@@ -29,138 +32,163 @@ export class FileService {
             type: fileType as FileType,
           },
         });
+
         savedFiles.push(savedFile);
-      } catch (error) {
-        console.error(`Error uploading file ${file.originalname}:`, error);
-        // Optional: Implement rollback logic here if needed
+      } catch (err) {
+        console.error(`Upload failed for ${file.originalname}:`, err);
+        // Optional rollback logic here if required
       }
     }
+
     return savedFiles;
   }
 
-  async updateFile(fileId: string, update: any) {
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-    });
+  async updateFile(fileId: string, data: Record<string, any>) {
+    const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
-    const existingData = file.data || {};
+    const mergedData = { ...(file.data || {}), ...data };
 
-    const mergedData = {
-      ...existingData,
-      ...update,
-    };
-
-    const updatedFile = await prisma.file.update({
+    return prisma.file.update({
       where: { id: fileId },
-      data: {
-        data: mergedData,
-      },
+      data: { data: mergedData },
     });
-
-    return updatedFile;
   }
 
-  async listFiles(
+  async replaceFile(
+    fileId: string,
     fileType: string,
-    orgId: string
-  ): Promise<{ data: any[] | null; error: string | null }> {
-    try {
-      const extractedFileType = fileType as FileType;
-      const files = await prisma.file.findMany({
-        where: {
-          orgId,
-          type: extractedFileType,
-        },
-      });
+    uploadedFiles: any[],
+    user: any
+  ) {
+    const dbFile = await prisma.file.findUnique({ where: { id: fileId } });
+    if (!dbFile) throw new Error('File not found');
 
-      if (!files.length) {
-        return { data: null, error: 'No files found' };
-      }
-      const filesWithUrls = await Promise.all(
-        files.map(async (file) => ({
-          ...file,
-          path: await storageFileService.getSignedUrl(file.path),
-        }))
-      );
-      return { data: filesWithUrls, error: null };
-    } catch (error: any) {
-      return { data: null, error: error.message };
-    }
+    const replacement = await storageFileService.replaceFile(
+      dbFile.path,
+      uploadedFiles[0],
+      fileType,
+      user
+    );
+
+    return prisma.file.update({
+      where: { id: fileId },
+      data: { path: replacement.path },
+    });
+  }
+
+  async listFiles(fileType: string, orgId: string) {
+    const files = await prisma.file.findMany({
+      where: { orgId, type: fileType as FileType },
+    });
+
+    if (!files.length) return { data: null, error: 'No files found' };
+
+    const data = await Promise.all(
+      files.map(async (file) => ({
+        ...file,
+        path: await storageFileService.getSignedUrl(file.path),
+      }))
+    );
+
+    return { data, error: null };
+  }
+
+  async getFileById(fileId: string, orgId: string) {
+    const file = await prisma.file.findUnique({ where: { id: fileId, orgId } });
+    if (!file) return { data: null, error: 'No file found' };
+
+    const signedUrl = await storageFileService.getSignedUrl(file.path);
+    return { data: { ...file, path: signedUrl }, error: null };
+  }
+
+  async getFileByName(fileName: string, orgId: string) {
+    const file = await prisma.file.findFirst({
+      where: { name: fileName, orgId },
+    });
+    if (!file) return { data: null, error: 'No file found' };
+
+    const signedUrl = await storageFileService.getSignedUrl(file.path);
+    return { data: { ...file, signedUrl }, error: null };
+  }
+
+  async getFileData(fileId: string) {
+    const data = await prisma.file.findUnique({
+      where: { id: fileId },
+      select: { data: true },
+    });
+    if (!data) return { data: null, error: 'No file found' };
+    return data;
+  }
+
+  async getThumbnail(fileId: string, orgId: string) {
+    const file = await prisma.file.findUnique({ where: { id: fileId, orgId } });
+    if (!file) return { data: null, error: 'No file found' };
+
+    const signedUrl = await storageFileService.getSignedUrl(file.thumbnail);
+    return { data: { ...file, path: signedUrl }, error: null };
+  }
+
+  async updateThumbnail(
+    reqFiles: Express.Multer.File[],
+    fileId: string,
+    user: any
+  ) {
+    if (!reqFiles?.length) throw new Error('No files uploaded');
+    const uploadedFile = reqFiles[0];
+
+    const dbFile = await prisma.file.findUnique({
+      where: { id: fileId },
+      select: { thumbnail: true },
+    });
+
+    if (!dbFile) throw new Error('File not found');
+
+    const newThumb = await storageFileService.replaceFile(
+      dbFile.thumbnail,
+      uploadedFile,
+      'thumbnail',
+      user
+    );
+
+    return prisma.file.update({
+      where: { id: fileId },
+      data: { thumbnail: newThumb.path },
+    });
   }
 
   async deleteFile(fileId: string, fileType: string, user: any) {
-    try {
-      const folder = user?.org?.name.trim();
-      const userId = user.id;
-      const orgId = user.org.id;
-      if (!folder) throw new Error('Organization not found for user');
-      const file = await prisma.file.findUnique({
-        where: { id: fileId },
-      });
-      if (!file) throw new Error('File not found');
-      const fullPath = file.path; // Trust path from database
-      await storageFileService.deleteFile(fullPath, fileType, user);
-      const deletedFile = await prisma.file.delete({
-        where: { id: fileId },
-      });
-      return deletedFile;
-    } catch (error: any) {
-      throw new Error(error.message);
+    const org = user?.org;
+    const userId = user?.id;
+    const folder = org?.name?.trim();
+
+    if (!folder || !org?.id || !userId) {
+      throw new Error('User or organization details missing');
     }
+
+    const file = await prisma.file.findUnique({ where: { id: fileId } });
+    if (!file) throw new Error('File not found');
+
+    await storageFileService.deleteFile(file.path, fileType, user);
+
+    return prisma.file.delete({ where: { id: fileId } });
   }
 
   async renameFile(fileId: string, newName: string) {
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-    });
+    const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
-    const oldPath = file.path;
-    const extension = file.name.split('.').pop();
-    const newPath = `${file.path
-      .split('/')
-      .slice(0, -1)
-      .join('/')}/${newName}.${extension}`;
-    await storageFileService.renameFile(oldPath, newPath);
-    const updatedFile = await prisma.file.update({
+
+    const extension = file.path.split('.').pop();
+    const newPath =
+      file.path.split('/').slice(0, -1).join('/') + `/${fileId}.${extension}`;
+
+    const newNameWithExtension = newName + '.' + extension;
+
+    await storageFileService.renameFile(file.path, newPath);
+
+    return prisma.file.update({
       where: { id: fileId },
-      data: { path: newPath, name: newName },
+      data: { name: newNameWithExtension, path: newPath },
     });
-    return updatedFile;
-  }
-
-  async downloadToTemp(signedUrl: string, filename: string) {
-    const tempDir = './tmp';
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    // Extract the file extension from the original filename or URL
-    const extension =
-      path.extname(filename) ||
-      new URL(signedUrl).pathname.split('.').pop() ||
-      '';
-    const filenameWithExt = extension
-      ? `${filename}${extension.startsWith('.') ? extension : `.${extension}`}`
-      : filename;
-
-    const tempFilePath = path.join(tempDir, filenameWithExt.toLowerCase());
-    const response = await fetch(signedUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${response.statusText}`);
-    }
-    const webStream = response.body;
-    if (!webStream) {
-      throw new Error('Response body is null');
-    }
-    // Convert Web Stream -> Node.js Stream
-    const nodeStream = Readable.fromWeb(webStream as any);
-    const writeStream = fs.createWriteStream(tempFilePath);
-    await new Promise<void>((resolve, reject) => {
-      nodeStream.pipe(writeStream);
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
-    });
-    return tempFilePath;
   }
 }

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '../dialog';
 
-import { useDialogStore } from '@prodgenie/libs/store';
+import { useAddDialogStore } from '@prodgenie/libs/store';
 import { FileDropzone } from './FileDropzone';
 import { ScrollArea } from '../scroll-area';
 import { Button } from '../button';
@@ -27,7 +27,7 @@ export function DialogDropZone({
   submitUrl,
   onUploadSuccess,
 }: DialogDropZoneProps) {
-  const { isOpen, close } = useDialogStore();
+  const { isOpen, close } = useAddDialogStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleFilesSelected = (files: File[]) => {

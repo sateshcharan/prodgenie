@@ -5,9 +5,11 @@ import { UploadCloud } from 'lucide-react';
 
 interface FileDropzoneProps {
   onFilesSelected: (files: File[]) => void;
+  accept?: Record<string, string[]>;
 }
 
 export const FileDropzone: React.FC<FileDropzoneProps> = ({
+  accept,
   onFilesSelected,
 }) => {
   const onDrop = useCallback(
@@ -24,7 +26,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     accept: {
       'application/json': ['.json'],
       'application/pdf': ['.pdf'],
-      'text/html': ['.html'],
+      'text/html': ['.html', '.htm'],
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      ...accept,
     },
   });
 

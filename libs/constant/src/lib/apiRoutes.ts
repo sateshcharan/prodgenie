@@ -16,8 +16,20 @@ export const apiRoutes = {
     upload: (fileType: string) => `/${fileType}/upload`,
     list: (fileType: string) => `/${fileType}/list`,
     delete: (fileType: string, fileId: string) => `/${fileType}/${fileId}`,
+    getById: (fileId: string) => `/getById/${fileId}`,
+    getByName: (fileName: string) => `/getByName/${fileName}`,
+    getFileData: (fileId: string) => `/getFileData/${fileId}`,
     rename: (fileType: string) => `/${fileType}`,
-    update: (fileId: string) => `/${fileId}`,
+    update: (fileId: string) => `/${fileId}/update`,
+    replace: (fileType: string, fileId: string) =>
+      `/${fileType}/${fileId}/replace`,
+  },
+
+  thumbnail: {
+    base: '/api/thumbnail',
+    get: (fileId: string) => `/get/${fileId}`,
+    set: (fileId: string) => `/set/${fileId}`,
+    update: (fileId: string) => `/update/${fileId}`,
   },
 
   users: {
@@ -40,6 +52,13 @@ export const apiRoutes = {
     getNumber: '/getNumber',
   },
 
+  sequence: {
+    base: '/api/sequence',
+    sync: '/sync',
+    getJobCardDataFromSequence: (sequence: string) =>
+      `/getJobCardDataFromSequence/${sequence}`,
+  },
+
   payment: {
     base: '/api/payment',
     stripeSession: '/stripe/session',
@@ -51,5 +70,6 @@ export const apiRoutes = {
     check: '/check',
     getOrgUsers: '/getOrgUsers',
     getOrgHistory: '/getOrgHistory',
+    getOrgConfig: (configName: string) => `/getOrgConfig/${configName}`,
   },
 };

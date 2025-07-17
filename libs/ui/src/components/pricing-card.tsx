@@ -48,7 +48,14 @@ const PricingCard = ({
       </CardContent>
 
       <CardFooter className="flex justify-center">
-        <Button className="w-full" onClick={onClick}>
+        <Button
+          className="w-full"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            onClick?.();
+          }}
+        >
           Get Started
         </Button>
       </CardFooter>

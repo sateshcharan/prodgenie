@@ -5,54 +5,40 @@ import { AuthService } from '../services/index.js';
 
 export class AuthController {
   static async signupOwner(req: Request, res: Response) {
-    const { email, password, orgName, name } = req.body;
-    try {
-      const user = await AuthService.signupOwner({
-        email,
-        password,
-        orgName,
-        name,
-      });
-      const token = AuthService.generateToken({
-        id: user.id,
-        email: user.email,
-      });
-      res.status(201).json({ user, token });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    const { email, password, confirmPassword, orgName, name } = req.body;
+    const user = await AuthService.signupOwner({
+      email,
+      password,
+      confirmPassword,
+      orgName,
+      name,
+    });
+    const token = AuthService.generateToken({
+      id: user.id,
+      email: user.email,
+    });
+    res.status(201).json({ user, token });
   }
 
   static async signupWithInvite(req: Request, res: Response) {
     const { email, password, name, inviteCode } = req.body;
-    try {
-      const user = await AuthService.signupWithInvite({
-        email,
-        password,
-        name,
-        inviteCode,
-      });
-      const token = AuthService.generateToken({
-        id: user.id,
-        email: user.email,
-      });
-      res.status(201).json({ user, token });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    const user = await AuthService.signupWithInvite({
+      email,
+      password,
+      name,
+      inviteCode,
+    });
+    const token = AuthService.generateToken({
+      id: user.id,
+      email: user.email,
+    });
+    res.status(201).json({ user, token });
   }
 
   static async generateInviteCode(req: Request, res: Response) {
     const { orgId, expiresInHours } = req.body;
-    try {
-      const invite = await AuthService.generateInviteCode(
-        orgId,
-        expiresInHours
-      );
-      res.status(201).json({ invite });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    const invite = await AuthService.generateInviteCode(orgId, expiresInHours);
+    res.status(201).json({ invite });
   }
 
   static async login(req: Request, res: Response) {

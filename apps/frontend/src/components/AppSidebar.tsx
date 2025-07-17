@@ -1,45 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpCircleIcon } from 'lucide-react';
 
 import {
   Sidebar,
+  SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  NavDocuments,
+  SidebarMenuButton,
   NavMain,
+  NavDocuments,
+  NavConfigurations,
+  NavBuilders,
   NavSecondary,
   NavUser,
 } from '@prodgenie/libs/ui';
-import { appSidebarItems } from '@prodgenie/libs/constant';
+import { useUserStore } from '@prodgenie/libs/store';
+import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
 import { api } from '../utils';
 
-export default function AppSidebar({
-  ...props
-}: React.ComponentProps<typeof Sidebar>) {
-  const [userData, setUserData] = useState(null);
-  const [user, setUser] = useState({
-    name: '',
-    email: '',
-    avatar: '',
-  });
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const userData = await api.get('/api/users/getProfile/me');
-      setUserData(userData.data);
-      setUser({
-        name: userData.data.name,
-        email: userData.data.email,
-        avatar: userData.data.avatar,
-      });
-    };
-    fetchUserData();
-  }, []);
+const stringService = new StringService();
+
+export default function AppSidebar(
+  props: React.ComponentProps<typeof Sidebar>
+) {
+  const user = useUserStore((state) => state.user);
+  // const setUser = useUserStore((state) => state.setUser);
+
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       const { data } = await api.get(`${apiRoutes.users.base}/getProfile/me`);
+  //       setUser(data);
+  //     } catch (error) {
+  //       console.error('Failed to fetch user data:', error);
+  //     }
+  //   };
+
+  //   fetchUserData();
+  // }, [setUser]);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -52,28 +55,28 @@ export default function AppSidebar({
             >
               <Link to="/dashboard">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">
-                  {userData?.org?.name
-                    ? userData.org.name.charAt(0).toUpperCase() +
-                      userData.org.name.slice(1)
-                    : ''}
+                <span className="text-base font-semibold capitalize">
+                  {/* {user?.org && stringService.camelToNormal(user?.org?.name)} */}
+                  {user?.org && stringService.camelToNormal(user?.org?.name)}
                 </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={appSidebarItems.navMain} />
         <NavDocuments items={appSidebarItems.documents} />
+        <NavConfigurations items={appSidebarItems.configs} />
+        <NavBuilders items={appSidebarItems.builders} />
         <NavSecondary
           items={appSidebarItems.navSecondary}
           className="mt-auto"
         />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
+
+      <SidebarFooter>{user ? <NavUser user={user} /> : null}</SidebarFooter>
     </Sidebar>
   );
 }

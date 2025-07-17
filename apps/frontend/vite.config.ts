@@ -29,10 +29,12 @@ export default defineConfig(() => ({
   optimizeDeps: {
     // include: ['pdfjs-dist/build/pdf.worker.min.js'],
   },
+  
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
+
   resolve: {
     alias: {
       '@prodgenie/libs/ui': path.resolve(__dirname, '../../libs/ui/src'),
@@ -46,6 +48,14 @@ export default defineConfig(() => ({
         '../../libs/schema/src'
       ),
       '@prodgenie/libs/store': path.resolve(__dirname, '../../libs/store/src'),
+      '@prodgenie/libs/services': path.resolve(
+        __dirname,
+        '../../libs/services/src'
+      ),
+      '@prodgenie/libs/frontend-services': path.resolve(
+        __dirname,
+        '../../libs/frontend-services/src'
+      ),
     },
   },
   build: {
@@ -55,5 +65,6 @@ export default defineConfig(() => ({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    chunkSizeWarningLimit: 2000,
   },
 }));

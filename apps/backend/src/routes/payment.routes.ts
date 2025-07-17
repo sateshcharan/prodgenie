@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, raw } from 'express';
 
 import { PaymentController } from '../controllers/payment.controller';
 
@@ -11,5 +11,11 @@ router.post(
   PaymentController.createStripeSession
 );
 router.post(apiRoutes.payment.upiOrder, PaymentController.createUpiOrder);
+
+router.post(
+  '/stripe/webhook',
+  raw({ type: 'application/json' }),
+  PaymentController.handleStripeWebhook
+);
 
 export { router };

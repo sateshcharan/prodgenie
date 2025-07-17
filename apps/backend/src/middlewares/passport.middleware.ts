@@ -53,7 +53,9 @@ passport.use(
 );
 
 // Middleware for route protection
-const authenticateJWT = passport.authenticate('jwt', { session: false });
+const authenticatePassportJWT = passport.authenticate('jwt', {
+  session: false,
+});
 
 // // Optional: Role-based middleware (ADMIN, OWNER)
 // export const requireAdmin = (req, res, next) => {
@@ -70,4 +72,4 @@ const authenticateJWT = passport.authenticate('jwt', { session: false });
 //   return res.status(403).json({ error: 'Forbidden: Owners only' });
 // };
 
-export { passport, authenticateJWT };
+export { passport, authenticatePassportJWT };

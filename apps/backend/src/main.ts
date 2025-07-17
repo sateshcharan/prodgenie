@@ -1,7 +1,7 @@
 import express from 'express';
-import * as path from 'path';
-import dotenv from 'dotenv';
+import path from 'path';
 import cors from 'cors';
+import 'dotenv/config';
 
 import {
   authRoutes,
@@ -11,12 +11,17 @@ import {
   jobCardRoutes,
   orgRoutes,
   paymentRoutes,
+  thumbnailRoutes,
+  sequenceRoutes,
 } from './routes';
-import { errorHandler, passport, authenticateJWT } from './middlewares';
+import {
+  errorHandler,
+  passport,
+  authenticatePassportJWT,
+  authenticateSupabase,
+} from './middlewares';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3333;
@@ -38,17 +43,19 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Routes
 app.use(apiRoutes.auth.base, authRoutes);
-app.use(apiRoutes.files.base, authenticateJWT, fileRoutes);
-app.use(apiRoutes.users.base, authenticateJWT, userRoutes);
-app.use(apiRoutes.pdf.base, authenticateJWT, pdfRoutes);
-app.use(apiRoutes.jobCard.base, authenticateJWT, jobCardRoutes);
-app.use(apiRoutes.payment.base, authenticateJWT, paymentRoutes);
 app.use(apiRoutes.orgs.base, orgRoutes);
+app.use(apiRoutes.pdf.base, authenticatePassportJWT, pdfRoutes);
+app.use(apiRoutes.files.base, authenticatePassportJWT, fileRoutes);
+app.use(apiRoutes.users.base, authenticatePassportJWT, userRoutes);
+app.use(apiRoutes.jobCard.base, authenticatePassportJWT, jobCardRoutes);
+app.use(apiRoutes.payment.base, authenticatePassportJWT, paymentRoutes);
+app.use(apiRoutes.thumbnail.base, authenticatePassportJWT, thumbnailRoutes);
+app.use(apiRoutes.sequence.base, authenticatePassportJWT, sequenceRoutes);
 
 // Error Handler
-// app.use(errorHandler);
+app.use(errorHandler);
 
 // Server
-const server = app.listen(port, () => {
+app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });

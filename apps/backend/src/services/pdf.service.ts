@@ -1,13 +1,17 @@
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import path from 'path';
+import path, { parse } from 'path';
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 import { PDFDocument, degrees } from 'pdf-lib';
-import axios, { head } from 'axios';
 
-import { StringService, CrudService } from '../utils/index.js';
+// import { StringService, CrudService } from '../utils/index.js';
+// import { FileService } from './file.service.js';
+
 import { JobCardItem } from '@prodgenie/libs/types';
+import { PuppeteerService } from '@prodgenie/libs/server-services';
+import { FileHelperService } from '@prodgenie/libs/server-services';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -23,14 +27,23 @@ interface ParsedPdf {
 }
 
 export class PdfService {
-  static async extractPdfData(
-    signedUrl: string,
-    user: any
-  ): Promise<ParsedPdf> {
-    const parsedData = await this.runPythonParser(signedUrl);
-    const config = await this.loadOrgConfig(user);
+  private static fileHelperService = new FileHelperService();
+  private static stringService = new StringService();
+  private static puppeteerService = new PuppeteerService();
 
-    return this.processParsedPdf(parsedData, config);
+  static async extractPdfData(signedUrl: string, user: any): Promise<any> {
+    const config = await this.loadOrgConfig(user);
+    const drawingFile = await this.fileHelperService.downloadToTemp(
+      signedUrl,
+      'drawing.pdf'
+    );
+
+    //local stratergy
+    // const parsedData = await this.runPythonParser(signedUrl);
+    // return this.processParsedPdf(parsedData, config);
+
+    // llm stratergy
+    return await this.puppeteerService.extractFromChatGPT(drawingFile);
   }
 
   // local setup
@@ -55,11 +68,11 @@ export class PdfService {
 
       python.stdout.on('data', (data) => {
         stdout += data.toString();
-        console.log(stdout);
+        // console.log(stdout);
       });
       python.stderr.on('data', (data) => {
         stderr += data.toString();
-        console.log(stderr);
+        // console.log(stderr);
       });
 
       python.on('close', (code) => {
@@ -77,12 +90,13 @@ export class PdfService {
   }
 
   private static async loadOrgConfig(user: any): Promise<any> {
-    const crudService = new CrudService();
+    // const fileHelperService = new FileHelperService();
     const setupConfig: Record<string, any> = {};
 
-    const onboardingConfig = await crudService.fetchJsonFromSignedUrl(
-      `${user?.org?.name}/config/onboarding.json`
-    );
+    const onboardingConfig =
+      await this.fileHelperService.fetchJsonFromSignedUrl(
+        `${user?.org?.name}/config/onboarding.json`
+      );
 
     Object.entries(onboardingConfig.setup).forEach(([key, value]) => {
       setupConfig[`${key}Config`] = value;
@@ -128,48 +142,6 @@ export class PdfService {
     };
   }
 
-  // private static extractBomFromTables(
-  //   tables: any[][],
-  //   config: any
-  // ): JobCardItem[] {
-  //   const {
-  //     header: { expected: expectedHeaders, required: requiredHeaders },
-  //   } = config;
-  //   const stringService = new StringService();
-
-  //   const bomTable = tables.find((table: any[][]) => {
-  //     console.log(table);
-  //     return table.some((row) => {
-  //       const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-  //       return requiredHeaders.every((req) =>
-  //         normalized.some((cell) => cell.includes(req.toLowerCase()))
-  //       );
-  //     });
-  //   });
-
-  //   if (!bomTable) return [];
-
-  //   const headerIndex = bomTable.findIndex((row) => {
-  //     const normalized = row.map((cell) => (cell || '').toLowerCase().trim());
-  //     return requiredHeaders.every((req) => normalized.includes(req));
-  //   });
-
-  //   if (headerIndex < 0) return [];
-
-  //   const headerRow = bomTable[headerIndex];
-  //   const headerMap = Object.fromEntries(
-  //     headerRow.map((cell, i) => [stringService.camelCase(cell), i])
-  //   );
-
-  //   return bomTable.slice(headerIndex + 1).map((row) => {
-  //     const entry: Record<string, string> = {};
-  //     expectedHeaders.forEach((header) => {
-  //       entry[header] = row[headerMap[header]] || '';
-  //     });
-  //     return entry as JobCardItem;
-  //   });
-  // }
-
   private static extractBomFromTables(
     tables: any[][][],
     config: any
@@ -205,15 +177,15 @@ export class PdfService {
           return;
         }
 
-        const normalizedHeaders = row[0].map((title) =>
-          stringService.camelCase(title)
+        const normalizedHeaders = row[0].map((title: string) =>
+          this.stringService.camelCase(title)
         );
 
         let matchCount = 0;
 
-        requiredHeaders.forEach((required) => {
-          const scores = normalizedHeaders.map((cell) =>
-            stringService.similarityScore(required, cell)
+        requiredHeaders.forEach((required: string) => {
+          const scores = normalizedHeaders.map((cell: string) =>
+            this.stringService.similarityScore(required, cell)
           );
           const maxScore = Math.max(...scores);
           if (maxScore >= MATCH_THRESHOLD) matchCount++;
@@ -227,10 +199,6 @@ export class PdfService {
         }
       });
 
-      // console.log(
-      //   `Table ${tableIndex} scored: ${(tableBestScore * 100).toFixed(2)}%`
-      // );
-
       // Now update global best if this table is better
       if (tableBestScore > bestScore) {
         bestScore = tableBestScore;
@@ -238,53 +206,6 @@ export class PdfService {
         bestHeaderRowIndex = tableBestHeaderIndex;
       }
     });
-
-    // const headerRow = bestTable[bestHeaderRowIndex];
-
-    // // Map expected headers to their best matching index using fuzzy matching
-    // const headerMap: Record<string, number> = {};
-    // expectedHeaders.forEach((expected) => {
-    //   let bestMatchIndex = -1;
-    //   let bestMatchScore = 0;
-
-    //   headerRow.forEach((cell, index) => {
-    //     const score = stringService.similarityScore(
-    //       expected,
-    //       stringService.camelCase(cell)
-    //     );
-    //     if (score > bestMatchScore) {
-    //       bestMatchScore = score;
-    //       bestMatchIndex = index;
-    //     }
-    //   });
-
-    //   if (bestMatchScore >= MATCH_THRESHOLD) {
-    //     headerMap[expected] = bestMatchIndex;
-    //   }
-    // });
-
-    // Extract valid BOM rows after the header
-    // const bomRows = bestTable
-    //   .slice(bestHeaderRowIndex + 1)
-    //   .filter(
-    //     (row) =>
-    //       Array.isArray(row) &&
-    //       row.some((cell) => (cell || '').toString().trim() !== '')
-    //   );
-
-    // const bomItems = bomRows.map((row) => {
-    //   const entry: Record<string, string> = {};
-    //   expectedHeaders.forEach((header) => {
-    //     const colIndex = headerMap[header];
-    //     entry[header] =
-    //     colIndex !== undefined ? (row[colIndex] || '').toString().trim() : '';
-    //   });
-
-    //   return entry as JobCardItem;
-    // });
-
-    // console.log(`✅ Extracted ${bomItems.length} BOM item(s)`);
-    // return bomItems;
 
     const bom = bestTable[bestHeaderRowIndex].slice(1).map((row) => {
       return expectedHeaders.reduce((obj, header, i) => {
@@ -303,7 +224,8 @@ export class PdfService {
     const {
       header: { expected: expectedHeaders, required: requiredHeaders },
     } = config;
-    const stringService = new StringService();
+    // const stringService = new StringService();
+
     const titleBlock: ParsedPdf['titleBlock'] = {};
 
     const temp: any[] = [];
@@ -321,7 +243,7 @@ export class PdfService {
 
     // Match each header against flattened rows
     for (const header of expectedHeaders) {
-      const normalizedHeader = stringService
+      const normalizedHeader = this.stringService
         .camelToNormal(header)
         .toLowerCase();
 
@@ -343,12 +265,12 @@ export class PdfService {
       if (matchedRow) {
         // Flatten and clean the row before processing
         const flatRow = matchedRow.filter(
-          (cell): cell is string =>
+          (cell: string): cell is string =>
             typeof cell === 'string' && cell.trim() !== ''
         );
 
         // Find the matching cell again to extract the value
-        const matchingCell = flatRow.find((cell) =>
+        const matchingCell = flatRow.find((cell: string) =>
           cell.toLowerCase().includes(normalizedHeader)
         );
 
@@ -452,13 +374,46 @@ export class PdfService {
           drawingPdf,
           drawingPdf.getPageIndices()
         );
-        drawingPages.forEach((page) => {
+
+        const A4_WIDTH = 595.28;
+        const A4_HEIGHT = 841.89;
+
+        for (const page of drawingPages) {
           const { width, height } = page.getSize();
-          if (width > height) {
-            page.setRotation(degrees(90));
+          const isLandscape = width > height;
+
+          const embeddedPage = await mergedPdf.embedPage(page);
+
+          let pageWidth = width;
+          let pageHeight = height;
+          let rotationAngle = 0;
+
+          if (isLandscape) {
+            pageWidth = height;
+            pageHeight = width;
+            rotationAngle = 90;
           }
-          mergedPdf.addPage(page);
-        });
+
+          const scaleX = A4_WIDTH / pageWidth;
+          const scaleY = A4_HEIGHT / pageHeight;
+          const scale = Math.min(scaleX, scaleY);
+
+          const scaledWidth = pageWidth * scale;
+          const scaledHeight = pageHeight * scale;
+
+          const xOffset = (A4_WIDTH - scaledWidth) / 2;
+          const yOffset = (A4_HEIGHT - scaledHeight) / 2;
+
+          const a4Page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT]);
+
+          a4Page.drawPage(embeddedPage, {
+            x: isLandscape ? xOffset + scaledWidth : xOffset,
+            y: yOffset,
+            xScale: scale,
+            yScale: scale,
+            rotate: isLandscape ? degrees(90) : undefined,
+          });
+        }
 
         await fs.writeFile(outputPath, await mergedPdf.save());
       } else {

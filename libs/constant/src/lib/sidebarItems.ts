@@ -48,21 +48,40 @@ export const appSidebarItems = {
       url: `/dashboard/${FileType.drawing}`,
       icon: Inbox,
     },
-    {
-      title: 'Templates',
-      url: `/dashboard/${FileType.template}`,
-      icon: Calendar,
-    },
+  ],
+  configs: [
     {
       title: 'Sequences',
       url: `/dashboard/${FileType.sequence}`,
       icon: StepForward,
+    },
+    {
+      title: 'Templates',
+      url: `/dashboard/${FileType.template}`,
+      icon: Calendar,
     },
 
     {
       title: 'Configs',
       url: `/dashboard/${FileType.config}`,
       icon: Calculator,
+    },
+  ],
+  builders: [
+    {
+      title: 'Sequence',
+      url: '/dashboard/sequence/builder',
+      icon: StepForward,
+    },
+    {
+      title: 'Template',
+      url: '/dashboard/template/builder',
+      icon: Calendar,
+    },
+    {
+      title: 'Material',
+      url: '/dashboard/material/builder',
+      icon: Briefcase,
     },
   ],
 };

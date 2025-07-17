@@ -7,14 +7,6 @@ export const jobCardSchema = z.object({
   productionQty: z
     .number({ invalid_type_error: 'Quantity must be a number' })
     .min(1, 'Quantity must be at least 1'),
-  rmBoardSize: z.object({
-    length: z
-      .number({ invalid_type_error: 'Length must be a number' })
-      .min(1, 'Length is required'),
-    width: z
-      .number({ invalid_type_error: 'Width must be a number' })
-      .min(1, 'Width is required'),
-  }),
 });
 
 export type jobCardFormValues = z.infer<typeof jobCardSchema>;

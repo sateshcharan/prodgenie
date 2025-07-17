@@ -1,3 +1,4 @@
+import { FolderSync } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
@@ -6,17 +7,26 @@ import {
   deleteFile,
   downloadFile,
 } from '../services/fileService';
-import { SearchBanner, FileCard } from './';
+import { api } from '../utils';
+import { SearchBanner, FileCard } from '../components';
 
-import { Card, CardContent, DialogDropZone, banner } from '@prodgenie/libs/ui';
-import { useDialogStore } from '@prodgenie/libs/store';
 import { CardItem } from '@prodgenie/libs/types';
-import { FileType } from '@prodgenie/libs/constant';
+import { apiRoutes, FileType } from '@prodgenie/libs/constant';
+import { useAddDialogStore, useEditDialogStore } from '@prodgenie/libs/store';
+import {
+  Button,
+  Card,
+  CardContent,
+  DialogDropZone,
+  DialogEditFile,
+  banner,
+} from '@prodgenie/libs/ui';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
   const [cardData, setCardData] = useState<CardItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editFileId, setEditFileId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchFiles = async () => {
@@ -35,19 +45,38 @@ const Files = () => {
     fetchFiles();
   }, [fileType]);
 
-  const handleCardClick = (card_id: number, signedUrl: string) => {
-    navigate(`/dashboard/${fileType}/${card_id}`, {
-      state: { signedUrl },
-    });
+  const handleCardClick = (card_id: string, signedUrl: string) => {
+    if (fileType === 'sequence') {
+      return navigate(`/dashboard/sequence/builder?id=${card_id}`, {
+        state: { signedUrl },
+      });
+    } else if (fileType === 'template') {
+      return navigate(`/dashboard/template/builder?id=${card_id}`);
+    } else {
+      return navigate(`/dashboard/${fileType}/${card_id}`, {
+        state: { signedUrl },
+      });
+    }
   };
 
-  const handleCardDelete = async (card_id: number) => {
+  const handleCardDelete = async (card_id: string) => {
     try {
       await deleteFile(fileType, card_id);
       setCardData((prev) => prev.filter((card) => card.id !== card_id));
     } catch (err) {
       console.error(`Error deleting file ${card_id}:`, err);
     }
+  };
+
+  const handleCardEdit = async (card_id: string) => {
+    setEditFileId(card_id);
+    useEditDialogStore.getState().open();
+    // try {
+    //   await deleteFile(fileType, card_id);
+    //   setCardData((prev) => prev.filter((card) => card.id !== card_id));
+    // } catch (err) {
+    //   console.error(`Error deleting file ${card_id}:`, err);
+    // }
   };
 
   const handleCardDownload = (path: string, name: string) => {
@@ -57,12 +86,20 @@ const Files = () => {
   };
 
   const handleAddFileClick = () => {
-    useDialogStore.getState().open();
+    // fileType === 'sequence'
+    //   ? navigate('/dashboard/builder/sequence')
+    //   : useDialogStore.getState().open();
+    useAddDialogStore.getState().open();
   };
 
   const filteredCards = cardData.filter((card) => {
     return card.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
+  const handleSequenceSync = async () => {
+    console.log('🌟 Syncing sequence...');
+    await api.post(`${apiRoutes.sequence.base}${apiRoutes.sequence.sync}`);
+  };
 
   return (
     <div className="p-4 flex flex-col gap-4">
@@ -73,6 +110,18 @@ const Files = () => {
         banner={banner}
       />
 
+      {fileType === 'sequence' && (
+        <div>
+          <Button
+            onClick={handleSequenceSync}
+            className=" px-4 py-2 rounded disabled:opacity-50"
+          >
+            <FolderSync size={16} />
+            Sync
+          </Button>
+        </div>
+      )}
+
       {/* File Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredCards.map((card) => (
@@ -80,8 +129,9 @@ const Files = () => {
             key={card.id}
             card={card}
             fileType={fileType}
-            onDelete={handleCardDelete}
+            onEdit={handleCardEdit}
             onDownload={handleCardDownload}
+            onDelete={handleCardDelete}
             onClick={handleCardClick}
           />
         ))}
@@ -98,13 +148,27 @@ const Files = () => {
         </Card>
       </div>
 
-      {/* Modal for User Login or Signup */}
+      {/* Modal for adding files */}
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}
         submitUrl={`/api/files/${fileType}/upload`}
         onUploadSuccess={fetchFiles}
       />
+
+      {/* Modal for adding edittign files */}
+      {editFileId && (
+        <DialogEditFile
+          title={`Replace ${fileType} thumbnail`}
+          description={`Select or drag and drop files to replace ${fileType} thumbnail`}
+          submitUrl={`/api/thumbnail/update/${editFileId}`}
+          onUploadSuccess={fetchFiles}
+          fileId={editFileId}
+          onOpenChange={(open) => {
+            if (!open) setEditFileId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

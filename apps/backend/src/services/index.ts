@@ -1,5 +1,4 @@
 export * from './auth.service.js';
-export * from '../utils/crud.service.js';
 export * from './file.service.js';
 export * from './folder.service.js';
 export * from './jobCard.service.js';
@@ -10,3 +9,5 @@ export * from './template.service.js';
 export * from './template.service.js';
 export * from './upi.service.js';
 export * from './xlsx.service.js';
+export * from './thumbnail.service.js';
+export * from './sequence.service.js';
