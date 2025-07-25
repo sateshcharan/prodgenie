@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   FolderIcon,
   MoreHorizontalIcon,
-  ShareIcon,
+  // ShareIcon,
   type LucideIcon,
 } from 'lucide-react';
 
