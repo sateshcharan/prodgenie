@@ -5,6 +5,7 @@ const isDev = import.meta.env.DEV;
 
 const api = axios.create({
   baseURL: isDev ? 'http://localhost:3000' : import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 
 // Add request interceptor
