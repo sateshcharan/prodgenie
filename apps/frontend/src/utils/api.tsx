@@ -9,10 +9,11 @@ const api = axios.create({
 
 // Add request interceptor
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // const token = localStorage.getItem('token');
+  // if (token) {
+  //   config.headers.Authorization = `Bearer ${token}`;
+  // }
+  config.withCredentials = true; // 🔥 ensures cookies are sent with each request
 
   // Trigger loading state
   const { startLoading } = useLoadingStore.getState();

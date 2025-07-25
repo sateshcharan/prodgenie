@@ -13,9 +13,12 @@ const Login = () => {
     try {
       const res = await api.post(
         `${apiRoutes.auth.base}${apiRoutes.auth.login}`,
-        data
+        data,
+        {
+          withCredentials: true,
+        }
       );
-      localStorage.setItem('token', res.data.token);
+      // localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.response.data.message || 'Login failed');
