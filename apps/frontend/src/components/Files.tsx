@@ -123,29 +123,31 @@ const Files = () => {
       )}
 
       {/* File Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredCards.map((card) => (
-          <FileCard
-            key={card.id}
-            card={card}
-            fileType={fileType}
-            onEdit={handleCardEdit}
-            onDownload={handleCardDownload}
-            onDelete={handleCardDelete}
-            onClick={handleCardClick}
-          />
-        ))}
+      <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
+          {filteredCards.map((card) => (
+            <FileCard
+              key={card.id}
+              card={card}
+              fileType={fileType}
+              onEdit={handleCardEdit}
+              onDownload={handleCardDownload}
+              onDelete={handleCardDelete}
+              onClick={handleCardClick}
+            />
+          ))}
 
-        {/* Add File Card */}
-        <Card
-          onClick={handleAddFileClick}
-          className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer bg-forground hover:bg-gray-100 transition-colors duration-200 min-h-[250px]"
-        >
-          <CardContent className="flex flex-col items-center justify-center h-full">
-            <div className="text-4xl text-gray-400">+</div>
-            <p className="mt-2 text-gray-600 text-sm">Add File</p>
-          </CardContent>
-        </Card>
+          {/* Add File Card */}
+          <Card
+            onClick={handleAddFileClick}
+            className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer bg-forground hover:bg-gray-100 transition-colors duration-200 min-h-[250px]"
+          >
+            <CardContent className="flex flex-col items-center justify-center h-full">
+              <div className="text-4xl text-gray-400">+</div>
+              <p className="mt-2 text-gray-600 text-sm">Add File</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Modal for adding files */}

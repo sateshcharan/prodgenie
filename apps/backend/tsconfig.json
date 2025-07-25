@@ -4,19 +4,16 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/frontend-services"
-    },
-    {
       "path": "../../libs/server-services"
     },
     {
       "path": "../../libs/types"
     },
     {
-      "path": "../../libs/supabase"
+      "path": "../../libs/schema"
     },
     {
-      "path": "../../libs/schema"
+      "path": "../../libs/supabase"
     },
     {
       "path": "../../libs/constant"

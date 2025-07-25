@@ -31,6 +31,7 @@ const PrivateLayout = () => {
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
+        {/* <PrivateHeader /> */}
         <PrivateHeader />
         <SiteHeader title={fileType} />
         <div className="flex flex-1 flex-col">

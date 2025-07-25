@@ -1,5 +1,5 @@
+import { forwardRef, useEffect, useState, useRef, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { forwardRef, useEffect, useState } from 'react';
 
 import { api } from '../utils';
 
@@ -40,13 +40,19 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
     const [searchParams] = useSearchParams();
     const fileId = searchParams.get('id');
 
-    const user = useUserStore((state) => state.user);
-
     const location = useLocation();
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const filetype = pathSegments[1];
 
+    const user = useUserStore((state) => state.user);
+
+    const stableUser = useMemo(() => user, []);
+    const stableExtraSuggestions = useMemo(() => [...extraSuggestions], []);
+    const hasFetchedSuggestionsRef = useRef(false);
+
     useEffect(() => {
+      if (hasFetchedSuggestionsRef.current) return;
+
       const loadSuggestions = async () => {
         //jobCardFields
         const jobCardSuggestions = jobCardFields.flatMap((field) =>
@@ -54,102 +60,63 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
             ? field.fields.map((f) => `jobCardForm_${f.name.replace('.', '_')}`)
             : [`jobCardForm_${field.name.replace('.', '_')}`]
         );
-        const result: string[] = [];
 
-        //dynamicJobCardFields todo: need to be set for templates per sequence // works in template builder not in formula builder
-        //if (fileType === 'template')
-        //if (fileType === 'sequence')
-        //get consolidated dynamic fields data from sequence.json/jobcarddata
+        const bomSuggestions: string[] = [];
 
-        if (filetype === 'template') {
-          const dynamicJobCardFields = await api.get(
-            `${apiRoutes.files.base}/getFileData/${fileId}`
-          );
-          const dynamicFields =
-            dynamicJobCardFields.data.data.jobCard.formFields.fields;
-          const dynamicJobCardSuggestions = dynamicFields.map((field) => {
-            return `jobCardForm_${field.name.split('.').join('_')}`;
-          });
+        try {
+          const {
+            data: { data: bomFile },
+          } = await api.get(`${apiRoutes.orgs.base}/getOrgConfig/bom.json`);
+          const response = await fetch(bomFile.path);
+          if (!response.ok) throw new Error('Failed to load config');
+          const json = await response.json();
 
-          try {
-            const rawFile = await api.get(
-              `${apiRoutes.orgs.base}/getOrgConfig/bom.json`
-            );
-            const response = await fetch(rawFile.data.data.path);
-            if (!response.ok) throw new Error('Failed to load config file');
-            const json = await response.json();
-
-            for (const section in json) {
-              const expected = json[section]?.header?.expected;
-              if (Array.isArray(expected)) {
-                result.push(
-                  ...expected.map((field: string) => `${section}_${field}`)
-                );
-              }
+          for (const section in json) {
+            const expected = json[section]?.header?.expected;
+            if (Array.isArray(expected)) {
+              bomSuggestions.push(
+                ...expected.map((f: string) => `${section}_${f}`)
+              );
             }
-          } catch (err) {
-            console.error('Error fetching config:', err);
           }
-
-          const userSuggestions = Object.keys(user).map((key) => `user_${key}`); // user
-
-          setSuggestions([
-            ...jobCardSuggestions,
-            ...dynamicJobCardSuggestions,
-            ...result,
-            ...userSuggestions,
-            ...preDefinedKeywords,
-            ...extraSuggestions,
-          ]);
+        } catch (err) {
+          console.error('Error fetching config:', err);
         }
-        if (filetype === 'sequence') {
-          const dynamicJobCardFields = await api.get(
-            `${apiRoutes.sequence.base}/getJobCardDataFromSequence/rsc.json`
-          );
 
-          //get jobcarddynamic fields for all templates of sequence consolidated
-          console.log(dynamicJobCardFields.data);
-          //   const dynamicFields =
-          //     dynamicJobCardFields.data.data.jobCard.formFields.fields;
-          //   const dynamicJobCardSuggestions = dynamicFields.map((field) => {
-          //     return `jobCardForm_${field.name.split('.').join('_')}`;
-          //   });
+        const userSuggestions = Object.keys(stableUser).map(
+          (key) => `user_${key}`
+        ); // user
 
+        let allSuggestions = [
+          ...jobCardSuggestions,
+          ...bomSuggestions,
+          ...userSuggestions,
+          ...preDefinedKeywords,
+          ...extraSuggestions,
+        ];
+
+        if (fileId) {
           try {
-            const rawFile = await api.get(
-              `${apiRoutes.orgs.base}/getOrgConfig/bom.json`
+            const {
+              data: { data: dynamicFieldsData },
+            } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
+            const dynamicFields =
+              dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
+            const dynamicSuggestions = dynamicFields.map(
+              (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
             );
-            const response = await fetch(rawFile.data.data.path);
-            if (!response.ok) throw new Error('Failed to load config file');
-            const json = await response.json();
-
-            for (const section in json) {
-              const expected = json[section]?.header?.expected;
-              if (Array.isArray(expected)) {
-                result.push(
-                  ...expected.map((field: string) => `${section}_${field}`)
-                );
-              }
-            }
+            allSuggestions = [...allSuggestions, ...dynamicSuggestions];
           } catch (err) {
-            console.error('Error fetching config:', err);
+            console.error('Error fetching dynamic job card fields:', err);
           }
-
-          const userSuggestions = Object.keys(user).map((key) => `user_${key}`); // user
-
-          setSuggestions([
-            ...jobCardSuggestions,
-            // ...dynamicJobCardSuggestions,
-            ...result,
-            ...userSuggestions,
-            ...preDefinedKeywords,
-            ...extraSuggestions,
-          ]);
         }
+
+        setSuggestions(allSuggestions);
+        hasFetchedSuggestionsRef.current = true;
       };
 
       loadSuggestions();
-    }, [extraSuggestions, user]); //extraSuggestions is causing infinite request loop
+    }, [fileId, extraSuggestions, user]);
 
     const updateTokens = (newTokens: string[]) => {
       setTokens(newTokens);

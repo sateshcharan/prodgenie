@@ -105,7 +105,7 @@ export class SequenceService {
     const jobCardData = await Promise.all(
       json.sections.map(async (section: any) => {
         try {
-          return section.jobCardData;
+          return section.jobCardForm;
         } catch (err) {
           console.error(
             'Failed to get jobcard data for section:',
@@ -117,11 +117,31 @@ export class SequenceService {
       })
     );
 
-    const consolidatedData = jobCardData
-      .map((data) => data.formFields)
-      .filter((fields) => fields !== undefined); // filter out undefined values
-    // add logic to reduce duplicates
+    // Flatten the nested array and filter out falsy values (undefined, null, empty object, etc.)
+    const allData = jobCardData
+      .flat()
+      .filter(
+        (item) =>
+          item &&
+          Object.keys(item).length > 0 &&
+          Array.isArray(item.sections) &&
+          item.sections.length > 0
+      );
 
-    return consolidatedData;
+    // Combine all sections
+    const allSections = allData.flatMap((item) => item.sections);
+
+    // Remove duplicates based on section name
+    const uniqueSectionsMap = new Map<string, any>();
+
+    allSections.forEach((section) => {
+      if (!uniqueSectionsMap.has(section.name)) {
+        uniqueSectionsMap.set(section.name, section);
+      }
+    });
+
+    const uniqueSections = Array.from(uniqueSectionsMap.values());
+
+    return uniqueSections;
   }
 }

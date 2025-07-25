@@ -70,14 +70,16 @@ export function NavConfigurations({
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}
               >
-                <DropdownMenuItem>
-                  <FolderIcon />
-                  <span>Open</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                <a href={item.url}>
+                  <DropdownMenuItem>
+                    <FolderIcon />
+                    <span>Open</span>
+                  </DropdownMenuItem>
+                </a>
+                {/* <DropdownMenuItem>
                   <ShareIcon />
                   <span>Share</span>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

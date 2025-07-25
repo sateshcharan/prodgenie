@@ -1,14 +1,3 @@
-import { set } from 'react-hook-form';
-import { useSearchParams } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import { Save, Trash, FolderSync } from 'lucide-react';
-
-import { api, ExcelHTMLViewer } from '../../utils';
-import FormulaBuilder from '../FormulaBuilder';
-import { fetchFilesByType, getThumbnail } from '../../services/fileService';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
-import { Button, Input } from '@prodgenie/libs/ui';
 import {
   DndContext,
   closestCenter,
@@ -22,17 +11,34 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { set } from 'react-hook-form';
 import { CSS } from '@dnd-kit/utilities';
+import { useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Save, Trash, FolderSync } from 'lucide-react';
+import isEqual from 'lodash.isequal';
+
+import FormulaBuilder from './FormulaBuilder';
+import { api, ExcelHTMLViewer } from '../../utils';
+import { fetchFilesByType, getThumbnail } from '../../services/fileService';
+
+import { Button, Input, toast } from '@prodgenie/libs/ui';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import { DataMutationService } from '@prodgenie/libs/frontend-services';
+
+const dataMutationService = new DataMutationService();
+
+type TemplateFile = {
+  id: string;
+  path: string;
+  name: string;
+};
 
 const SortableItem = ({
   file,
   onDelete,
 }: {
-  file: {
-    id: string;
-    name: string;
-    path: string;
-  };
+  file: TemplateFile;
   onDelete: (id: string) => void;
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -81,18 +87,19 @@ const SortableItem = ({
 };
 
 const SequenceBuilder = () => {
+  const [isSaving, setIsSaving] = useState(false);
   const [sequenceName, setSequenceName] = useState('');
   const [sequence, setSequence] = useState<TemplateFile[]>([]);
-  const [templateFiles, setTemplateFiles] = useState<TemplateFile[]>([]);
-
   const [originalSequence, setOriginalSequence] = useState<TemplateFile[]>([]);
+  const [sequenceFormulas, setSequenceFormulas] = useState({});
+  const [templateFiles, setTemplateFiles] = useState<TemplateFile[]>([]);
   // const [originalName, setOriginalName] = useState('');
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(true);
-
   const hasFetchedRef = useRef(false);
   const sensors = useSensors(useSensor(PointerSensor));
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
+
+  const formulaBuilderRef = useRef<{ saveTemplate: () => void } | null>(null);
 
   useEffect(() => {
     const fetchTemplateFiles = async () => {
@@ -115,20 +122,14 @@ const SequenceBuilder = () => {
     fetchTemplateFiles();
   }, []);
 
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
-
-  const [fileData, setFileData] = useState<any>({});
-
   useEffect(() => {
     const fetchFile = async () => {
       try {
         const rawFile = await api.get(`${apiRoutes.files.base}/getById/${id}`);
+        setSequenceFormulas(rawFile.data.data.data);
         const jsonFile = await fetch(rawFile.data.data.path).then((res) =>
           res.json()
         );
-        setFileData(jsonFile);
-
         const updatedSections = jsonFile.sections.map(
           (section: any, i: number) => {
             const matchedFile = templateFiles.find((file) =>
@@ -140,7 +141,6 @@ const SequenceBuilder = () => {
             };
           }
         );
-
         setSequenceName(rawFile.data.data.name.split('.')[0]);
         setSequence(updatedSections);
         setOriginalSequence(updatedSections);
@@ -148,12 +148,21 @@ const SequenceBuilder = () => {
         console.error('Error fetching sequence files', err);
       }
     };
-
     if (id && templateFiles.length > 0 && !hasFetchedRef.current) {
       fetchFile();
       hasFetchedRef.current = true; // prevent refetch
     }
   }, [id, templateFiles]);
+
+  useEffect(() => {
+    if (!id) {
+      setSequenceName('');
+      setSequence([]);
+      setOriginalSequence([]);
+      setIsSaving(false);
+      hasFetchedRef.current = false;
+    }
+  }, [id]);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -187,16 +196,15 @@ const SequenceBuilder = () => {
     setSequence((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleSequenceSave = async () => {
-    const trimmedName = sequenceName.trim();
-
+  const handleSequenceSave = async (updatedSequenceFormulas: any) => {
+    if (!sequence || !sequenceName.trim()) return;
     setIsSaving(true);
 
-    const isSameSequence =
-      sequence.length === originalSequence.length &&
-      sequence.every((item, index) => item.id === originalSequence[index]?.id);
+    const isUnchanged =
+      isEqual(sequence, originalSequence) &&
+      isEqual(sequenceFormulas, updatedSequenceFormulas);
 
-    if (isSameSequence) {
+    if (isUnchanged) {
       console.log('⚠️ No changes detected. Skipping save.');
       return;
     }
@@ -205,11 +213,12 @@ const SequenceBuilder = () => {
       sections: sequence.map((file) => ({
         name: file.name.split('.')[0],
         path: `template/${file.id}.${file.name.split('.')[1]}`,
-        jobCardData: file.data.jobCard || {},
+        jobCardForm: file.data.jobCardForm || {},
       })),
     };
 
     try {
+      // sequence part
       const formData = new FormData();
       const jsonBlob = new Blob([JSON.stringify(sequenceJson)], {
         type: 'application/json',
@@ -223,11 +232,26 @@ const SequenceBuilder = () => {
 
       if (id) {
         await api.post(`/api/files/sequence/${id}/replace`, formData);
+
+        // formulabuilder part
+        await api.patch(
+          `${apiRoutes.files.base}/${id}/update`,
+          updatedSequenceFormulas
+        );
+        toast('✅ File updated successfully.');
       } else {
-        await api.post('/api/files/sequence/upload', formData);
+        const { data } = await api.post('/api/files/sequence/upload', formData);
+
+        const id = data[0].id;
+        // formulabuilder part
+        await api.patch(
+          `${apiRoutes.files.base}/${id}/update`,
+          updatedSequenceFormulas
+        );
+        toast('✅ File updated successfully.');
       }
 
-      setSequenceName(trimmedName);
+      setSequenceName(sequenceName.trim());
       setOriginalSequence(sequence);
     } catch (error) {
       console.error('❌ Failed to save sequence', error);
@@ -240,7 +264,7 @@ const SequenceBuilder = () => {
     <div className="grid grid-cols-[300px_1fr] w-full h-screen gap-4 p-4">
       {/* Left: Template List */}
       <div>
-        <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[400px]">
+        <div className="bg-white border rounded shadow p-2 overflow-auto h-[600px] ">
           <h2 className="text-lg font-semibold mb-4">Templates</h2>
           {templateFiles.map((file) => (
             <div
@@ -270,11 +294,6 @@ const SequenceBuilder = () => {
               type="text"
               value={sequenceName}
               onChange={(e) => setSequenceName(e.target.value)}
-              onBlur={() => {
-                if (sequenceName.trim()) {
-                  setIsEditing(false);
-                }
-              }}
               autoFocus
               placeholder="Enter Sequence Name"
               className="w-full max-w-sm"
@@ -289,7 +308,9 @@ const SequenceBuilder = () => {
           )}
 
           <Button
-            onClick={handleSequenceSave}
+            onClick={() => {
+              formulaBuilderRef.current?.saveTemplate();
+            }}
             className=" px-4 py-2 rounded disabled:opacity-50"
             disabled={!sequenceName.trim()}
           >
@@ -326,7 +347,12 @@ const SequenceBuilder = () => {
 
       {/* Bottom: Sequence Builder */}
       <div className=" col-span-2">
-        {fileData && <FormulaBuilder fileData={fileData} />}
+        <FormulaBuilder
+          ref={formulaBuilderRef}
+          fileData={sequence}
+          sequenceFormulas={sequenceFormulas}
+          onFormulaSave={handleSequenceSave}
+        />
       </div>
     </div>
   );

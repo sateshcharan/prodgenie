@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useLocation, useLoaderData } from 'react-router-dom';
 
 import JobCard from './JobCard';
-import { parsePdfFromUrl } from '../services/pdfService';
 import { ExcelHTMLViewer } from '../utils';
+import { parsePdfFromUrl } from '../services/pdfService';
 
 const FileDetails = () => {
   const { fileId, fileType } = useLoaderData() as {

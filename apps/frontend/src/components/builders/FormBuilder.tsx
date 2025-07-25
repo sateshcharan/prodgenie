@@ -1,430 +1,445 @@
-import { Trash2, Plus } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { SelectContent, SelectTrigger } from '@radix-ui/react-select';
+import { z } from 'zod';
+import { Trash2, Plus, X } from 'lucide-react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Controller, useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
   Input,
   Button,
   Select,
   SelectItem,
+  SelectTrigger,
+  SelectContent,
   Label,
-  ScrollArea,
+  SelectValue,
 } from '@prodgenie/libs/ui';
 
-// Types
-export type Field = {
-  name: string;
-  label: string;
-  placeholder?: string;
-  defaultValue?: string;
-  type: 'text' | 'number' | 'select';
-  options?: string[];
-  colSpan?: number;
-};
+export const fieldSchema = z.object({
+  name: z.string().min(1, 'Field name is required'),
+  label: z.string().min(1, 'Field label is required'),
+  placeholder: z.union([z.string(), z.number()]).optional(),
+  defaultValue: z.union([z.string(), z.number()]).optional(),
+  type: z.enum(['text', 'number', 'select']),
+  options: z.array(z.string()).optional(),
+});
 
-type Section = {
-  title: string;
-  fields: Field[];
-};
+export const sectionSchema = z.object({
+  name: z.string().min(1, 'Section name is required'),
+  fields: z.array(fieldSchema),
+  schema: z.string().optional(),
+});
+export const formBuilderSchema = z.object({
+  formSections: z.array(sectionSchema),
+});
 
-const FormBuilder = ({ jobCardData: initialConfig }: any) => {
-  const [formFields, setFormFields] = useState<Field[]>([]);
-  const [formSections, setFormSections] = useState<Section[]>([]);
+export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;
+
+const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
+  const [schema, setSchema] = useState<any>(null);
+
+  useImperativeHandle(ref, () => ({
+    saveTemplate: handleSaveTemplate,
+  }));
 
   useEffect(() => {
-    if (initialConfig?.fields) {
-      const enriched = initialConfig.fields.map((f: any, i: any) => ({
-        ...f,
-        colSpan: f.colSpan || 3,
-        defaultValue: f.defaultValue || '',
-      }));
-      setFormFields(enriched);
-    }
-    console.log(formFields);
-  }, [initialConfig]);
+    if (!jobCardData || !Array.isArray(jobCardData.sections)) return;
 
-  const addField = () =>
-    setFormFields([
-      ...formFields,
+    // If schema is already provided, just use it
+    const mappedSections = jobCardData.sections.map((section: any) => ({
+      ...section,
+      schema: section.schema || generateZodSchemaString(section.fields),
+    }));
+    // setValue('formSections', mappedSections);
+    replace(mappedSections);
+  }, [jobCardData]);
+
+  // 💡 Hook up builderForm to formSections
+  const builderForm = useForm<FormBuilderSchema>({
+    resolver: zodResolver(formBuilderSchema),
+    defaultValues: {
+      formSections: [],
+    },
+  });
+
+  const {
+    control,
+    handleSubmit: handleBuilderSubmit,
+    watch,
+    register,
+    setValue,
+    formState: { errors },
+  } = builderForm;
+
+  const {
+    fields: sectionFields,
+    append,
+    remove,
+    replace,
+  } = useFieldArray({
+    control,
+    name: 'formSections',
+  });
+
+  const watchedSections = watch('formSections');
+
+  useEffect(() => {
+    if (!watchedSections.length) return;
+
+    const parsedSchemas = watchedSections.map((section) => {
+      try {
+        const schemaFn = new Function('z', `return (${section.schema})`);
+        return schemaFn(z);
+      } catch (e) {
+        console.error(`Error parsing schema for section "${section.name}":`, e);
+        return z.object({});
+      }
+    });
+
+    const merged = z.object(
+      watchedSections.reduce((acc, section, idx) => {
+        const key = section.name || `section${idx}`;
+        acc[key] = parsedSchemas[idx];
+        return acc;
+      }, {} as Record<string, z.ZodTypeAny>)
+    );
+
+    setSchema(merged);
+  }, [watchedSections]);
+
+  useEffect(() => {
+    if (!watchedSections.length) return;
+
+    const updatedSections = watchedSections.map((section) => ({
+      ...section,
+      schema: generateZodSchemaString(section.fields),
+    }));
+
+    replace(updatedSections);
+  }, [
+    watchedSections.length,
+    watchedSections.map((s) => s.fields.length).join(','),
+  ]);
+
+  const form = useForm({
+    resolver: schema ? zodResolver(schema) : undefined,
+  });
+
+  // function generateZodSchemaString(fields: any[]): string {
+  //   const nested: Record<string, string[]> = {};
+  //   const flat: string[] = [];
+
+  //   for (const field of fields) {
+  //     const zodType =
+  //       field.type === 'number'
+  //         ? 'z.number().min(1)'
+  //         : field.type === 'text'
+  //         ? 'z.string().min(1)'
+  //         : 'z.any()';
+
+  //     const parts = field.name.split('.');
+  //     if (parts.length === 1) {
+  //       flat.push(`${JSON.stringify(field.name)}: ${zodType}`);
+  //     } else {
+  //       const [parent, child] = parts;
+  //       if (!nested[parent]) nested[parent] = [];
+  //       nested[parent].push(`${JSON.stringify(child)}: ${zodType}`);
+  //     }
+  //   }
+
+  //   const nestedObjects = Object.entries(nested).map(
+  //     ([key, fields]) =>
+  //       `${JSON.stringify(key)}: z.object({\n  ${fields.join(',\n  ')}\n})`
+  //   );
+
+  //   const allEntries = [...flat, ...nestedObjects];
+
+  //   return `z.object({\n${allEntries.join(',\n')}\n})`;
+  // }
+
+  function generateZodSchemaString(fields: any[]): string {
+    const schemaTree: any = {};
+
+    const getZodType = (type: string) => {
+      if (type === 'number') return 'z.number().min(1)';
+      if (type === 'text') return 'z.string().min(1)';
+      return 'z.any()';
+    };
+
+    // Builds a nested object structure
+    for (const field of fields) {
+      const keys = field.name.split('.');
+      const zodType = getZodType(field.type);
+
+      let current = schemaTree;
+      keys.forEach((key, index) => {
+        if (index === keys.length - 1) {
+          current[key] = zodType;
+        } else {
+          current[key] = current[key] || {};
+          current = current[key];
+        }
+      });
+    }
+
+    const buildZod = (obj: any, indent = 2): string => {
+      const pad = (level: number) => ' '.repeat(level);
+      const entries = Object.entries(obj)
+        .map(([key, val]) => {
+          if (typeof val === 'string') {
+            return `${pad(indent)}${key}: ${val}`;
+          } else {
+            return `${pad(indent)}${key}: z.object({${buildZod(
+              val,
+              indent + 2
+            )}${pad(indent)}})`;
+          }
+        })
+        .join(',');
+      return entries;
+    };
+
+    return `z.object({${buildZod(schemaTree)}})`;
+  }
+
+  const addSection = () => {
+    const newFields = [
       {
-        name: `Name`,
+        name: 'name',
         label: 'Label',
         placeholder: 'Placeholder',
-        defaultValue: 'Default Value',
-        type: 'select',
-        colSpan: 3,
+        defaultValue: '',
+        type: 'text',
       },
-    ]);
+    ];
 
-  // const addSection = () =>
-  //   setFormFields([
-  //     ...formFields,
-  //     {
-  //       name: `Name`,
-  //       label: 'Label',
-  //       placeholder: 'Placeholder',
-  //       defaultValue: 'Default Value',
-  //       type: 'select',
-  //       colSpan: 3,
-  //     },
-  //   ]);
+    append({
+      name: `Section ${sectionFields.length + 1}`,
+      fields: newFields as any,
+      schema: generateZodSchemaString(newFields),
+    });
+  };
 
-  const addSection = () =>
-    setFormSections([
-      ...formSections,
-      {
-        title: `Section ${formSections.length + 1}`,
-        fields: [
-          {
-            name: `name`,
-            label: 'Label',
-            placeholder: 'Placeholder',
-            defaultValue: '',
-            type: 'text',
-            colSpan: 3,
-          },
-        ],
-      },
-    ]);
+  const handleRemoveSection = (indexToRemove: number) => remove(indexToRemove);
 
   const addFieldToSection = (sectionIndex: number) => {
-    const updated = [...formSections];
-    updated[sectionIndex].fields.push({
-      name: `name`,
-      label: 'Label',
-      placeholder: 'Placeholder',
-      defaultValue: '',
-      type: 'text',
-      colSpan: 3,
+    const current = watch(`formSections.${sectionIndex}.fields`);
+    setValue(`formSections.${sectionIndex}.fields`, [
+      ...current,
+      {
+        name: 'name',
+        label: 'Label',
+        placeholder: 'Placeholder',
+        defaultValue: '',
+        type: 'text',
+      },
+    ]);
+  };
+
+  const removeField = (sectionIndex: number, fieldIndex: number) => {
+    const current = watch(`formSections.${sectionIndex}.fields`);
+    const updated = current.filter((_, idx) => idx !== fieldIndex);
+    setValue(`formSections.${sectionIndex}.fields`, updated);
+  };
+
+  const handleSaveTemplate = () => {
+    const builderResult = formBuilderSchema.safeParse({
+      formSections: watchedSections,
     });
-    setFormSections(updated);
-  };
 
-  const updateField = (index: number, updated: Partial<Field>) => {
-    const newFields = [...formFields];
-    newFields[index] = { ...newFields[index], ...updated };
-    setFormFields(newFields);
-  };
+    if (!builderResult.success) {
+      console.error(builderResult.error.format());
+      alert('Fix issues in form builder before saving.');
+      return;
+    }
 
-  // const updateField = (
-  //   sectionIndex: number,
-  //   fieldIndex: number,
-  //   updated: Partial<Field>
-  // ) => {
-  //   const updatedSections = [...formSections];
-  //   updatedSections[sectionIndex].fields[fieldIndex] = {
-  //     ...updatedSections[sectionIndex].fields[fieldIndex],
-  //     ...updated,
-  //   };
-  //   setFormSections(updatedSections);
-  // };
-
-  const removeField = (index: number) => {
-    const newFields = [...formFields];
-    newFields.splice(index, 1);
-    setFormFields(newFields);
+    const formData = {
+      jobCardForm: { sections: builderResult.data.formSections },
+    };
+    onFormSubmit(formData);
   };
 
   return (
-    <div className="p-2 mt-4 border max-w-[700px]">
-      <ScrollArea>
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold mb-4">Job Card Form Fields</h2>
+    <div className="bg-white border rounded shadow p-2 mt-4 overflow-auto ">
+      <div className="flex justify-between items-center  gap-4">
+        <h2 className="text-lg font-semibold">Job Card Form Sections</h2>
+        <div className="flex flex-row gap-2 p-2">
           <Button onClick={addSection} variant="outline">
-            <Plus className="mr-2 w-4 h-4" /> Add Section
+            <Plus className="mr-2 w-4 h-4" />
+            Add Section
           </Button>
-          <Button onClick={addField} variant="outline">
-            <Plus className="mr-2 w-4 h-4" /> Add Field
-          </Button>
+          {/* 
+          <Button type="button" onClick={handleSaveTemplate}>
+            Save Template
+          </Button> */}
         </div>
+      </div>
 
-        {formFields.length === 0 && <p>No fields added yet.</p>}
+      {sectionFields.map((section, sectionIndex) => (
+        <div key={section.id} className="mb-6 border p-4 rounded-md">
+          <div className="flex justify-between items-center mb-2">
+            {/* <h3 className="text-md font-bold">
+              {watch(`formSections.${sectionIndex}.name`)}
+            </h3> */}
+            <Input
+              {...register(`formSections.${sectionIndex}.name`)}
+              className="text-md font-bold px-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none w-auto"
+              placeholder="Section Title"
+            />
+            <div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => addFieldToSection(sectionIndex)}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveSection(sectionIndex)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
 
-        <div className="grid gap-4">
-          {formFields.map((field, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-12 items-center gap-4 border p-4 rounded-md"
-            >
-              <div className="col-span-3">
-                <Input
-                  value={field.name}
-                  onChange={(e) => updateField(index, { name: e.target.value })}
-                  placeholder={field.placeholder}
-                />
-              </div>
-
-              <div className="col-span-3">
-                <Input
-                  value={field.label}
-                  onChange={(e) =>
-                    updateField(index, { label: e.target.value })
-                  }
-                  placeholder={field.placeholder}
-                />
-              </div>
-
-              <div className="col-span-2">
-                <Input
-                  value={field.placeholder}
-                  onChange={(e) =>
-                    updateField(index, { placeholder: e.target.value })
-                  }
-                  placeholder={field.placeholder}
-                />
-              </div>
-
-              <div className="col-span-2">
-                {field.type === 'select' && (
+          <div className="grid gap-4">
+            {watch(`formSections.${sectionIndex}.fields`)?.map(
+              (field, fieldIndex) => (
+                <div
+                  key={fieldIndex}
+                  className="grid grid-cols-12 items-center gap-4 border p-2 rounded-md"
+                >
                   <Input
-                    placeholder="Option1,Option2"
-                    onChange={(e) =>
-                      updateField(index, {
-                        options: e.target.value.split(',').map((v) => v.trim()),
-                      })
-                    }
+                    className="col-span-3"
+                    {...register(
+                      `formSections.${sectionIndex}.fields.${fieldIndex}.name`
+                    )}
+                    placeholder="Name"
                   />
-                )}
-              </div>
-
-              <div className="col-span-2">
-                <Select
-                  value={field.type}
-                  onValueChange={(val) =>
-                    updateField(index, { type: val as Field['type'] })
-                  }
-                >
-                  <SelectContent>
-                    <SelectTrigger className="w-full" />
-                    <SelectContent>
-                      <SelectItem value="text">Text</SelectItem>
-                      <SelectItem value="number">Number</SelectItem>
-                      <SelectItem value="select">Select</SelectItem>
-                    </SelectContent>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  value={field.colSpan || 1}
-                  onChange={(e) =>
-                    updateField(index, { colSpan: Number(e.target.value) })
-                  }
-                  min={1}
-                  max={12}
-                  placeholder="Col Span"
-                />
-              </div>
-
-              <div className="col-span-1 flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeField(index)}
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
-            </div>
-          ))}
-
-          {/* {formSections.map((section, sectionIndex) => (
-            <div key={sectionIndex} className="mb-6 border p-4 rounded-md">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-md font-bold">{section.title}</h3>
-                <Button
-                  onClick={() => addFieldToSection(sectionIndex)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Plus className="mr-1 w-4 h-4" />
-                  Add Field
-                </Button>
-              </div>
-
-              <div className="grid gap-4">
-                {section.fields.map((field, fieldIndex) => (
-                  <div
-                    key={fieldIndex}
-                    className="grid grid-cols-12 items-center gap-4 border p-2 rounded-md"
-                  >
-                    // Field editors: name, label, placeholder, type, options, etc. 
-                    <Input
-                      value={field.name}
-                      onChange={(e) =>
-                        updateField(sectionIndex, fieldIndex, {
-                          name: e.target.value,
-                        })
+                  <Input
+                    className="col-span-3"
+                    {...register(
+                      `formSections.${sectionIndex}.fields.${fieldIndex}.label`
+                    )}
+                    placeholder="Label"
+                  />
+                  <Input
+                    className="col-span-3"
+                    {...register(
+                      `formSections.${sectionIndex}.fields.${fieldIndex}.placeholder`
+                    )}
+                    placeholder="Placeholder"
+                  />
+                  <div className="col-span-2 border">
+                    <Select
+                      value={field.type}
+                      onValueChange={(val) =>
+                        setValue(
+                          `formSections.${sectionIndex}.fields.${fieldIndex}.type`,
+                          val as any
+                        )
                       }
-                    />
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="select data type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Text</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="select">Select</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))} */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeField(sectionIndex, fieldIndex)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            )}
+          </div>
         </div>
+      ))}
 
-        <h3 className="text-lg font-semibold mt-8">Preview</h3>
-        <DynamicForm fields={formFields} />
-        {/* <DynamicForm
-          sections={[
-            {
-              title: 'Basic Info',
-              fields: [
-                {
-                  name: 'name',
-                  label: 'Name',
-                  placeholder: 'Enter name',
-                  type: 'text',
-                  colSpan: 6,
-                },
-                {
-                  name: 'age',
-                  label: 'Age',
-                  placeholder: 'Enter age',
-                  type: 'number',
-                  colSpan: 6,
-                },
-              ],
-            },
-          ]}
-        /> */}
-      </ScrollArea>
+      <h3 className="text-lg font-semibold mt-8">Preview</h3>
+      <DynamicForm
+        sections={watchedSections}
+        form={form}
+        handleSaveTemplate={handleSaveTemplate}
+      />
     </div>
   );
-};
+});
 
-function DynamicForm({ fields }: { fields: Field[] }) {
-  const { register, handleSubmit } = useForm();
-
-  const onSubmit = (data: any) => {
-    function flattenJobCardFormObject(
-      obj: Record<string, any>,
-      parentKey = 'jobCardForm',
-      result: Record<string, string> = {}
-    ): Record<string, string> {
-      for (const key in obj) {
-        const value = obj[key];
-        const newKey = `${parentKey}_${key}`;
-        if (
-          typeof value === 'object' &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
-          flattenJobCardFormObject(value, newKey, result);
-        } else {
-          result[newKey] = String(value); // Ensure string output
-        }
-      }
-      return result;
-    }
-
-    const flattenedData = flattenJobCardFormObject(data);
-    console.log(flattenedData);
-  };
+const DynamicForm = ({
+  sections,
+  form,
+  handleSaveTemplate,
+}: {
+  sections: any[];
+  form: any;
+  handleSaveTemplate: any;
+}) => {
+  const { register, handleSubmit, control } = form;
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleSaveTemplate)}
       className="grid grid-cols-12 gap-4 p-4 border rounded-md"
     >
-      {fields.map((field, i) => {
-        const col = `col-span-${Math.min(field.colSpan || 3, 12)}`;
-        return (
-          <div key={i} className="col-span-3">
-            <label className="block mb-1 text-sm font-medium">
-              {field.label}
-            </label>
-            {field.type === 'text' && (
-              <Input
-                {...register(field.name)}
-                placeholder={field.placeholder}
-                defaultValue={field.defaultValue}
-              />
-            )}
-            {field.type === 'number' && (
-              <Input
-                {...register(field.name)}
-                type="number"
-                placeholder={field.placeholder}
-                defaultValue={field.defaultValue}
-              />
-            )}
-            {field.type === 'select' && (
-              <Select {...register(field.name)}>
-                {(field.options || []).map((opt, idx) => (
-                  <SelectItem key={idx} value={opt}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </Select>
-            )}
+      {sections.map((section, i) => (
+        <div key={i} className="col-span-12 mb-4">
+          <h4 className="text-md font-semibold mb-2 ">{section.name}</h4>
+          <div className="grid grid-cols-12 gap-4">
+            {section.fields.map((field: any, j: number) => (
+              <div key={j} className={`col-span-3`}>
+                <Label>{field.label}</Label>
+
+                {field.type === 'text' && (
+                  <Input
+                    disabled
+                    id={field.name}
+                    {...register(field.name)}
+                    placeholder={field.placeholder}
+                  />
+                )}
+
+                {field.type === 'number' && (
+                  <Input
+                    disabled
+                    type="number"
+                    id={field.name}
+                    {...register(field.name, { valueAsNumber: true })}
+                    placeholder={field.placeholder}
+                  />
+                )}
+                {field.type === 'select' && (
+                  <Controller
+                    control={form.control}
+                    name={`${field.name}`}
+                    render={({ field: controllerField }) => (
+                      <Select {...controllerField}>
+                        {(field.options || []).map((opt: any, idx: number) => (
+                          <SelectItem key={idx} value={opt}>
+                            {opt}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-        );
-      })}
-      <div className="col-span-12">
-        <Button type="submit">Submit</Button>
-      </div>
+        </div>
+      ))}
     </form>
   );
-}
-
-// function DynamicForm({ sections }: { sections: Section[] }) {
-//   const { register, handleSubmit } = useForm();
-
-//   const onSubmit = (data: any) => {
-//     console.log(data);
-//   };
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit(onSubmit)}
-//       className="grid grid-cols-12 gap-4 p-4 border rounded-md"
-//     >
-//       {sections.map((section, i) => (
-//         <div key={i} className="col-span-12 mb-4">
-//           <h4 className="text-md font-semibold mb-2">{section.title}</h4>
-//           <div className="grid grid-cols-12 gap-4">
-//             {section.fields.map((field, j) => (
-//               <div key={j} className={`col-span-${field.colSpan || 3}`}>
-//                 <Label>{field.label}</Label>
-//                 {field.type === 'text' && (
-//                   <Input
-//                     {...register(`${section.title}.${field.name}`)}
-//                     placeholder={field.placeholder}
-//                     defaultValue={field.defaultValue}
-//                   />
-//                 )}
-//                 {field.type === 'number' && (
-//                   <Input
-//                     {...register(`${section.title}.${field.name}`)}
-//                     type="number"
-//                     placeholder={field.placeholder}
-//                     defaultValue={field.defaultValue}
-//                   />
-//                 )}
-//                 {field.type === 'select' && (
-//                   <Select {...register(`${section.title}.${field.name}`)}>
-//                     {(field.options || []).map((opt, idx) => (
-//                       <SelectItem key={idx} value={opt}>
-//                         {opt}
-//                       </SelectItem>
-//                     ))}
-//                   </Select>
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       ))}
-//       <div className="col-span-12">
-//         <Button type="submit">Submit</Button>
-//       </div>
-//     </form>
-//   );
-// }
+};
 
 export default FormBuilder;

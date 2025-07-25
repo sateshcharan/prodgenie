@@ -1,15 +1,15 @@
 import fs from 'fs/promises';
-import get from 'lodash/get';
+import { randomUUID } from 'crypto';
+import { Parser } from 'expr-eval';
 import { Readable } from 'stream';
 import { evaluate } from 'mathjs';
-import { Parser } from 'expr-eval';
-import { randomUUID } from 'crypto';
+import get from 'lodash/get';
 
 import { prisma } from '@prodgenie/libs/prisma';
-import { FileStorageService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
-import { StringService } from '@prodgenie/libs/frontend-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
+import { StringService } from '@prodgenie/libs/frontend-services';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -101,13 +101,14 @@ export class JobCardService {
           continue;
         }
 
+        const templateDataJson = templateData?.data[section.name];
         const template = await this.fileHelperService.downloadToTemp(
           sectionUrl,
           section.name
         );
 
-        const { manual: manualFields, computed: computedFieldDefs } =
-          templateData?.data?.templateFields || {};
+        const manualFields = templateDataJson.fields.manual || {};
+        const computedFieldDefs = templateDataJson.fields.computed || {};
 
         const context = this.buildContext(
           Object.fromEntries(
@@ -118,6 +119,8 @@ export class JobCardService {
           ),
           manualContext
         );
+
+        console.log(context);
 
         const evalContext = Object.entries({
           sectionName: section.name,
@@ -262,16 +265,20 @@ export class JobCardService {
     context: Record<string, any>,
     depField: string
   ): number | string {
-    const { sequenceData, materialConfig, bomItem_material } = context;
+    const {
+      sequenceData,
+      materialConfig,
+      bomItem_material,
+      bomItem_description,
+    } = context;
 
     const normalizeKey = (str: string) => str.toLowerCase().replace(/\s/g, '');
 
     const materialThickness = materialConfig[normalizeKey(bomItem_material)];
 
-    const { common = {}, depField: depFields = {} } = sequenceData;
+    const prodConfig = sequenceData[normalizeKey(bomItem_description)];
+    const { common = {}, depField: depFields = {} } = prodConfig;
     const depFieldExpr = depFields[depField];
-
-    console.log(common, depField, depFieldExpr);
 
     if (!depFieldExpr)
       throw new Error(`depField expression for "${depField}" not found`);

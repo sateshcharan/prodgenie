@@ -100,6 +100,7 @@ const JobCard = ({
             return res.data;
           })
         );
+
         setJobCardData(...responses);
       } catch (err) {
         console.error('Error fetching job card data:', err);
@@ -112,6 +113,7 @@ const JobCard = ({
 
   // ⏳ Dynamic schema and fields
   const dynamicFields = jobCardData[0]?.fields;
+  const dynamicSectionName = jobCardData[0]?.name;
   const dynamicSchema = (function (z) {
     return eval(jobCardData[0]?.schema);
   })(z); // dangerous execuction
@@ -267,7 +269,11 @@ const JobCard = ({
 
                   <FormProvider {...form}>
                     {jobCardData.map((fields, idx) => (
-                      <div className="space-y-4" key={idx}>
+                      <div
+                        className="space-y-4 border p-4 rounded-md mt-4"
+                        key={idx}
+                      >
+                        <FormLabel>{fields.name}</FormLabel>
                         {fields?.fields?.map((f) => (
                           <FormField
                             control={form.control}
@@ -275,22 +281,24 @@ const JobCard = ({
                             name={f.name as any}
                             render={({ field }) => (
                               <FormItem className="pt-4">
-                                <FormLabel>{f.label}</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type={f.type}
-                                    placeholder={f.placeholder}
-                                    value={field.value ?? ''}
-                                    onChange={(e) =>
-                                      field.onChange(
-                                        f.type === 'number'
-                                          ? Number(e.target.value)
-                                          : e.target.value
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
+                                <div className="flex">
+                                  <FormLabel>{f.label}</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type={f.type}
+                                      placeholder={f.placeholder}
+                                      value={field.value ?? ''}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          f.type === 'number'
+                                            ? Number(e.target.value)
+                                            : e.target.value
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </div>
                               </FormItem>
                             )}
                           />

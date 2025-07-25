@@ -142,7 +142,82 @@ export class ThumbnailService {
     }
 
     if (fileType === 'config' || fileType === 'sequence') {
-      console.log('generate thumbnail for config/sequence');
+      try {
+        const browser = await puppeteer.launch({
+          headless: true,
+        });
+        const page = await browser.newPage();
+
+        const jsonData = JSON.parse(file.buffer.toString());
+
+        // Build a basic HTML summary from JSON
+        const htmlContent = `
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              background-color: #f9f9f9;
+            }
+            h1 {
+              font-size: 18px;
+              margin-bottom: 10px;
+            }
+            .section {
+              background: #fff;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              padding: 10px;
+              margin-bottom: 10px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .section h2 {
+              font-size: 14px;
+              margin: 0 0 5px;
+            }
+            .field {
+              font-size: 12px;
+              color: #555;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Template Preview</h1>
+          ${(jsonData?.sections || [])
+            .map(
+              (section: any) => `
+            <div class="section">
+              <h2>📦 ${section.name}</h2>
+              <div class="field">Fields: ${
+                section?.jobCardForm?.sections?.flatMap(
+                  (s: any) => s.fields || []
+                ).length || 0
+              }</div>
+            </div>
+          `
+            )
+            .join('')}
+        </body>
+      </html>
+    `;
+
+        await page.setContent(htmlContent, {
+          waitUntil: 'domcontentloaded',
+        });
+
+        const screenshotBuffer = await page.screenshot({
+          fullPage: false,
+          type: 'jpeg',
+          quality: 80,
+        });
+
+        await browser.close();
+        return screenshotBuffer as Buffer;
+      } catch (error: any) {
+        console.error('❌ Failed to generate JSON thumbnail:', error);
+        throw new Error(`Thumbnail generation error: ${error.message}`);
+      }
     }
 
     throw new Error(`Unsupported fileType: ${fileType}`);

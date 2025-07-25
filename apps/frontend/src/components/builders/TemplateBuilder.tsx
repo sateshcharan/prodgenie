@@ -2,6 +2,7 @@ import { Save } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
+import isEqual from 'lodash.isequal';
 
 import { api } from '../../utils';
 import FormBuilder from './FormBuilder';
@@ -12,11 +13,12 @@ import {
   preDefinedKeywords,
   preDefinedOperators,
 } from '@prodgenie/libs/constant';
-import { Button, FileDropzone, Input, toast } from '@prodgenie/libs/ui';
+import { Button, Card, FileDropzone, Input, toast } from '@prodgenie/libs/ui';
 
 const TemplateBuilder = () => {
   const [templateName, setTemplateName] = useState('');
   const [templateFile, setTemplateFile] = useState<string | null>(null);
+  const [originalTemplateFile, setOriginalTemplateFile] = useState('');
   const [templateFields, setTemplateFields] = useState<string[]>([]);
   const [templateBlocks, setTemplateBlocks] = useState<string[]>([]);
   const [templateFieldValues, setTemplateFieldValues] = useState<
@@ -24,16 +26,17 @@ const TemplateBuilder = () => {
   >({});
   const [originalTemplateFieldValues, setOriginalTemplateFieldValues] =
     useState<Record<string, string>>({});
-  const [originalTemplateFile, setOriginalTemplateFile] = useState('');
   const [jobCardData, setJobCardData] = useState(null);
+  const [originalJobCardData, setOriginalJobCardData] = useState(null);
 
   const [isSaving, setIsSaving] = useState(false);
-  // const [isEditing, setIsEditing] = useState(false);
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get('id');
 
   const hasFetchedRef = useRef(false);
+
+  const formBuilderRef = useRef<{ saveTemplate: () => void } | null>(null);
 
   useEffect(() => {
     if (!id || hasFetchedRef.current) return;
@@ -41,31 +44,26 @@ const TemplateBuilder = () => {
 
     const fetchFile = async () => {
       try {
-        const rawFile = await api.get(`${apiRoutes.files.base}/getById/${id}`);
-        const name = rawFile.data.data.name;
-        const templateName = name.split('.')[0];
-        const fileContent = await fetch(rawFile.data.data.path).then((res) =>
+        const {
+          data: { data: templateFile },
+        } = await api.get(`${apiRoutes.files.base}/getById/${id}`);
+        const templateName = templateFile.name.split('.')[0];
+        const templateFileContent = await fetch(templateFile.path).then((res) =>
           res.text()
         );
+        const jobCardFormData = templateFile?.data?.jobCardForm;
+        const { manual = {}, computed = {} } =
+          templateFile?.data?.templateFields ?? {};
+        const combined = { ...manual, ...computed };
+        const { fields, blocks } = extractPlaceholders(templateFileContent);
 
         setTemplateName(templateName);
-        setTemplateFile(fileContent);
-        setOriginalTemplateFile(fileContent);
-
-        const { fields, blocks } = extractPlaceholders(fileContent);
+        setTemplateFile(templateFileContent);
+        setOriginalTemplateFile(templateFileContent);
         setTemplateFields(fields);
         setTemplateBlocks(blocks);
-
-        const { data } = await api.get(
-          `${apiRoutes.files.base}/getFileData/${id}`
-        );
-        const templateData = data?.data?.[templateName];
-        const jobCardFormData = data?.data?.jobCard?.formFields;
         setJobCardData(jobCardFormData);
-
-        const manualFields = templateData.fields.manual ?? {};
-        const computedFields = templateData.fields.computed ?? {};
-        const combined = { ...manualFields, ...computedFields };
+        setOriginalJobCardData(jobCardFormData);
         setTemplateFieldValues(combined);
         setOriginalTemplateFieldValues(combined);
       } catch (err) {
@@ -76,16 +74,29 @@ const TemplateBuilder = () => {
     fetchFile();
   }, [id]);
 
-  // Extracts {{placeholders}} and grouped blocks from HTML
+  useEffect(() => {
+    if (!id) {
+      setTemplateName('');
+      setTemplateFile(null);
+      setTemplateFields([]);
+      setTemplateBlocks([]);
+      setTemplateFieldValues({});
+      setOriginalTemplateFieldValues({});
+      setOriginalTemplateFile('');
+      setJobCardData(null);
+      setOriginalJobCardData(null);
+      setIsSaving(false);
+      hasFetchedRef.current = false;
+    }
+  }, [id]);
+
   const extractPlaceholders = (htmlContent: string) => {
     const fields: string[] = [];
     const blocks: string[] = [];
+    let currentBlock: string | null = null;
 
     const matches = htmlContent.match(/{{(.*?)}}/g);
     if (!matches) return { fields, blocks };
-
-    let currentBlock: string | null = null;
-
     matches
       .map((m) => m.slice(2, -2).trim())
       .forEach((token) => {
@@ -98,7 +109,6 @@ const TemplateBuilder = () => {
           fields.push(token);
         }
       });
-
     return { fields, blocks };
   };
 
@@ -133,31 +143,34 @@ const TemplateBuilder = () => {
     reader.readAsText(file);
   };
 
-  const handleTemplateSave = async () => {
+  const handleTemplateSave = async (UpdatedJobCardData: any) => {
     if (!templateFile || !templateName.trim()) return;
     setIsSaving(true);
 
-    const isUnchanged =
-      JSON.stringify(templateFieldValues) ===
-        JSON.stringify(originalTemplateFieldValues) &&
-      templateFile === originalTemplateFile;
+    const stripSchema = (obj: any) => {
+      const clone = structuredClone(obj);
+      for (const section of clone.sections ?? []) {
+        delete section.schema;
+      }
+      return clone;
+    };
 
-    if (isUnchanged) {
-      console.log('⚠️ No changes detected. Skipping save.');
-      setIsSaving(false);
-      return;
+    if (id) {
+      const isUnchanged =
+        isEqual(
+          stripSchema(UpdatedJobCardData.jobCardForm),
+          stripSchema(originalJobCardData)
+        ) && isEqual(templateFieldValues, originalTemplateFieldValues);
+
+      if (isUnchanged) {
+        console.log('⚠️ No changes detected. Skipping save.');
+        setIsSaving(false);
+        return;
+      }
     }
 
     const manual: Record<string, string> = {};
     const computed: Record<string, string> = {};
-
-    // Object.entries(templateFieldValues).forEach(([key, val]) => {
-    //   const isComputed =
-    //     typeof val === 'string' &&
-    //     (val.includes(`depField`) ||
-    //       preDefinedOperators.some((op) => val.includes(op)));
-    //   isComputed ? (computed[key] = val) : (manual[key] = val);
-    // });
 
     Object.entries(templateFieldValues).forEach(([key, val]) => {
       const isComputed =
@@ -168,12 +181,11 @@ const TemplateBuilder = () => {
     });
 
     const templateJson = {
-      [templateName]: {
-        fields: {
-          manual,
-          computed,
-        },
+      templateFields: {
+        manual,
+        computed,
       },
+      ...UpdatedJobCardData,
     };
 
     try {
@@ -256,16 +268,18 @@ const TemplateBuilder = () => {
               </div>
             </ScrollArea>
 
-            {/* {jobCardData && Object.keys(jobCardData).length > 0 && (
-              <FormBuilder jobCardData={jobCardData} />
-            )} */}
-
-            {templateFile && <FormBuilder jobCardData={jobCardData} />}
+            {templateFile && (
+              <FormBuilder
+                ref={formBuilderRef}
+                jobCardData={jobCardData}
+                onFormSubmit={handleTemplateSave}
+              />
+            )}
           </div>
         )}
 
       {/* Right: Upload, Name, and Preview */}
-      <div className="bg-white border rounded shadow p-2 overflow-auto">
+      <div className="bg-white border rounded shadow p-2 overflow-auto ">
         <div className="flex justify-between items-center mb-4 gap-4">
           {id === null ? (
             <Input
@@ -285,7 +299,7 @@ const TemplateBuilder = () => {
             </h3>
           )}
           <Button
-            onClick={handleTemplateSave}
+            onClick={() => formBuilderRef.current?.saveTemplate()}
             disabled={!templateFile || isSaving}
             className="flex items-center gap-2"
           >

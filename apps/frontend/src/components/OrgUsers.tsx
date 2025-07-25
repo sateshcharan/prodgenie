@@ -81,9 +81,10 @@ const OrgUsers = ({ orgId }: OrgUsersProps) => {
       <div className="space-y-2 flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Team</h2>
         {!inviteCode && (
-          <Button onClick={handleGenerateInviteCode} disabled={inviteLoading}>
-            {inviteLoading ? 'Generating...' : 'Generate Invite Code'}
-          </Button>
+          // <Button onClick={handleGenerateInviteCode} disabled={inviteLoading}>
+          //   {inviteLoading ? 'Generating...' : 'Generate Invite Code'}
+          // </Button>
+          <h2>{orgId}</h2>
         )}
 
         {inviteCode && (

@@ -113,7 +113,7 @@ const FileCard = ({
           // ) 
           : (
             // <div className="text-gray-400">No Preview</div>
-            <AvatarFallback className="rounded-lg">
+            <AvatarFallback className="rounded-lg w-full h-[120px]">
               {stringService.getInitials(card?.name)}
             </AvatarFallback>
           )}

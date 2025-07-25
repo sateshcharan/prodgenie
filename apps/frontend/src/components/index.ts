@@ -16,5 +16,5 @@ export { default as Signup } from './Signup';
 export { default as TemplateBuilder } from './builders/TemplateBuilder';
 export { default as SequenceBuilder } from './builders/SequenceBuilder';
 export { default as MaterialBuilder } from './builders/MaterialBuilder';
-export { default as FormulaBuilder } from './FormulaBuilder';
+export { default as FormulaBuilder } from './builders/FormulaBuilder';
 export { default as FormBuilder } from './builders/FormBuilder';
