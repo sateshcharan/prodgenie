@@ -7,7 +7,7 @@
 // });
 
 export const connection = {
-  host: process.env.REDIS_HOST || 'localhost',
+  host: process.env.REDIS_URL || 'localhost',
   port: 6379,
   maxRetriesPerRequest: null,
 };
