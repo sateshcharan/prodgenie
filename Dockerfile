@@ -4,7 +4,7 @@ FROM node:20
 RUN apt-get update && apt-get install -y \
     # python3 python3-pip python3-venv \
     chromium \
-    redis-server \
+    # redis-server \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -29,11 +29,11 @@ ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Install concurrently globally
-RUN pnpm add -g concurrently
+# RUN pnpm add -g concurrently
 
 # Expose backend port
 EXPOSE 3000
 
 # Start Redis + Node.js backend + Python service
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]
-CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js'"]
+CMD ["sh", "-c", "node apps/backend/dist/main.js"]
