@@ -25,18 +25,21 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 
 const app = express();
 const port = process.env.PORT || 3333;
+const corsOptions = {
+  origin: [
+    'http://localhost:4200',
+    'http://localhost:4300',
+    'https://prodgenie.vercel.app',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  // credentials: true,
+};
 
 // Middlewares
 app.use(express.json());
 app.use(passport.initialize());
-app.use(
-  cors({
-    origin: ['http://localhost:4200', 'https://prodgenie.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    // credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 // Static Files
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
