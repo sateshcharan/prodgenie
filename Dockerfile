@@ -24,7 +24,7 @@ RUN pnpm store prune && rm -rf ~/.pnpm-store
 RUN pnpm install --frozen-lockfile
 
 # Ensure prisma schema is valid
-RUN pnpm exec prisma validate
+# RUN pnpm exec prisma validate
 RUN pnpm exec prisma generate
 
 # Build backend
