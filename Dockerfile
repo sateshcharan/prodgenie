@@ -12,10 +12,21 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
+# Copy the Prisma schema to the root where Prisma expects it (optional)
+COPY libs/prisma/src/prisma/schema.prisma prisma/schema.prisma
+
+# Environment
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="${PNPM_HOME}:${PATH}"
+
 # Install pnpm and dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN pnpm install --frozen-lockfile
+
+# Generate Prisma Client
 RUN pnpm exec prisma generate
+
+# Build backend
 RUN pnpm nx build backend
 
 # Setup Python virtual environment
@@ -24,9 +35,6 @@ RUN pnpm nx build backend
 #     /opt/venv/bin/pip install --upgrade pip && \
 #     /opt/venv/bin/pip install -r apps/pdf-parser/requirements.txt
 
-# Environment
-ENV PNPM_HOME="/root/.local/share/pnpm"
-ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Install concurrently globally
 # RUN pnpm add -g concurrently
