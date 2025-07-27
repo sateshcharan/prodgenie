@@ -3,8 +3,8 @@ FROM node:20
 # Install Chromium, Python, Redis
 RUN apt-get update && apt-get install -y \
     # python3 python3-pip python3-venv \
-    chromium \
     # redis-server \
+    chromium \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -21,10 +21,18 @@ ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Install pnpm and dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate
+# Clean pnpm store to avoid stale artifacts
+RUN pnpm store prune && rm -rf ~/.pnpm-store
 RUN pnpm install --frozen-lockfile
+
+# Ensure Prisma schema is valid
+RUN pnpm exec prisma validate
 
 # Generate Prisma Client
 RUN pnpm exec prisma generate
+
+# Optional: Output debug info
+RUN echo "⏱ Prisma client generated:" && ls -l node_modules/.prisma/client
 
 # Build backend
 RUN pnpm nx build backend
