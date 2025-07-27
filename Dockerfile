@@ -12,27 +12,20 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
-# Copy the Prisma schema to the root where Prisma expects it (optional)
-COPY libs/prisma/src/prisma/schema.prisma prisma/schema.prisma
-
 # Environment
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Install pnpm and dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate
-# Clean pnpm store to avoid stale artifacts
+
+# Clear pnpm store to avoid aritfacts
 RUN pnpm store prune && rm -rf ~/.pnpm-store
 RUN pnpm install --frozen-lockfile
 
-# Ensure Prisma schema is valid
+# Ensure prisma schema is valid
 RUN pnpm exec prisma validate
-
-# Generate Prisma Client
 RUN pnpm exec prisma generate
-
-# Optional: Output debug info
-RUN echo "⏱ Prisma client generated:" && ls -l node_modules/.prisma/client
 
 # Build backend
 RUN pnpm nx build backend
