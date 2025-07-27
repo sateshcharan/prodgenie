@@ -17,7 +17,7 @@ import IORedis from 'ioredis';
 export const connection = new IORedis(
   process.env.REDIS_INTERNAL_URL ||
     process.env.REDIS_EXTERNAL_URL ||
-    'redis://localhost:6379',
+    'redis://red-d22hp3adbo4c73f8ro00:6379',
   {
     maxRetriesPerRequest: null,
   }
