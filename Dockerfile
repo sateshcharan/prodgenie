@@ -30,18 +30,21 @@ RUN pnpm exec prisma generate
 # Build backend
 RUN pnpm nx build backend
 
+# Install puppeteer
+RUN npx puppeteer browsers install chrome
+
 # Setup Python virtual environment
 # RUN python3 -m venv /opt/venv && \
 #     . /opt/venv/bin/activate && \
 #     /opt/venv/bin/pip install --upgrade pip && \
 #     /opt/venv/bin/pip install -r apps/pdf-parser/requirements.txt
 
-
 # Install concurrently globally
 # RUN pnpm add -g concurrently
 
 # Expose backend port
 EXPOSE 3000
+
 
 # Start Redis + Node.js backend + Python service
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]

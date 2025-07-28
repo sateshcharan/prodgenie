@@ -81,7 +81,19 @@ export class PuppeteerService {
       fs.unlinkSync(this.singletonLockPath);
     }
     return puppeteer.launch({
-      headless: false,
+      // needed for docker environment
+      headless: true,
+      // executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process',
+        '--no-zygote',
+      ],
+
+      // headless: false,
       userDataDir: this.userDataDir,
       defaultViewport: { width: 1920, height: 1080 },
     });
