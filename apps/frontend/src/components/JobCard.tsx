@@ -112,14 +112,34 @@ const JobCard = ({
   }, [bom]);
 
   // ⏳ Dynamic schema and fields
-  const dynamicFields = jobCardData[0]?.fields;
-  const dynamicSectionName = jobCardData[0]?.name;
-  const dynamicSchema = (function (z) {
-    return eval(jobCardData[0]?.schema);
-  })(z); // dangerous execuction
+  // const dynamicFields = jobCardData[0]?.fields;
+  const dynamicFields = jobCardData?.[0]?.fields || { fields: [] };
 
+  const dynamicSectionName = jobCardData[0]?.name;
+
+  // const dynamicSchema = (function (z) {
+  //   return eval(jobCardData[0]?.schema);
+  // })(z); // dangerous execuction
+  const dynamicSchema = useMemo(() => {
+    try {
+      const rawSchema = jobCardData?.[0]?.schema;
+      if (!rawSchema) return undefined;
+
+      const parsed = eval(rawSchema);
+      return parsed && typeof parsed === 'object' ? parsed : undefined;
+    } catch (e) {
+      console.error('Failed to eval schema', e);
+      return undefined;
+    }
+  }, [jobCardData]);
+
+  // const mergedSchema = useMemo(() => {
+  //   if (!dynamicSchema) return jobCardSchema;
+  //   return jobCardSchema.merge(dynamicSchema);
+  // }, [dynamicSchema]);
   const mergedSchema = useMemo(() => {
-    if (!dynamicSchema) return jobCardSchema;
+    if (!dynamicSchema || typeof dynamicSchema !== 'object')
+      return jobCardSchema;
     return jobCardSchema.merge(dynamicSchema);
   }, [dynamicSchema]);
 
