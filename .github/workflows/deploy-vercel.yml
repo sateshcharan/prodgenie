@@ -22,9 +22,6 @@ jobs:
       - name: Pull Vercel Project Settings
         run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 
-      # - name: Generate Vercel Build Output
-      #   run: VITE_API_URL=${{ secrets.VITE_API_URL }} pnpm dlx vercel build --prod
-
       - name: Generate Vercel Build Output
         run: pnpm dlx vercel build --prod
         env:

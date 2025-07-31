@@ -4,10 +4,19 @@ FROM node:20
 RUN apt-get update && apt-get install -y \
     # python3 python3-pip python3-venv \
     # redis-server \
+    ghostscript \
+    graphicsmagick \
+    # imagemagick \ 
+    # libglib2.0-0 \
+    # libsm6 \
+    # libxrender1 \
+    # libxext6 \
+    # fonts-dejavu-core \ 
     chromium \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# COPY imagemagick-policy.xml /etc/ImageMagick-6/policy.xml
 # Set working directory
 WORKDIR /app
 COPY . .
@@ -42,9 +51,9 @@ RUN npx puppeteer browsers install chrome
 # Install concurrently globally
 # RUN pnpm add -g concurrently
 
+
 # Expose backend port
 EXPOSE 3000
-
 
 # Start Redis + Node.js backend + Python service
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]

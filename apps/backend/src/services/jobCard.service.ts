@@ -44,10 +44,10 @@ export class JobCardService {
 
     const orgCredits = user?.org?.credits;
 
-    //check org credits
-    // if (orgCredits < 10) {
-    //   throw new Error('Not enough credits upgrade your plan');
-    // }
+    // check org credits
+    if (orgCredits < 10) {
+      throw new Error('Not enough credits upgrade your plan');
+    }
 
     const materialConfig = await this.fetchOrgConfig(orgId, 'material.json');
     const standardConfig = await this.fetchOrgConfig(orgId, 'standard.json');
@@ -160,10 +160,10 @@ export class JobCardService {
     const jobCardUrl = await this.uploadJobCard(outputPath, user);
 
     // Deduct 10 credits
-    // await prisma.org.update({
-    //   where: { id: orgId },
-    //   data: { credits: { decrement: 10 } },
-    // });
+    await prisma.org.update({
+      where: { id: orgId },
+      data: { credits: { decrement: 10 } },
+    });
 
     await fs.rm('./tmp', { recursive: true });
 
@@ -359,7 +359,7 @@ export class JobCardService {
       filename: fileName,
       path: filePath,
       buffer: fileBuffer,
-      stream: undefined as any,
+      // stream: undefined as any,
     };
 
     const jobCard = await this.fileService.uploadFile(
@@ -382,7 +382,7 @@ export class JobCardService {
       destination: '',
       filename: '',
       path: '',
-      stream: Readable.from(thumbnailBuffer),
+      // stream: Readable.from(thumbnailBuffer),
     };
 
     await this.thumbnailService.set(thumbnailFile, jobCard[0].id, user);

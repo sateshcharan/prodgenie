@@ -95,7 +95,7 @@ export class ThumbnailService {
       try {
         const convert = fromBuffer(file.buffer, {
           saveFilename: filename,
-          savePath: '/tmp',
+          savePath: './tmp',
           density: 72,
           format: 'jpeg',
           // width: 600,
@@ -103,6 +103,8 @@ export class ThumbnailService {
           quality: 80,
         });
         const result = await convert(1, { responseType: 'buffer' });
+        console.log('PDF2PIC result:', result.buffer);
+
         return result.buffer as Buffer;
       } catch (error: any) {
         console.error('Failed to generate thumbnail:', error);
@@ -113,6 +115,14 @@ export class ThumbnailService {
     if (fileType === 'template') {
       const browser = await puppeteer.launch({
         headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--single-process',
+          '--no-zygote',
+        ],
       });
       try {
         const page = await browser.newPage();
@@ -145,6 +155,14 @@ export class ThumbnailService {
       try {
         const browser = await puppeteer.launch({
           headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--single-process',
+            '--no-zygote',
+          ],
         });
         const page = await browser.newPage();
 

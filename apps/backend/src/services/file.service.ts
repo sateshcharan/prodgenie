@@ -1,8 +1,10 @@
 import { FileType } from '@prisma/client';
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
+import { ThumbnailService } from './thumbnail.service';
 
 const storageFileService = new FileStorageService();
+const thumbnailService = new ThumbnailService();
 
 export class FileService {
   async uploadFile(filesWithId: any[], fileType: string, user: any) {
@@ -34,6 +36,8 @@ export class FileService {
         });
 
         savedFiles.push(savedFile);
+
+        // await thumbnailService.set(file, file.id, user);
       } catch (err) {
         console.error(`Upload failed for ${file.originalname}:`, err);
         // Optional rollback logic here if required
