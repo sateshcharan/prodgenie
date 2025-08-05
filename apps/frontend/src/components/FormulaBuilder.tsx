@@ -1,11 +1,11 @@
-import { object } from 'zod';
+// import { object } from 'zod';
 import { Plus, Trash } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
-import { api } from '../utils';
-import SuggestionInput from '../SuggestionInput';
+// import { api } from '../utils';
+import SuggestionInput from './SuggestionInput';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 import {
@@ -18,7 +18,7 @@ import {
 } from '@prodgenie/libs/ui';
 
 type FormulaConfig = {
-  key: string;
+  key: string | null;
   common: { key: string; value: string }[];
   depField: { key: string; value: string }[];
 };
@@ -26,7 +26,7 @@ type FormulaConfig = {
 type FormulaBuilderProps = {
   fileData: any;
   sequenceFormulas: any;
-  onFormulaSave: any;
+  onFormulaSave: (formula: any) => void;
 };
 
 const FormulaBuilder = forwardRef(
@@ -36,6 +36,7 @@ const FormulaBuilder = forwardRef(
       common: [],
       depField: [],
     };
+
     const {
       control,
       handleSubmit,
@@ -62,13 +63,7 @@ const FormulaBuilder = forwardRef(
     });
 
     const watchedSections = watch('products');
-
-    useImperativeHandle(ref, () => ({
-      saveTemplate: onSubmit,
-    }));
-
     const originalConfigRef = useRef<string | null>(null);
-
     const [searchParams] = useSearchParams();
     const id = searchParams.get('id');
 
@@ -81,6 +76,10 @@ const FormulaBuilder = forwardRef(
         })
       );
     });
+
+    useImperativeHandle(ref, () => ({
+      saveTemplate: onSubmit,
+    }));
 
     // Extract data from file
     useEffect(() => {
@@ -97,7 +96,7 @@ const FormulaBuilder = forwardRef(
           );
 
           const merged = transformed.reduce(
-            (acc, item) => {
+            (acc: any, item: any) => {
               Object.assign(acc.common, item.common);
               Object.assign(acc.depField, item.depField);
               return acc;
@@ -115,7 +114,6 @@ const FormulaBuilder = forwardRef(
             depField: { ...merged.depField, ...sequenceFormulas.depField },
           };
 
-          // reset({ products: [hydrated] });
           reset({
             products: [
               {
@@ -162,7 +160,6 @@ const FormulaBuilder = forwardRef(
       };
 
       onFormulaSave(output);
-
       // originalConfigRef.current = outputString;
     };
 
@@ -262,12 +259,10 @@ function FormulaFields({
     name: `products.${index}.${fieldName}`,
   });
 
-  const prefixedSuggestions = extraSuggestions.map((k) => `formula_${k}`);
-
-  jobCardFormSuggestions &&
-    jobCardFormSuggestions.map((k) => {
-      prefixedSuggestions.push(k);
-    });
+  const allSuggestions = [
+    ...extraSuggestions.map((k) => `formula_${k}`),
+    ...jobCardFormSuggestions,
+  ];
 
   return (
     <div className="space-y-2">
@@ -281,7 +276,7 @@ function FormulaFields({
           ={/* fix this input */}
           <SuggestionInput
             value={field.value}
-            extraSuggestions={prefixedSuggestions}
+            extraSuggestions={allSuggestions}
             onChange={(val) => console.log(val)}
             {...control.register(`products.${index}.${fieldName}.${i}.value`)}
           />

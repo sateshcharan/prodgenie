@@ -7,3 +7,4 @@ export { router as orgRoutes } from './org.routes.js';
 export { router as paymentRoutes } from './payment.routes.js';
 export { router as thumbnailRoutes } from './thumbnail.routes.js';
 export { router as sequenceRoutes } from './sequence.routes.js';
+export { router as webhookRoutes } from './webhook.routes.js';

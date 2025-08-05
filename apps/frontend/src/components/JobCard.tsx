@@ -125,7 +125,10 @@ const JobCard = ({
       const rawSchema = jobCardData?.[0]?.schema;
       if (!rawSchema) return undefined;
 
-      const parsed = eval(rawSchema);
+      const buildSchema = new Function('z', `return (${rawSchema});`);
+      const parsed = buildSchema(z);
+
+      // const parsed = eval(rawSchema);
       return parsed && typeof parsed === 'object' ? parsed : undefined;
     } catch (e) {
       console.error('Failed to eval schema', e);
@@ -169,15 +172,30 @@ const JobCard = ({
   });
 
   // ✅ Ensure defaults reset once jobCardData is ready
+  // useEffect(() => {
+  //   if (dynamicFields?.fields) {
+  //     form.reset({
+  //       ...staticDefaults,
+  //       ...dynamicDefaults,
+  //     });
+  //     setIsLoading(false); // ✅ schema + defaults ready
+  //   }
+  // }, [dynamicFields]);
   useEffect(() => {
-    if (dynamicFields?.fields) {
-      form.reset({
-        ...staticDefaults,
-        ...dynamicDefaults,
-      });
-      setIsLoading(false); // ✅ schema + defaults ready
+    if (!dynamicFields?.fields) return;
+
+    const merged = {
+      ...staticDefaults,
+      ...dynamicDefaults,
+    };
+
+    // Only reset if form values are different
+    const currentValues = form.getValues();
+    if (JSON.stringify(currentValues) !== JSON.stringify(merged)) {
+      form.reset(merged);
+      setIsLoading(false);
     }
-  }, [dynamicFields]);
+  }, [dynamicDefaults, staticDefaults, dynamicFields]);
 
   const onSubmit = async (jobCardForm: jobCardFormValues) => {
     try {

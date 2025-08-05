@@ -31,13 +31,30 @@ const FileDetails = () => {
   }, [signedUrl, fileId]);
 
   return fileType === 'drawing' ? (
-    <div
-      className={`grid ${
-        tables ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'
-      } w-full h-screen`}
-    >
+    // <div
+    //   className={`grid ${
+    //     tables ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'
+    //   } w-full h-screen`}
+    // >
+    //   {tables && (
+    //     <div className="p-4 bg-white rounded-lg overflow-auto">
+    //       <JobCard
+    //         tables={tables}
+    //         fileId={fileId}
+    //         signedUrl={signedUrl}
+    //         setJobCardUrl={setSignedUrl}
+    //       />
+    //     </div>
+    //   )}
+    //   <div>
+    //     <iframe src={signedUrl} className="w-full h-full" title="PDF Preview" />
+    //   </div>
+    // </div>
+
+    // <div className="flex flex-col lg:flex-row w-full h-screen">
+    <div className="flex flex-col lg:flex-row w-full flex-1 overflow-hidden">
       {tables && (
-        <div className="p-4 bg-white rounded-lg overflow-auto">
+        <div className="lg:w-[40%] w-full p-4 bg-white rounded-lg max-h-[50vh] lg:max-h-none overflow-y-auto">
           <JobCard
             tables={tables}
             fileId={fileId}
@@ -46,10 +63,12 @@ const FileDetails = () => {
           />
         </div>
       )}
-      <div>
+      <div className="flex-1">
         <iframe src={signedUrl} className="w-full h-full" title="PDF Preview" />
       </div>
     </div>
+
+
   ) : fileType === 'template' ? (
     <ExcelHTMLViewer url={signedUrl} />
   ) : fileType === 'sequence' ? (

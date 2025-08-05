@@ -12,7 +12,7 @@ export const SearchBanner = ({
   banner: string;
 }) => {
   return (
-    <Card className="bg-gray-100 rounded-xl w-full">
+    <Card className="bg-primary-foreground rounded-xl w-full">
       <CardContent className="flex flex-col md:flex-row items-center justify-between p-6 gap-4 md:h-[150px]">
         {/* Left Section: Search Bar with Subheading */}
         <div className="w-full md:max-w-md">

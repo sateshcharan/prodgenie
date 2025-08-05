@@ -22,6 +22,8 @@ import {
 } from '@prodgenie/libs/constant';
 import { useUserStore } from '@prodgenie/libs/store';
 
+import { useSuggestionTokens } from '../hooks/useSuggestionTokens';
+
 interface SuggestionInputProps {
   readonly?: boolean;
   value: string;
@@ -35,7 +37,8 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
       value ? value.split(' ') : []
     );
     const [open, setOpen] = useState(false);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
+    // const [suggestions, setSuggestions] = useState<string[]>([]);
+    const suggestions = useSuggestionTokens(extraSuggestions);
 
     const [searchParams] = useSearchParams();
     const fileId = searchParams.get('id');
@@ -50,73 +53,73 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
     const stableExtraSuggestions = useMemo(() => [...extraSuggestions], []);
     const hasFetchedSuggestionsRef = useRef(false);
 
-    useEffect(() => {
-      if (hasFetchedSuggestionsRef.current) return;
+    // useEffect(() => {
+    //   if (hasFetchedSuggestionsRef.current) return;
 
-      const loadSuggestions = async () => {
-        //jobCardFields
-        const jobCardSuggestions = jobCardFields.flatMap((field) =>
-          field.fields
-            ? field.fields.map((f) => `jobCardForm_${f.name.replace('.', '_')}`)
-            : [`jobCardForm_${field.name.replace('.', '_')}`]
-        );
+    //   const loadSuggestions = async () => {
+    //     //jobCardFields
+    //     const jobCardSuggestions = jobCardFields.flatMap((field) =>
+    //       field.fields
+    //         ? field.fields.map((f) => `jobCardForm_${f.name.replace('.', '_')}`)
+    //         : [`jobCardForm_${field.name.replace('.', '_')}`]
+    //     );
 
-        const bomSuggestions: string[] = [];
+    //     const bomSuggestions: string[] = [];
 
-        try {
-          const {
-            data: { data: bomFile },
-          } = await api.get(`${apiRoutes.orgs.base}/getOrgConfig/bom.json`);
-          const response = await fetch(bomFile.path);
-          if (!response.ok) throw new Error('Failed to load config');
-          const json = await response.json();
+    //     try {
+    //       const {
+    //         data: { data: bomFile },
+    //       } = await api.get(`${apiRoutes.orgs.base}/getOrgConfig/bom.json`);
+    //       const response = await fetch(bomFile.path);
+    //       if (!response.ok) throw new Error('Failed to load config');
+    //       const json = await response.json();
 
-          for (const section in json) {
-            const expected = json[section]?.header?.expected;
-            if (Array.isArray(expected)) {
-              bomSuggestions.push(
-                ...expected.map((f: string) => `${section}_${f}`)
-              );
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching config:', err);
-        }
+    //       for (const section in json) {
+    //         const expected = json[section]?.header?.expected;
+    //         if (Array.isArray(expected)) {
+    //           bomSuggestions.push(
+    //             ...expected.map((f: string) => `${section}_${f}`)
+    //           );
+    //         }
+    //       }
+    //     } catch (err) {
+    //       console.error('Error fetching config:', err);
+    //     }
 
-        const userSuggestions = Object.keys(stableUser).map(
-          (key) => `user_${key}`
-        ); // user
+    //     const userSuggestions = Object.keys(stableUser).map(
+    //       (key) => `user_${key}`
+    //     ); // user
 
-        let allSuggestions = [
-          ...jobCardSuggestions,
-          ...bomSuggestions,
-          ...userSuggestions,
-          ...preDefinedKeywords,
-          ...extraSuggestions,
-        ];
+    //     let allSuggestions = [
+    //       ...jobCardSuggestions,
+    //       ...bomSuggestions,
+    //       ...userSuggestions,
+    //       ...preDefinedKeywords,
+    //       ...extraSuggestions,
+    //     ];
 
-        if (fileId) {
-          try {
-            const {
-              data: { data: dynamicFieldsData },
-            } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
-            const dynamicFields =
-              dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
-            const dynamicSuggestions = dynamicFields.map(
-              (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
-            );
-            allSuggestions = [...allSuggestions, ...dynamicSuggestions];
-          } catch (err) {
-            console.error('Error fetching dynamic job card fields:', err);
-          }
-        }
+    //     if (fileId) {
+    //       try {
+    //         const {
+    //           data: { data: dynamicFieldsData },
+    //         } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
+    //         const dynamicFields =
+    //           dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
+    //         const dynamicSuggestions = dynamicFields.map(
+    //           (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
+    //         );
+    //         allSuggestions = [...allSuggestions, ...dynamicSuggestions];
+    //       } catch (err) {
+    //         console.error('Error fetching dynamic job card fields:', err);
+    //       }
+    //     }
 
-        setSuggestions(allSuggestions);
-        hasFetchedSuggestionsRef.current = true;
-      };
+    //     setSuggestions(allSuggestions);
+    //     hasFetchedSuggestionsRef.current = true;
+    //   };
 
-      loadSuggestions();
-    }, [fileId, extraSuggestions, user]);
+    //   loadSuggestions();
+    // }, [fileId, extraSuggestions, user]);
 
     const updateTokens = (newTokens: string[]) => {
       setTokens(newTokens);

@@ -34,10 +34,10 @@ interface SignupInvitePayload {
 }
 
 export class AuthService {
+  // custom auth
   /**
    * Signup a user and create a new organization (Owner/ADMIN)
    */
-  //custom auth
   static async signupOwner({
     name,
     email,
@@ -95,62 +95,9 @@ export class AuthService {
     return user;
   }
 
-  //supabase auth
-  // static async signupOwner({
-  //   name,
-  //   email,
-  //   password,
-  //   orgName,
-  // }: {
-  //   name: string;
-  //   email: string;
-  //   password: string;
-  //   orgName: string;
-  // }) {
-  //   // Sign up user in Supabase
-  //   console.log(email, password);
-  //   const { data, error } = await supabase.auth.admin.createUser({
-  //     email,
-  //     password,
-  //     user_metadata: {
-  //       name,
-  //       type: 'OWNER',
-  //     },
-  //   });
-
-  //   if (error) throw new Error(error.message);
-
-  //   const supabaseUserId = data.user?.id;
-  //   if (!supabaseUserId) throw new Error('Failed to create user');
-
-  //   // Scaffold storage for the org
-  //   await folderService.scaffoldFolder(orgName);
-
-  //   // Create org and user association in your DB (if needed)
-  //   const org = await prisma.org.upsert({
-  //     where: { name: orgName },
-  //     update: {},
-  //     create: { name: orgName },
-  //   });
-
-  //   // Save extra user info in your DB
-  //   await prisma.user.create({
-  //     data: {
-  //       id: supabaseUserId, // same as Supabase UID
-  //       email,
-  //       name,
-  //       type: 'OWNER',
-  //       orgId: org.id,
-  //     },
-  //   });
-
-  //   return data.user;
-  // }
-
   /**
    * Signup using invite code (Member)
    */
-  // custom auth
   static async signupWithInvite({
     email,
     password,
@@ -186,7 +133,67 @@ export class AuthService {
     return user;
   }
 
-  //supabase auth
+  // // supabase auth
+  // static async signupOwner({
+  //   name,
+  //   email,
+  //   password,
+  //   orgName,
+  // }: {
+  //   name: string;
+  //   email: string;
+  //   password: string;
+  //   orgName: string;
+  // }) {
+  //   // Sign up user in Supabase
+  //   const { data, error } = await supabase.auth.admin.createUser({
+  //     email,
+  //     password,
+  //     user_metadata: {
+  //       name,
+  //       type: 'OWNER',
+  //     },
+  //   });
+
+  //   if (error) throw new Error(error.message);
+  //   const supabaseUserId = data.user?.id;
+  //   if (!supabaseUserId) throw new Error('User ID not returned');
+
+  //   // Scaffold storage folders
+  //   await folderService.scaffoldFolder(orgName);
+
+  //   // Create or upsert Org
+  //   const org = await prisma.org.upsert({
+  //     where: { name: orgName },
+  //     update: {},
+  //     create: { name: orgName },
+  //   });
+
+  //   // Store user metadata in your DB
+  //   await prisma.user.create({
+  //     data: {
+  //       id: supabaseUserId, // Use Supabase UID
+  //       email,
+  //       name,
+  //       type: 'OWNER',
+  //       orgId: org.id,
+  //     },
+  //   });
+
+  //   // Optionally create an admin user (for internal use only)
+  //   await prisma.user.create({
+  //     data: {
+  //       email: `admin@${orgName}.com`,
+  //       password: await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS),
+  //       name: 'admin',
+  //       type: 'ADMIN',
+  //       orgId: org.id,
+  //     },
+  //   });
+
+  //   return data.user;
+  // }
+
   // static async signupWithInvite({
   //   email,
   //   password,
@@ -217,9 +224,8 @@ export class AuthService {
   //   });
 
   //   if (error) throw new Error(error.message);
-
   //   const supabaseUserId = data.user?.id;
-  //   if (!supabaseUserId) throw new Error('Failed to create user');
+  //   if (!supabaseUserId) throw new Error('No user ID returned');
 
   //   await prisma.user.create({
   //     data: {

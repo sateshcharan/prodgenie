@@ -172,7 +172,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
       const zodType = getZodType(field.type);
 
       let current = schemaTree;
-      keys.forEach((key, index) => {
+      keys.forEach((key: string, index: number) => {
         if (index === keys.length - 1) {
           current[key] = zodType;
         } else {
@@ -260,7 +260,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
   };
 
   return (
-    <div className="bg-white border rounded shadow p-2 mt-4 overflow-auto ">
+    <div className="bg-white border rounded shadow p-2 overflow-auto ">
       <div className="flex justify-between items-center  gap-4">
         <h2 className="text-lg font-semibold">Job Card Form Sections</h2>
         <div className="flex flex-row gap-2 p-2">
@@ -277,7 +277,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
 
       {sectionFields.map((section, sectionIndex) => (
         <div key={section.id} className="mb-6 border p-4 rounded-md">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex  justify-between items-center mb-2">
             {/* <h3 className="text-md font-bold">
               {watch(`formSections.${sectionIndex}.name`)}
             </h3> */}

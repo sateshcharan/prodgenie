@@ -1,7 +1,16 @@
-import { CTA, Features, Hero, PreFooter } from '../sections';
-import { motion } from 'framer-motion';
 import { useRef } from 'react';
-import { useInView } from 'framer-motion';
+import { useInView, motion } from 'framer-motion';
+import {
+  CTA,
+  Features,
+  Hero,
+  PreFooter,
+  ProcessFlow,
+  Integrations,
+  Industries,
+  Stats,
+} from './sections';
+import { useState, useEffect } from 'react';
 
 type SectionWrapperProps = {
   children: React.ReactNode;
@@ -41,19 +50,43 @@ const SectionWrapper = ({ children, from = 'bottom' }: SectionWrapperProps) => {
 };
 
 const Home = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   return (
-    <div className="min-h-screen space-y-16">
-      <SectionWrapper from="bottom">
-        <Hero />
-      </SectionWrapper>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style={{ animationDelay: '2s' }}
+        ></div>
+        <div
+          className="absolute top-40 left-1/2 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style={{ animationDelay: '4s' }}
+        ></div>
+      </div>
+
+      <Hero isVisible={isVisible} />
+
+      <Stats />
+
+      <ProcessFlow />
+
+      <Industries />
 
       <SectionWrapper from="right">
         <Features />
       </SectionWrapper>
 
-      <SectionWrapper from="top">
-        <CTA />
-      </SectionWrapper>
+      <Integrations />
+
+      <CTA />
 
       <SectionWrapper from="left">
         <PreFooter />

@@ -11,7 +11,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { set } from 'react-hook-form';
+// import { set } from 'react-hook-form';
 import { CSS } from '@dnd-kit/utilities';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
@@ -19,19 +19,21 @@ import { Save, Trash, FolderSync } from 'lucide-react';
 import isEqual from 'lodash.isequal';
 
 import FormulaBuilder from './FormulaBuilder';
-import { api, ExcelHTMLViewer } from '../../utils';
-import { fetchFilesByType, getThumbnail } from '../../services/fileService';
+import { api, ExcelHTMLViewer } from '../utils';
+import { fetchFilesByType, getThumbnail } from '../services/fileService';
 
 import { Button, Input, toast } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { DataMutationService } from '@prodgenie/libs/frontend-services';
+// import { DataMutationService } from '@prodgenie/libs/frontend-services';
 
-const dataMutationService = new DataMutationService();
+// const dataMutationService = new DataMutationService();
 
 type TemplateFile = {
   id: string;
   path: string;
   name: string;
+  data: any;
+  thumbnail: string;
 };
 
 const SortableItem = ({
@@ -58,6 +60,7 @@ const SortableItem = ({
       <div className="flex-1">
         <div className="flex justify-between items-center mb-2">
           <p className="font-medium text-sm">{file.name.split('.')[0]}</p>
+
           {/* ✅ Drag handle only */}
           <div
             {...attributes}
@@ -93,19 +96,19 @@ const SequenceBuilder = () => {
   const [originalSequence, setOriginalSequence] = useState<TemplateFile[]>([]);
   const [sequenceFormulas, setSequenceFormulas] = useState({});
   const [templateFiles, setTemplateFiles] = useState<TemplateFile[]>([]);
+  const formulaBuilderRef = useRef<{ saveTemplate: () => void } | null>(null);
+
   // const [originalName, setOriginalName] = useState('');
-  const hasFetchedRef = useRef(false);
   const sensors = useSensors(useSensor(PointerSensor));
   const [searchParams] = useSearchParams();
   const id = searchParams.get('id');
+  const hasFetchedRef = useRef(false);
 
-  const formulaBuilderRef = useRef<{ saveTemplate: () => void } | null>(null);
-
+  // Fetch all available template files
   useEffect(() => {
     const fetchTemplateFiles = async () => {
       try {
         const files = await fetchFilesByType('template');
-
         const filesWithThumbnails = await Promise.all(
           files.map(async (file: any) => ({
             ...file,
@@ -122,14 +125,16 @@ const SequenceBuilder = () => {
     fetchTemplateFiles();
   }, []);
 
+  // Load existing sequence (if editing)
   useEffect(() => {
     const fetchFile = async () => {
       try {
         const rawFile = await api.get(`${apiRoutes.files.base}/getById/${id}`);
-        setSequenceFormulas(rawFile.data.data.data);
+        const formulas = rawFile.data.data.data;
         const jsonFile = await fetch(rawFile.data.data.path).then((res) =>
           res.json()
         );
+
         const updatedSections = jsonFile.sections.map(
           (section: any, i: number) => {
             const matchedFile = templateFiles.find((file) =>
@@ -141,25 +146,28 @@ const SequenceBuilder = () => {
             };
           }
         );
+
         setSequenceName(rawFile.data.data.name.split('.')[0]);
         setSequence(updatedSections);
         setOriginalSequence(updatedSections);
+        setSequenceFormulas(formulas);
       } catch (err) {
         console.error('Error fetching sequence files', err);
       }
     };
+
     if (id && templateFiles.length > 0 && !hasFetchedRef.current) {
       fetchFile();
       hasFetchedRef.current = true; // prevent refetch
     }
   }, [id, templateFiles]);
 
+  // Reset on new sequence creation
   useEffect(() => {
     if (!id) {
       setSequenceName('');
       setSequence([]);
       setOriginalSequence([]);
-      setIsSaving(false);
       hasFetchedRef.current = false;
     }
   }, [id]);
@@ -198,7 +206,6 @@ const SequenceBuilder = () => {
 
   const handleSequenceSave = async (updatedSequenceFormulas: any) => {
     if (!sequence || !sequenceName.trim()) return;
-    setIsSaving(true);
 
     const isUnchanged =
       isEqual(sequence, originalSequence) &&
@@ -208,6 +215,8 @@ const SequenceBuilder = () => {
       console.log('⚠️ No changes detected. Skipping save.');
       return;
     }
+
+    setIsSaving(true);
 
     const sequenceJson = {
       sections: sequence.map((file) => ({
@@ -223,35 +232,29 @@ const SequenceBuilder = () => {
       const jsonBlob = new Blob([JSON.stringify(sequenceJson)], {
         type: 'application/json',
       });
-
       const jsonFile = new File([jsonBlob], `${sequenceName}.json`, {
         type: 'application/json',
       });
-
       formData.append('files', jsonFile);
 
       if (id) {
-        await api.post(`/api/files/sequence/${id}/replace`, formData);
-
         // formulabuilder part
+        await api.post(`/api/files/sequence/${id}/replace`, formData);
         await api.patch(
           `${apiRoutes.files.base}/${id}/update`,
           updatedSequenceFormulas
         );
-        toast('✅ File updated successfully.');
       } else {
         const { data } = await api.post('/api/files/sequence/upload', formData);
-
         const id = data[0].id;
-        // formulabuilder part
         await api.patch(
           `${apiRoutes.files.base}/${id}/update`,
           updatedSequenceFormulas
         );
-        toast('✅ File updated successfully.');
       }
 
-      setSequenceName(sequenceName.trim());
+      toast('✅ File updated successfully.');
+      // setSequenceName(sequenceName.trim());
       setOriginalSequence(sequence);
     } catch (error) {
       console.error('❌ Failed to save sequence', error);
@@ -261,10 +264,105 @@ const SequenceBuilder = () => {
   };
 
   return (
-    <div className="grid grid-cols-[300px_1fr] w-full h-screen gap-4 p-4">
-      {/* Left: Template List */}
-      <div>
-        <div className="bg-white border rounded shadow p-2 overflow-auto h-[600px] ">
+    // <div className="grid grid-cols-[300px_1fr] w-full  gap-4 p-4">
+    //   {/* Left: Template List */}
+    //   <div>
+    //     <div className="bg-white border rounded shadow p-2 overflow-auto h-[400px] ">
+    //       <h2 className="text-lg font-semibold mb-4">Templates</h2>
+    //       {templateFiles.map((file) => (
+    //         <div
+    //           key={file.id}
+    //           draggable
+    //           onDragStart={(e) => handleDragStart(e, file)}
+    //           className="cursor-move border p-2 rounded mb-2 bg-gray-50 hover:bg-gray-100"
+    //         >
+    //           <p className="font-medium text-sm mb-2 capitalize ">
+    //             {file.name.split('.')[0]}
+    //           </p>
+    //           <img src={file.thumbnail} alt="thumbnail" />
+    //         </div>
+    //       ))}
+    //     </div>
+    //   </div>
+
+    //   {/* Right: Sequence Builder */}
+    //   <div
+    //     className="bg-white border rounded shadow p-2 overflow-auto h-[400px] "
+    //     onDragOver={(e) => e.preventDefault()}
+    //     onDrop={handleDrop}
+    //   >
+    //     <div className="flex justify-between items-center gap-4 mb-4">
+    //       {id === null ? (
+    //         <Input
+    //           type="text"
+    //           value={sequenceName}
+    //           onChange={(e) => setSequenceName(e.target.value)}
+    //           autoFocus
+    //           placeholder="Enter Sequence Name"
+    //           className="w-full max-w-sm"
+    //         />
+    //       ) : (
+    //         <h3
+    //           className="text-lg font-semibold capitalize "
+    //           title="Click to edit"
+    //         >
+    //           {sequenceName}
+    //         </h3>
+    //       )}
+
+    //       <Button
+    //         onClick={() => {
+    //           formulaBuilderRef.current?.saveTemplate();
+    //         }}
+    //         className=" px-4 py-2 rounded disabled:opacity-50"
+    //         disabled={!sequenceName.trim()}
+    //       >
+    //         <Save size={16} />
+    //         {isSaving ? 'Saving...' : 'Save'}
+    //       </Button>
+    //     </div>
+
+    //     {sequence.length === 0 ? (
+    //       <div className="text-gray-400 italic">
+    //         Drag templates here to build a sequence.
+    //       </div>
+    //     ) : (
+    //       <DndContext
+    //         sensors={sensors}
+    //         collisionDetection={closestCenter}
+    //         onDragEnd={handleDragEnd}
+    //       >
+    //         <SortableContext
+    //           items={sequence.map((file) => file.id)}
+    //           strategy={verticalListSortingStrategy}
+    //         >
+    //           {sequence.map((file) => (
+    //             <SortableItem
+    //               key={file.id}
+    //               file={file}
+    //               onDelete={handleDelete}
+    //             />
+    //           ))}
+    //         </SortableContext>
+    //       </DndContext>
+    //     )}
+    //   </div>
+
+    //   {/* Bottom: Sequence Builder */}
+    //   <div className=" col-span-2 h-[100px]">
+    //     <FormulaBuilder
+    //       ref={formulaBuilderRef}
+    //       fileData={sequence}
+    //       sequenceFormulas={sequenceFormulas}
+    //       onFormulaSave={handleSequenceSave}
+    //     />
+    //   </div>
+    // </div>
+
+    <div className="flex flex-col md:flex-row h-screen max-h-screen gap-4 p-4">
+      {/* Left Panel: Templates */}
+      <div className="w-full md:w-[300px] flex-shrink-0">
+        <div className="bg-white border rounded shadow p-2 h-full overflow-auto">
           <h2 className="text-lg font-semibold mb-4">Templates</h2>
           {templateFiles.map((file) => (
             <div
@@ -273,7 +371,7 @@ const SequenceBuilder = () => {
               onDragStart={(e) => handleDragStart(e, file)}
               className="cursor-move border p-2 rounded mb-2 bg-gray-50 hover:bg-gray-100"
             >
-              <p className="font-medium text-sm mb-2 capitalize ">
+              <p className="font-medium text-sm mb-2 capitalize">
                 {file.name.split('.')[0]}
               </p>
               <img src={file.thumbnail} alt="thumbnail" />
@@ -282,71 +380,66 @@ const SequenceBuilder = () => {
         </div>
       </div>
 
-      {/* Right: Sequence Builder */}
-      <div
-        className="bg-white border rounded shadow p-2 overflow-auto "
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-      >
-        <div className="flex justify-between items-center gap-4 mb-4">
-          {id === null ? (
-            <Input
-              type="text"
-              value={sequenceName}
-              onChange={(e) => setSequenceName(e.target.value)}
-              autoFocus
-              placeholder="Enter Sequence Name"
-              className="w-full max-w-sm"
-            />
-          ) : (
-            <h3
-              className="text-lg font-semibold capitalize "
-              title="Click to edit"
-            >
-              {sequenceName}
-            </h3>
-          )}
+      {/* Right Panel: Sequence + Formula */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <div
+          className="bg-white border rounded shadow p-2 flex-1 overflow-auto"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
+          <div className="flex justify-between items-center gap-4 mb-4">
+            {!id ? (
+              <Input
+                type="text"
+                value={sequenceName}
+                onChange={(e) => setSequenceName(e.target.value)}
+                autoFocus
+                placeholder="Enter Sequence Name"
+                className="w-full max-w-sm"
+              />
+            ) : (
+              <h3 className="text-lg font-semibold capitalize">
+                {sequenceName}
+              </h3>
+            )}
 
-          <Button
-            onClick={() => {
-              formulaBuilderRef.current?.saveTemplate();
-            }}
-            className=" px-4 py-2 rounded disabled:opacity-50"
-            disabled={!sequenceName.trim()}
-          >
-            <Save size={16} />
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
+            <Button
+              onClick={() => formulaBuilderRef.current?.saveTemplate()}
+              className="px-4 py-2 rounded disabled:opacity-50"
+              disabled={!sequenceName.trim()}
+            >
+              <Save size={16} />
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+
+          {sequence.length === 0 ? (
+            <div className="text-gray-400 italic">
+              Drag templates here to build a sequence.
+            </div>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sequence.map((file) => file.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {sequence.map((file) => (
+                  <SortableItem
+                    key={file.id}
+                    file={file}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
         </div>
 
-        {sequence.length === 0 ? (
-          <div className="text-gray-400 italic">
-            Drag templates here to build a sequence.
-          </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={sequence.map((file) => file.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {sequence.map((file) => (
-                <SortableItem
-                  key={file.id}
-                  file={file}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        )}
-      </div>
-
-      {/* Bottom: Sequence Builder */}
-      <div className=" col-span-2">
+        {/* Bottom: FormulaBuilder */}
         <FormulaBuilder
           ref={formulaBuilderRef}
           fileData={sequence}

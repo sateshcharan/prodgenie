@@ -4,9 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import isEqual from 'lodash.isequal';
 
-import { api } from '../../utils';
+import { api } from '../utils';
 import FormBuilder from './FormBuilder';
-import SuggestionInput from '../SuggestionInput';
+import SuggestionInput from './SuggestionInput';
 
 import {
   apiRoutes,
@@ -220,54 +220,16 @@ const TemplateBuilder = () => {
 
   return (
     <div
-      className={`grid ${
-        templateFields.length > 0 ? 'grid-cols-[auto_1fr]' : 'grid-cols-1'
-      } w-full h-screen gap-4 p-4`}
+      className={`grid w-full gap-4 p-4 ${
+        templateFields.length > 0
+          ? 'grid-cols-1 lg:grid-cols-[minmax(300px,400px)_1fr]'
+          : 'grid-cols-1'
+      }`}
     >
-      {/* Left: Parsed Fields */}
+      {/* Left: Template Builder */}
       {templateFields.length > 0 &&
         Object.keys(templateFieldValues).length > 0 && (
-          <div>
-            <ScrollArea>
-              <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[400px] ">
-                <h2 className="text-lg font-semibold mb-4">Template Fields</h2>
-                <div className="space-y-2">
-                  {templateBlocks.map((blockName, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between gap-2 border p-2 rounded mb-2 bg-gray-50"
-                    >
-                      <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
-                        {blockName}:
-                      </label>
-                      <SuggestionInput readonly value={`${blockName}s[]`} />
-                    </div>
-                  ))}
-
-                  {templateFields.map((field, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between gap-2 border p-2 rounded mb-2 bg-gray-50"
-                    >
-                      <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
-                        {field}:
-                      </label>
-                      <SuggestionInput
-                        extraSuggestions={[]}
-                        value={templateFieldValues[field] || ''}
-                        onChange={(val) =>
-                          setTemplateFieldValues((prev) => ({
-                            ...prev,
-                            [field]: val,
-                          }))
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollArea>
-
+          <div className="w-full max-w-full lg:max-w-[400px]">
             {templateFile && (
               <FormBuilder
                 ref={formBuilderRef}
@@ -278,7 +240,7 @@ const TemplateBuilder = () => {
           </div>
         )}
 
-      {/* Right: Upload, Name, and Preview */}
+      {/* Right: Template Builder */}
       <div className="bg-white border rounded shadow p-2 overflow-auto ">
         <div className="flex justify-between items-center mb-4 gap-4">
           {id === null ? (
@@ -311,7 +273,8 @@ const TemplateBuilder = () => {
         {templateFile ? (
           <div className="border-t pt-4">
             <h3 className="text-md font-semibold mb-2">Preview</h3>
-            <div className="w-full h-[500px] border rounded overflow-hidden">
+            {/* <div className="w-full h-[500px] border rounded overflow-hidden"> */}
+            <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] border rounded overflow-hidden">
               <iframe
                 title="Template Preview"
                 srcDoc={templateFile}
@@ -325,6 +288,49 @@ const TemplateBuilder = () => {
             onFilesSelected={handleDrop}
           />
         )}
+      </div>
+
+      {/* Bottom: Template Builder */}
+      <div className=" col-span-2">
+        <ScrollArea>
+          <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[60vh] sm:max-h-[400px]">
+            <h2 className="text-lg font-semibold mb-4">Template Fields</h2>
+            <div className="space-y-2">
+              {templateBlocks.map((blockName, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-2 border p-2 rounded mb-2 bg-gray-50"
+                >
+                  <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
+                    {blockName}:
+                  </label>
+                  <SuggestionInput readonly value={`${blockName}s[]`} />
+                </div>
+              ))}
+
+              {templateFields.map((field, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-2 border p-2 rounded mb-2 bg-gray-50"
+                >
+                  <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
+                    {field}:
+                  </label>
+                  <SuggestionInput
+                    extraSuggestions={[]}
+                    value={templateFieldValues[field] || ''}
+                    onChange={(val) =>
+                      setTemplateFieldValues((prev) => ({
+                        ...prev,
+                        [field]: val,
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );

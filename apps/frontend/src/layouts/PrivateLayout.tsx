@@ -31,14 +31,15 @@ const PrivateLayout = () => {
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
-        {/* <PrivateHeader /> */}
-        <PrivateHeader />
-        <SiteHeader title={fileType} />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <Outlet />
-          </div>
+        {/* Make this fixed or sticky */}
+        <div className="sticky top-0 z-10 bg-background">
+          <PrivateHeader />
+          <SiteHeader title={fileType} />
         </div>
+
+        {/* <div className="@container/main flex flex-1 flex-col gap-2"> */}
+        <Outlet />
+        {/* </div> */}
       </SidebarInset>
     </SidebarProvider>
   );

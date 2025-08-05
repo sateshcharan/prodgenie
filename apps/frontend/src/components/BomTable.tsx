@@ -50,7 +50,7 @@ const BomTable = ({
 
   return (
     <div className="overflow-x-auto">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-start gap-2 mb-2">
         <h2 className="text-lg font-semibold">BOM</h2>
         <button
           onClick={() => {
@@ -121,19 +121,17 @@ const BomTable = ({
         </tbody>
       </table>
 
-      <p className="mt-4 text-right">
+      <p className="mt-4 text-left mb-2">
         Selected Items: {selectedItems.length}/{bom.length}
       </p>
 
       {isEditing && (
-        <div className="mt-4 text-right">
-          <Button
-            onClick={handleConfirm}
-            className="flex items-center gap-2 ml-auto"
-          >
-            <Check size={16} /> Confirm Changes
-          </Button>
-        </div>
+        <Button
+          onClick={handleConfirm}
+          className="flex items-center gap-2 ml-0 my-4"
+        >
+          <Check size={16} /> Confirm Changes
+        </Button>
       )}
     </div>
   );

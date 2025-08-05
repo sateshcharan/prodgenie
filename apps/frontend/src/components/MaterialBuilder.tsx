@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-import { api } from '../../utils';
+import { api } from '../utils';
 
 import { Button } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';

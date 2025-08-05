@@ -4,7 +4,7 @@ import { SectionCard } from '@prodgenie/libs/ui';
 
 import handleCheckout from '../components/HandleCheckout';
 
-const SectionCards = (credits: number) => {
+const SectionCards = (credits: any) => {
   return (
     <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-3 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-6">
       <SectionCard
@@ -26,7 +26,7 @@ const SectionCards = (credits: number) => {
       <SectionCard
         title="Available Credits"
         value={`${credits?.credits} $`}
-        // value={`1000`} 
+        // value={`1000`}
         button={
           <Button variant="ghost" onClick={handleCheckout}>
             <Plus className="size-4" /> Add More

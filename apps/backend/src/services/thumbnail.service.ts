@@ -103,7 +103,6 @@ export class ThumbnailService {
           quality: 80,
         });
         const result = await convert(1, { responseType: 'buffer' });
-        console.log('PDF2PIC result:', result.buffer);
 
         return result.buffer as Buffer;
       } catch (error: any) {
