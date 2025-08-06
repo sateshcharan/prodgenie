@@ -167,21 +167,22 @@ const FormulaBuilder = forwardRef(
     const commonFieldKeys = Object.keys(products[0].common);
 
     return (
-      <div className="bg-white border rounded shadow p-2 overflow-auto h-[400px]">
+      <div className="bg-white border rounded shadow p-2  h-[400px] flex flex-col">
         <h2 className="text-lg font-semibold ">Formula Builder</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {products.map((product, index) => (
-            <Card key={product.id}>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h3
-                    className="font-medium capitalize mt-4"
-                    {...register(`products.${index}.key`)}
-                  >
-                    {products[index].key}
-                  </h3>
-                  {/* <Input
+        <h3
+          className="font-medium capitalize "
+          {...register(`products.${0}.key`)}
+        >
+          {products[0].key}
+        </h3>
+        <div className="overflow-y-auto flex-1">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {products.map((product, index) => (
+              <Card key={product.id}>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2 ">
+                    {/* <Input
                   placeholder="Product Key (e.g. rsc)"
                   {...register(`products.${index}.key`)}
                 />
@@ -192,34 +193,34 @@ const FormulaBuilder = forwardRef(
                 >
                   Remove
                 </Button> */}
-                </div>
+                  </div>
 
-                <div>
-                  <h4 className="font-medium">Common Fields</h4>
-                  <FormulaFields
-                    control={control}
-                    index={index}
-                    fieldName="common"
-                    extraSuggestions={commonFieldKeys}
-                    jobCardFormSuggestions={jobCardFormSuggestions}
-                  />
-                </div>
+                  <div className="overflow-auto">
+                    <h4 className="font-medium">Common Fields</h4>
+                    <FormulaFields
+                      control={control}
+                      index={index}
+                      fieldName="common"
+                      extraSuggestions={commonFieldKeys}
+                      jobCardFormSuggestions={jobCardFormSuggestions}
+                    />
+                  </div>
 
-                <div>
-                  <h4 className="font-medium">Dependent Fields</h4>
-                  <FormulaFields
-                    control={control}
-                    index={index}
-                    fieldName="depField"
-                    extraSuggestions={commonFieldKeys}
-                    jobCardFormSuggestions={jobCardFormSuggestions}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="overflow-auto">
+                    <h4 className="font-medium">Dependent Fields</h4>
+                    <FormulaFields
+                      control={control}
+                      index={index}
+                      fieldName="depField"
+                      extraSuggestions={commonFieldKeys}
+                      jobCardFormSuggestions={jobCardFormSuggestions}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
 
-          {/* <Button
+            {/* <Button
           type="button"
           onClick={() =>
             append({
@@ -232,8 +233,9 @@ const FormulaBuilder = forwardRef(
           Add Product
         </Button> */}
 
-          {/* <Button type="submit">Save Formulas</Button> */}
-        </form>
+            {/* <Button type="submit">Save Formulas</Button> */}
+          </form>
+        </div>
       </div>
     );
   }
@@ -268,24 +270,23 @@ function FormulaFields({
     <div className="space-y-2">
       {fields.map((field, i) => (
         <div key={field.id} className="flex items-center gap-2">
+          <Button type="button" variant="ghost" onClick={() => remove(i)}>
+            <Trash className="h-4 w-4 text-red-500" />
+          </Button>
           <Input
-            className="max-w-xs"
+            className="w-fit"
             placeholder="Key (e.g. flatLen)"
             {...control.register(`products.${index}.${fieldName}.${i}.key`)}
           />
-          ={/* fix this input */}
+          =
           <SuggestionInput
             value={field.value}
             extraSuggestions={allSuggestions}
             onChange={(val) => console.log(val)}
             {...control.register(`products.${index}.${fieldName}.${i}.value`)}
           />
-          <Button type="button" variant="ghost" onClick={() => remove(i)}>
-            <Trash className="h-4 w-4 text-red-500" />
-          </Button>
         </div>
       ))}
-
       <Button
         type="button"
         variant="outline"

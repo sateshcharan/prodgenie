@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pencil, Check } from 'lucide-react';
 
 import { Button } from '@prodgenie/libs/ui';
 import { useBomStore } from '@prodgenie/libs/store';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import { api } from '../utils';
+import axios from 'axios';
 
 interface BomItem {
   slNo: string;
@@ -28,6 +31,7 @@ const BomTable = ({
   const { setSelectedItems, selectedItems } = useBomStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editableBom, setEditableBom] = useState<BomItem[]>(bom);
+  const [bomHeaders, setBomHeaders] = useState<string[]>([]);
 
   const toggleSelection = (slNo: string) => {
     setSelectedItems((prev) =>
@@ -37,7 +41,7 @@ const BomTable = ({
     );
   };
 
-  const handleChange = (index: number, key: keyof BomItem, value: string) => {
+  const handleChange = (index: number, key: any, value: string) => {
     setEditableBom((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
     );
@@ -47,6 +51,18 @@ const BomTable = ({
     console.log({ bom: editableBom });
     setIsEditing(false);
   };
+
+  useEffect(() => {
+    const fetchBOM = async (fileId: string) => {
+      const response = await api.get(
+        `${apiRoutes.files.base}/getByName/bom.json`
+      );
+      const bom = response.data.data.signedUrl;
+      const bomJson = await axios.get(bom);
+      setBomHeaders(bomJson.data.bomItem.header.expected);
+    };
+    fetchBOM(fileId);
+  }, [fileId]);
 
   return (
     <div className="overflow-x-auto">
@@ -63,63 +79,51 @@ const BomTable = ({
         </button>
       </div>
 
-      <table className="w-full text-sm text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-100 text-black">
-            <th className="border px-2 py-2">Sl No.</th>
-            <th className="border px-2 py-2">Length</th>
-            <th className="border px-2 py-2">Width</th>
-            <th className="border px-2 py-2">Height</th>
-            <th className="border px-2 py-2">Material</th>
-            <th className="border px-2 py-2">Specification</th>
-            <th className="border px-2 py-2">Description</th>
-            <th className="border px-2 py-2">Qty</th>
-            <th className="border px-2 py-2 text-center">Select</th>
-          </tr>
-        </thead>
-        <tbody>
-          {editableBom.map((item, index) => (
-            <tr key={index}>
-              <td className="border px-2 py-2">{index + 1}</td>
-
-              {(
-                [
-                  'length',
-                  'width',
-                  'height',
-                  'material',
-                  'specification',
-                  'description',
-                  'qty',
-                ] as const
-              ).map((field) => (
-                <td key={field} className="border px-2 py-2">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={item[field]}
-                      onChange={(e) =>
-                        handleChange(index, field, e.target.value)
-                      }
-                      className="border rounded px-1 py-0.5 w-full"
-                    />
-                  ) : (
-                    item[field]
-                  )}
-                </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-black">
+              {bomHeaders.map((header) => (
+                <th key={header} className="border px-2 py-2">
+                  {header}
+                </th>
               ))}
 
-              <td className="border px-2 py-2 text-center">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(item.slNo)}
-                  onChange={() => toggleSelection(item.slNo)}
-                />
-              </td>
+              <th className="border px-2 py-2 text-center">Select</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {editableBom.map((item: any, index: number) => (
+              <tr key={index}>
+                {bomHeaders.map((field) => (
+                  <td key={field} className="border px-2 py-2">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={item[field]}
+                        onChange={(e) =>
+                          handleChange(index, field, e.target.value)
+                        }
+                        className="border rounded px-1 py-0.5 w-full"
+                      />
+                    ) : (
+                      item[field]
+                    )}
+                  </td>
+                ))}
+
+                <td className="border px-2 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(item.slNo)}
+                    onChange={() => toggleSelection(item.slNo)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <p className="mt-4 text-left mb-2">
         Selected Items: {selectedItems.length}/{bom.length}

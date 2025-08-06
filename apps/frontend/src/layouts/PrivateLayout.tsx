@@ -28,18 +28,36 @@ const PrivateLayout = () => {
   }, [setUser]);
 
   return (
+    // <SidebarProvider>
+    //   <AppSidebar variant="inset" />
+    //   <SidebarInset>
+    //     {/* Make this fixed or sticky */}
+    //     <div className="sticky top-0 z-10 bg-background">
+    //       <PrivateHeader />
+    //       <SiteHeader title={fileType} />
+    //     </div>
+
+    //     {/* <div className="@container/main flex flex-1 flex-col gap-2"> */}
+    //     <Outlet />
+    //     {/* </div> */}
+    //   </SidebarInset>
+    // </SidebarProvider>
+
     <SidebarProvider>
       <AppSidebar variant="inset" />
-      <SidebarInset>
-        {/* Make this fixed or sticky */}
-        <div className="sticky top-0 z-10 bg-background">
-          <PrivateHeader />
-          <SiteHeader title={fileType} />
+
+      {/* Make SidebarInset a flex container */}
+      <SidebarInset className="flex flex-col h-screen">
+        {/* Sticky headers */}
+        <div className="shrink-0 sticky top-0 z-10 bg-white">
+          <PrivateHeader /> {/* full header with logout etc */}
+          <SiteHeader title={fileType} /> {/* slim header */}
         </div>
 
-        {/* <div className="@container/main flex flex-1 flex-col gap-2"> */}
-        <Outlet />
-        {/* </div> */}
+        {/* Scrollable area */}
+        <div className="flex-1 overflow-auto">
+          <Outlet /> {/* Your routed page component */}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

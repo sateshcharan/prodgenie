@@ -58,7 +58,17 @@ const SortableItem = ({
       className="border p-2 rounded mb-4 bg-green-50 shadow-sm flex justify-between items-start"
     >
       <div className="flex-1">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex gap-2  items-center mb-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(file.id);
+            }}
+            className="text-red-500 hover:text-red-700 p-1"
+            title="Delete section"
+          >
+            <Trash size={16} />
+          </button>
           <p className="font-medium text-sm">{file.name.split('.')[0]}</p>
 
           {/* ✅ Drag handle only */}
@@ -75,16 +85,6 @@ const SortableItem = ({
       </div>
 
       {/* ✅ Fully clickable delete */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(file.id);
-        }}
-        className="text-red-500 hover:text-red-700 p-1"
-        title="Delete section"
-      >
-        <Trash size={16} />
-      </button>
     </div>
   );
 };
@@ -264,130 +264,43 @@ const SequenceBuilder = () => {
   };
 
   return (
-    // <div className="grid grid-cols-[300px_1fr] w-full  gap-4 p-4">
-    //   {/* Left: Template List */}
-    //   <div>
-    //     <div className="bg-white border rounded shadow p-2 overflow-auto h-[400px] ">
-    //       <h2 className="text-lg font-semibold mb-4">Templates</h2>
-    //       {templateFiles.map((file) => (
-    //         <div
-    //           key={file.id}
-    //           draggable
-    //           onDragStart={(e) => handleDragStart(e, file)}
-    //           className="cursor-move border p-2 rounded mb-2 bg-gray-50 hover:bg-gray-100"
-    //         >
-    //           <p className="font-medium text-sm mb-2 capitalize ">
-    //             {file.name.split('.')[0]}
-    //           </p>
-    //           <img src={file.thumbnail} alt="thumbnail" />
-    //         </div>
-    //       ))}
-    //     </div>
-    //   </div>
-
-    //   {/* Right: Sequence Builder */}
-    //   <div
-    //     className="bg-white border rounded shadow p-2 overflow-auto h-[400px] "
-    //     onDragOver={(e) => e.preventDefault()}
-    //     onDrop={handleDrop}
-    //   >
-    //     <div className="flex justify-between items-center gap-4 mb-4">
-    //       {id === null ? (
-    //         <Input
-    //           type="text"
-    //           value={sequenceName}
-    //           onChange={(e) => setSequenceName(e.target.value)}
-    //           autoFocus
-    //           placeholder="Enter Sequence Name"
-    //           className="w-full max-w-sm"
-    //         />
-    //       ) : (
-    //         <h3
-    //           className="text-lg font-semibold capitalize "
-    //           title="Click to edit"
-    //         >
-    //           {sequenceName}
-    //         </h3>
-    //       )}
-
-    //       <Button
-    //         onClick={() => {
-    //           formulaBuilderRef.current?.saveTemplate();
-    //         }}
-    //         className=" px-4 py-2 rounded disabled:opacity-50"
-    //         disabled={!sequenceName.trim()}
-    //       >
-    //         <Save size={16} />
-    //         {isSaving ? 'Saving...' : 'Save'}
-    //       </Button>
-    //     </div>
-
-    //     {sequence.length === 0 ? (
-    //       <div className="text-gray-400 italic">
-    //         Drag templates here to build a sequence.
-    //       </div>
-    //     ) : (
-    //       <DndContext
-    //         sensors={sensors}
-    //         collisionDetection={closestCenter}
-    //         onDragEnd={handleDragEnd}
-    //       >
-    //         <SortableContext
-    //           items={sequence.map((file) => file.id)}
-    //           strategy={verticalListSortingStrategy}
-    //         >
-    //           {sequence.map((file) => (
-    //             <SortableItem
-    //               key={file.id}
-    //               file={file}
-    //               onDelete={handleDelete}
-    //             />
-    //           ))}
-    //         </SortableContext>
-    //       </DndContext>
-    //     )}
-    //   </div>
-
-    //   {/* Bottom: Sequence Builder */}
-    //   <div className=" col-span-2 h-[100px]">
-    //     <FormulaBuilder
-    //       ref={formulaBuilderRef}
-    //       fileData={sequence}
-    //       sequenceFormulas={sequenceFormulas}
-    //       onFormulaSave={handleSequenceSave}
-    //     />
-    //   </div>
-    // </div>
-
-    <div className="flex flex-col md:flex-row h-screen max-h-screen gap-4 p-4">
+    <div className="flex flex-col md:flex-row h-screen max-h-screen gap-4 p-4 overflow-hidden">
       {/* Left Panel: Templates */}
-      <div className="w-full md:w-[300px] flex-shrink-0">
-        <div className="bg-white border rounded shadow p-2 h-full overflow-auto">
-          <h2 className="text-lg font-semibold mb-4">Templates</h2>
-          {templateFiles.map((file) => (
-            <div
-              key={file.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, file)}
-              className="cursor-move border p-2 rounded mb-2 bg-gray-50 hover:bg-gray-100"
-            >
-              <p className="font-medium text-sm mb-2 capitalize">
-                {file.name.split('.')[0]}
-              </p>
-              <img src={file.thumbnail} alt="thumbnail" />
+      <div className="w-full md:w-[300px] flex-shrink-0 h-[20vh] md:h-full">
+        <div className="bg-white border rounded shadow p-2 h-full">
+          <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-white ">
+            Templates
+          </h2>
+
+          <div className="overflow-y-auto max-h-[calc(100%-2rem)] pr-1">
+            <div className="flex md:flex-col gap-2">
+              {templateFiles.map((file) => (
+                <div
+                  key={file.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, file)}
+                  className="cursor-move border p-2 rounded bg-gray-50 hover:bg-gray-100 min-w-[150px] md:min-w-0"
+                >
+                  <p className="font-medium text-sm mb-2 capitalize">
+                    {file.name.split('.')[0]}
+                  </p>
+                  <img
+                    src={file.thumbnail}
+                    alt="thumbnail"
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
       {/* Right Panel: Sequence + Formula */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <div
-          className="bg-white border rounded shadow p-2 flex-1 overflow-auto"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-        >
-          <div className="flex justify-between items-center gap-4 mb-4">
+      <div className="flex flex-col flex-1 overflow-hidden gap-4">
+        {/* Sequence Builder Panel */}
+        <div className="h-[600px] flex flex-col bg-white border rounded shadow p-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4">
             {!id ? (
               <Input
                 type="text"
@@ -395,48 +308,52 @@ const SequenceBuilder = () => {
                 onChange={(e) => setSequenceName(e.target.value)}
                 autoFocus
                 placeholder="Enter Sequence Name"
-                className="w-full max-w-sm"
+                className="w-full sm:max-w-sm"
               />
             ) : (
-              <h3 className="text-lg font-semibold capitalize">
+              <h3 className="text-lg font-semibold capitalize break-words">
                 {sequenceName}
               </h3>
             )}
 
             <Button
               onClick={() => formulaBuilderRef.current?.saveTemplate()}
-              className="px-4 py-2 rounded disabled:opacity-50"
+              className="px-4 py-2 rounded disabled:opacity-50 w-full sm:w-auto"
               disabled={!sequenceName.trim()}
             >
-              <Save size={16} />
+              <Save size={16} className="mr-2" />
               {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
 
-          {sequence.length === 0 ? (
-            <div className="text-gray-400 italic">
-              Drag templates here to build a sequence.
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={sequence.map((file) => file.id)}
-                strategy={verticalListSortingStrategy}
+          <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+            {sequence.length === 0 ? (
+              <div className="text-gray-400 italic">
+                Drag templates here to build a sequence.
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                {sequence.map((file) => (
-                  <SortableItem
-                    key={file.id}
-                    file={file}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
+                <SortableContext
+                  items={sequence.map((file) => file.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {sequence.map((file) => (
+                      <SortableItem
+                        key={file.id}
+                        file={file}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
         </div>
 
         {/* Bottom: FormulaBuilder */}

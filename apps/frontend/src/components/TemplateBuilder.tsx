@@ -241,8 +241,8 @@ const TemplateBuilder = () => {
         )}
 
       {/* Right: Template Builder */}
-      <div className="bg-white border rounded shadow p-2 overflow-auto ">
-        <div className="flex justify-between items-center mb-4 gap-4">
+      <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[calc(100vh-200px)]">
+        <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-10 bg-white pb-2">
           {id === null ? (
             <Input
               type="text"
@@ -272,7 +272,9 @@ const TemplateBuilder = () => {
 
         {templateFile ? (
           <div className="border-t pt-4">
-            <h3 className="text-md font-semibold mb-2">Preview</h3>
+            <h3 className="text-md font-semibold mb-2 sticky top-12 bg-white z-10">
+              Preview
+            </h3>
             {/* <div className="w-full h-[500px] border rounded overflow-hidden"> */}
             <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] border rounded overflow-hidden">
               <iframe
@@ -294,7 +296,10 @@ const TemplateBuilder = () => {
       <div className=" col-span-2">
         <ScrollArea>
           <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[60vh] sm:max-h-[400px]">
-            <h2 className="text-lg font-semibold mb-4">Template Fields</h2>
+            <div className="sticky top-0 bg-white pb-2">
+              <h2 className="text-lg font-semibold mb-4">Template Fields</h2>
+            </div>
+
             <div className="space-y-2">
               {templateBlocks.map((blockName, index) => (
                 <div
