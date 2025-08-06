@@ -12,19 +12,19 @@ export const loginFields = [
 ];
 
 export const signupFields = [
-  {
-    name: 'name',
-    label: 'Name',
-    type: 'name',
-  },
+  // {
+  //   name: 'name',
+  //   label: 'Name',
+  //   type: 'name',
+  // },
   {
     name: 'email',
-    label: 'Email',
+    label: 'Work Email',
     type: 'email',
   },
   {
     name: 'password',
-    label: 'Password',
+    label: 'Create Password',
     type: 'password',
   },
   {
@@ -34,7 +34,7 @@ export const signupFields = [
   },
   {
     name: 'orgName',
-    label: 'Organization Name',
+    label: 'Organization Id',
     type: 'text',
   },
 ];

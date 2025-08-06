@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Trash2, Plus, X } from 'lucide-react';
+import { Trash, Plus, X } from 'lucide-react';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -309,8 +309,15 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
               (field, fieldIndex) => (
                 <div
                   key={fieldIndex}
-                  className="grid grid-cols-12 items-center gap-4 border p-2 rounded-md"
+                  className="grid grid-cols-12 items-center gap-4  p-2 rounded-md"
                 >
+                  <button
+                    onClick={() => removeField(sectionIndex, fieldIndex)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Delete section"
+                  >
+                    <Trash size={16} />
+                  </button>
                   <Input
                     className="col-span-3"
                     {...register(
@@ -352,13 +359,6 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeField(sectionIndex, fieldIndex)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               )
             )}

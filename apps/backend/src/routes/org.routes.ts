@@ -15,23 +15,23 @@ router.get(apiRoutes.orgs.check, asyncHandler(OrgController.checkOrgExists));
 
 router.get(
   apiRoutes.orgs.getOrgUsers,
-  // authenticateSupabaseJWT,
-  authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  // authenticatePassportJWT,
   asyncHandler(OrgController.getOrgUsers)
 );
 
 router.get(
   apiRoutes.orgs.getOrgConfig(':configName'),
-  // authenticateSupabaseJWT,
-  authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  // authenticatePassportJWT,
   asyncHandler(OrgController.getOrgConfig)
 );
 
 // Assuming getOrgHistory uses a route param like /orgs/:orgId/history
 router.get(
   apiRoutes.orgs.getOrgHistory,
-  // authenticateSupabaseJWT,
-  authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  // authenticatePassportJWT,
   asyncHandler(OrgController.getOrgHistory)
 );
 

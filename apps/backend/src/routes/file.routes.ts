@@ -11,7 +11,7 @@ const upload = multer();
 
 router.get(
   apiRoutes.files.list(':fileType'),
-  validateFileType,
+  // validateFileType,
   asyncHandler(FileController.listFilesController)
 );
 

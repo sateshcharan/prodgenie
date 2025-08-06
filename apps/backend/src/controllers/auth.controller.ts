@@ -5,13 +5,13 @@ import { AuthService } from '../services/index.js';
 
 export class AuthController {
   static async signupOwner(req: Request, res: Response) {
-    const { email, password, confirmPassword, orgName, name } = req.body;
+    const { email, password, confirmPassword, orgId } = req.body;
     const user = await AuthService.signupOwner({
       email,
       password,
       confirmPassword,
-      orgName,
-      name,
+      orgId,
+      name: email.split('@')[0],
     });
     const token = AuthService.generateToken({
       id: user.id,
@@ -42,19 +42,22 @@ export class AuthController {
   }
 
   static async login(req: Request, res: Response) {
-    passport.authenticate(
-      'local',
-      { session: false },
-      (err: any, user: any, info: any) => {
-        if (err || !user) {
-          return res.status(401).json({
-            success: false,
-            message: info?.message || 'Authentication failed',
-          });
-        }
-        const token = AuthService.generateToken(user);
-        return res.json({ success: true, token });
-      }
-    )(req, res);
+    // passport.authenticate(
+    //   'local',
+    //   { session: false },
+    //   (err: any, user: any, info: any) => {
+    //     if (err || !user) {
+    //       return res.status(401).json({
+    //         success: false,
+    //         message: info?.message || 'Authentication failed',
+    //       });
+    //     }
+    //     const token = AuthService.generateToken(user);
+    //     return res.json({ success: true, token });
+    //   }
+    // )(req, res);
+    const { email, password } = req.body;
+    const token = await AuthService.login(email, password);
+    res.status(201).json({ success: true, token });
   }
 }
