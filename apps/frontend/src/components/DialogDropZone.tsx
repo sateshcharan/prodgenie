@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 
 import {
   Dialog,
@@ -7,13 +7,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../dialog';
-
+  ScrollArea,
+  Button,
+} from '@prodgenie/libs/ui';
 import { useAddDialogStore } from '@prodgenie/libs/store';
-import { FileDropzone } from './FileDropzone';
-import { ScrollArea } from '../scroll-area';
-import { Button } from '../button';
+import { FileDropzone } from '@prodgenie/libs/ui/components/FileDropzone';
 import { toast } from 'sonner';
+
+import api from '../utils/api';
 
 interface DialogDropZoneProps {
   title: string;
@@ -42,11 +43,13 @@ export function DialogDropZone({
     selectedFiles.forEach((file) => formData.append('files', file));
 
     try {
-      await axios.post(submitUrl, formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      //   await axios.post(submitUrl, formData, {
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem('token')}`,
+      //     },
+      //   });
+
+      await api.post(submitUrl, formData);
 
       toast.success('upload successful');
 

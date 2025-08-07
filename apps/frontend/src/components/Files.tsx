@@ -17,10 +17,11 @@ import {
   Button,
   Card,
   CardContent,
-  DialogDropZone,
   DialogEditFile,
   banner,
 } from '@prodgenie/libs/ui';
+
+import { DialogDropZone } from './DialogDropZone';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -154,7 +155,9 @@ const Files = () => {
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}
-        submitUrl={`/api/files/${fileType}/upload`}
+        submitUrl={`${
+          import.meta.env.VITE_API_URL
+        }/api/files/${fileType}/upload`}
         onUploadSuccess={fetchFiles}
       />
 
