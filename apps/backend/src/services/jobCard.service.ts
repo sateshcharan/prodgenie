@@ -271,8 +271,6 @@ export class JobCardService {
     const { common = {}, depField: depFields = {} } = sequenceData;
     const depFieldExpr = depFields[depField];
 
-    console.log(common, depField, depFieldExpr);
-
     if (!depFieldExpr)
       throw new Error(`depField expression for "${depField}" not found`);
 

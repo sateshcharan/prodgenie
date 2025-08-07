@@ -5,8 +5,15 @@ import crypto from 'crypto';
 import { FolderService } from './folder.service.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
-import { supabase } from '@prodgenie/libs/supabase';
 import { signupSchema } from '@prodgenie/libs/schema';
+
+// import { supabase } from '@prodgenie/libs/supabase';
+import {createClient} from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -138,7 +145,7 @@ export class AuthService {
     email,
     password,
     confirmPassword,
-    orgId,
+    orgName,
   }: {
     name: string;
     email: string;

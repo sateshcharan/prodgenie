@@ -410,49 +410,51 @@ const TemplateBuilder = () => {
         )}
       </div>
 
-      {/* Bottom: Template Fields */}
-      <div className="col-span-full">
-        <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
-          <div className="sticky top-0 bg-white z-10 pb-2 border-b mb-4">
-            <h2 className="text-lg font-semibold">Template Fields</h2>
-          </div>
+      {templateFile && (
+        /* Bottom: Template Fields */
+        <div className="col-span-full">
+          <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
+            <div className="sticky top-0 bg-white z-10 pb-2 border-b mb-4">
+              <h2 className="text-lg font-semibold">Template Fields</h2>
+            </div>
 
-          <div className="space-y-2">
-            {templateBlocks.map((blockName, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50"
-              >
-                <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
-                  {blockName}:
-                </label>
-                <SuggestionInput readonly value={`${blockName}s[]`} />
-              </div>
-            ))}
+            <div className="space-y-2">
+              {templateBlocks.map((blockName, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50"
+                >
+                  <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
+                    {blockName}:
+                  </label>
+                  <SuggestionInput readonly value={`${blockName}s[]`} />
+                </div>
+              ))}
 
-            {templateFields.map((field, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50"
-              >
-                <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
-                  {field}:
-                </label>
-                <SuggestionInput
-                  extraSuggestions={[]}
-                  value={templateFieldValues[field] || ''}
-                  onChange={(val) =>
-                    setTemplateFieldValues((prev) => ({
-                      ...prev,
-                      [field]: val,
-                    }))
-                  }
-                />
-              </div>
-            ))}
+              {templateFields.map((field, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50"
+                >
+                  <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
+                    {field}:
+                  </label>
+                  <SuggestionInput
+                    extraSuggestions={[]}
+                    value={templateFieldValues[field] || ''}
+                    onChange={(val) =>
+                      setTemplateFieldValues((prev) => ({
+                        ...prev,
+                        [field]: val,
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

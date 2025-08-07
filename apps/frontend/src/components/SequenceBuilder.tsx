@@ -326,7 +326,11 @@ const SequenceBuilder = () => {
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+          <div
+            className="flex-1 overflow-y-auto pr-2 scrollbar-thin"
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+          >
             {sequence.length === 0 ? (
               <div className="text-gray-400 italic">
                 Drag templates here to build a sequence.

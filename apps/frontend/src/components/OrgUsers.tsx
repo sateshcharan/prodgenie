@@ -84,7 +84,9 @@ const OrgUsers = ({ orgId }: OrgUsersProps) => {
           // <Button onClick={handleGenerateInviteCode} disabled={inviteLoading}>
           //   {inviteLoading ? 'Generating...' : 'Generate Invite Code'}
           // </Button>
-          <h2>{orgId}</h2>
+          <h2>
+            <strong>Organization ID:</strong> {orgId}
+          </h2>
         )}
 
         {inviteCode && (

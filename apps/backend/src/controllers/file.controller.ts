@@ -92,7 +92,7 @@ export class FileController {
   static listFilesController = async (req: Request, res: Response) => {
     const { fileType } = req.params;
     const orgId = req.user?.orgId;
-
+    // console.log(orgId);
     const files = await fileService.listFiles(fileType, orgId);
     return res.status(200).json(files);
   };
