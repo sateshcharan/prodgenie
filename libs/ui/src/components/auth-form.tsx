@@ -16,12 +16,12 @@ import {
 import { cn } from '@prodgenie/libs/utils';
 import { useAuthModalStore } from '@prodgenie/libs/store';
 
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+// const supabase = createClient(
+//   import.meta.env.VITE_SUPABASE_URL!,
+//   import.meta.env.VITE_SUPABASE_ANON_KEY!
+// );
 
 type Field = {
   name: string;
@@ -71,12 +71,12 @@ const AuthForm = ({
   }, [watch, onFieldChange]);
 
   const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    // await supabase.auth.signInWithOAuth({
+    //   provider: 'google',
+    //   options: {
+    //     redirectTo: `${window.location.origin}/auth/callback`,
+    //   },
+    // });
   };
 
   return (
