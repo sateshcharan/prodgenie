@@ -1,3 +1,3 @@
-2025/08/08-10:29:55.254 104770 Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Session Storage/MANIFEST-000001
-2025/08/08-10:29:55.254 104770 Recovering log #3
-2025/08/08-10:29:55.255 104770 Reusing old log /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Session Storage/000003.log 
+2025/08/08-12:14:13.617 911e Reusing MANIFEST /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/Session Storage/MANIFEST-000001
+2025/08/08-12:14:13.618 911e Recovering log #3
+2025/08/08-12:14:13.623 911e Reusing old log /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/Session Storage/000003.log 

@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import puppeteerExtra from 'puppeteer-extra';
 import type { PuppeteerExtra } from 'puppeteer-extra';
-import type { Page, ElementHandle } from 'puppeteer';
+// import type { Page, ElementHandle } from 'puppeteer';
+import type { Page } from 'puppeteer';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 import { extractBOMPrompt } from '@prodgenie/libs/constant';
@@ -30,33 +31,44 @@ export class PuppeteerService {
   public async extractFromChatGPT(filePath: string): Promise<string> {
     const browser = await this.launchBrowser();
 
+    console.log(filePath);
+
     try {
       const page = await browser.newPage();
       await page.goto(this.openaiIds.url, { waitUntil: 'networkidle2' });
 
-      // upload file
-      const uploadButton = await page.$('#upload-file-btn');
-      if (!uploadButton) throw new Error('Upload button not found');
-      await uploadButton.click();
+      // upload file gpt-4
+      // const uploadButton = await page.$('#upload-file-btn');
+      // if (!uploadButton) throw new Error('Upload button not found');
+      // await uploadButton.click();
 
-      const menuItems = await page.$$('[role="menuitem"]');
-      let uploadFileButton: ElementHandle<Element> | undefined;
+      // const menuItems = await page.$$('[role="menuitem"]');
+      // let uploadFileButton: ElementHandle<Element> | undefined;
 
-      for (const el of menuItems) {
-        const text = await el.evaluate((node: any) => node.textContent || '');
-        if (text.includes('Add photos & files')) {
-          uploadFileButton = el;
-          break;
-        }
-      }
+      // for (const el of menuItems) {
+      //   const text = await el.evaluate((node: any) => node.textContent || '');
+      //   if (text.includes('Add photos & files')) {
+      //     uploadFileButton = el;
+      //     break;
+      //   }
+      // }
 
-      if (!uploadFileButton) throw new Error('Upload button not found');
+      // if (!uploadFileButton) throw new Error('Upload button not found');
 
-      // Handle file chooser
+      // // Handle file chooser
+      // const [fileChooser] = await Promise.all([
+      //   page.waitForFileChooser(),
+      //   uploadFileButton.click(),
+      // ]);
+
+      // gpt-5
+      await page.keyboard.press('/');
+
       const [fileChooser] = await Promise.all([
         page.waitForFileChooser(),
-        uploadFileButton.click(),
+        page.keyboard.press('Enter'),
       ]);
+
       await fileChooser.accept([filePath]);
 
       await this.delay(10000); // wait for file to upload
@@ -82,8 +94,10 @@ export class PuppeteerService {
     }
     return puppeteer.launch({
       // needed for docker environment
-      headless: false,
       // executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+      headless: false,
+      userDataDir: this.userDataDir,
+      defaultViewport: { width: 1920, height: 1080 },
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -92,9 +106,6 @@ export class PuppeteerService {
         '--single-process',
         '--no-zygote',
       ],
-
-      userDataDir: this.userDataDir,
-      defaultViewport: { width: 1920, height: 1080 },
     });
   }
 

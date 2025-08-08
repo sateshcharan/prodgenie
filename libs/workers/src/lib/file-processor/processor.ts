@@ -18,6 +18,7 @@ export const processDrawingBom = async (job: Job) => {
   // Write buffer to temp file
   await fs.writeFile(tempFilePath, Buffer.from(file.buffer.data));
 
+  console.log(tempFilePath);
   try {
     // Now pass local file path
     const data = await puppeteerService.extractFromChatGPT(tempFilePath);
