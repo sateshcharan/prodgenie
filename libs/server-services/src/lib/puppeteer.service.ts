@@ -82,7 +82,7 @@ export class PuppeteerService {
     }
     return puppeteer.launch({
       // needed for docker environment
-      headless: true,
+      headless: false,
       // executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
       args: [
         '--no-sandbox',
@@ -93,7 +93,6 @@ export class PuppeteerService {
         '--no-zygote',
       ],
 
-      // headless: false,
       userDataDir: this.userDataDir,
       defaultViewport: { width: 1920, height: 1080 },
     });

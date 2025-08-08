@@ -1,3 +1,3 @@
-2025/07/16-20:07:11.507 6e12 Reusing MANIFEST /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/IndexedDB/https_chatgpt.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/07/16-20:07:11.507 6e12 Recovering log #4
-2025/07/16-20:07:11.512 6e12 Reusing old log /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/IndexedDB/https_chatgpt.com_0.indexeddb.leveldb/000004.log 
+2025/07/31-19:45:05.242 d370 Reusing MANIFEST /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/IndexedDB/https_chatgpt.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/07/31-19:45:05.242 d370 Recovering log #4
+2025/07/31-19:45:05.257 d370 Reusing old log /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/IndexedDB/https_chatgpt.com_0.indexeddb.leveldb/000004.log 

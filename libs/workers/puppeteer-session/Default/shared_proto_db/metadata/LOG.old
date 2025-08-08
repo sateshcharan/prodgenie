@@ -1,3 +1,3 @@
-2025/07/16-20:06:55.712 6e12 Reusing MANIFEST /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/shared_proto_db/metadata/MANIFEST-000001
-2025/07/16-20:06:55.713 6e12 Recovering log #3
-2025/07/16-20:06:55.713 6e12 Reusing old log /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/shared_proto_db/metadata/000003.log 
+2025/08/08-10:27:15.088 103530 Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/shared_proto_db/metadata/MANIFEST-000001
+2025/08/08-10:27:15.089 103530 Recovering log #3
+2025/08/08-10:27:15.090 103530 Reusing old log /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/shared_proto_db/metadata/000003.log 

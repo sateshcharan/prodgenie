@@ -155,9 +155,7 @@ const Files = () => {
       <DialogDropZone
         title={`Upload file to ${fileType}`}
         description={`Select or drag and drop files to upload to ${fileType}`}
-        submitUrl={`${
-          import.meta.env.VITE_API_URL
-        }/api/files/${fileType}/upload`}
+        submitUrl={`/api/files/${fileType}/upload`}
         onUploadSuccess={fetchFiles}
       />
 
