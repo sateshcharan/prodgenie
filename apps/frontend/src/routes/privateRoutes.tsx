@@ -3,14 +3,21 @@ import { RouteObject } from 'react-router-dom';
 import { Dashboard } from '../pages';
 import { PrivateLayout } from '../layouts';
 import PrivateRoute from './PrivateRoute';
-import { Files, FileDetails, FileBuilder, FormulaBuilder } from '../components';
+import {
+  Files,
+  FileDetails,
+  FileBuilder,
+  FormulaBuilder,
+  Settings,
+} from '../components';
 import {
   fileDetailsLoader,
   fileDatasLoader,
   fileBuilderLoader,
+  settingsLoader,
 } from '../loaders';
 
-const dashboardRoutes: RouteObject[] = [
+const PrivateRoutes: RouteObject[] = [
   {
     index: true,
     element: <Dashboard />,
@@ -30,6 +37,11 @@ const dashboardRoutes: RouteObject[] = [
     element: <FileBuilder />,
     loader: fileBuilderLoader,
   },
+  {
+    path: 'settings/:tab',
+    element: <Settings />,
+    loader: settingsLoader,
+  },
 ];
 
 export const privateRoutes = [
@@ -40,6 +52,6 @@ export const privateRoutes = [
         <PrivateLayout />
       </PrivateRoute>
     ),
-    children: dashboardRoutes,
+    children: PrivateRoutes,
   },
 ];

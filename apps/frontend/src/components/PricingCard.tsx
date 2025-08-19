@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
-import { useAuthModalStore } from '@prodgenie/libs/store';
+import { useAuthStore } from '@prodgenie/libs/store';
 
 const PricingCard = () => {
   const PRICE_IDS = {
@@ -23,9 +23,9 @@ const PricingCard = () => {
     'monthly'
   );
 
-  const { openModal } = useAuthModalStore();
+  const { setAuthType } = useAuthStore();
   const handleClick = () => {
-    openModal('signup');
+    setAuthType('signup');
   };
 
   return (

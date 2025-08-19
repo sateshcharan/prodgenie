@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { jobCardRequest, BomItem } from '@prodgenie/libs/types';
+import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
 import { StringService } from '@prodgenie/libs/frontend-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 
@@ -34,24 +34,37 @@ export class JobCardService {
     titleBlock,
     signedUrl,
     printingDetails,
+    activeWorkspace,
   }: jobCardRequest) {
     if (!bom.length) return console.warn('bom is empty');
 
     console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
 
     const templates: string[] = [];
-    const orgId = user?.org?.id;
-
-    const orgCredits = user?.org?.credits;
+    const workspaceId = activeWorkspace?.workspace?.id;
+    const workspaceCredits = activeWorkspace?.workspace?.credits;
+    const workspaceName = activeWorkspace?.workspace?.name;
 
     // check org credits
-    if (orgCredits < 10) {
+    if (workspaceCredits < 10) {
       throw new Error('Not enough credits upgrade your plan');
     }
 
-    const materialConfig = await this.fetchOrgConfig(orgId, 'material.json');
-    const standardConfig = await this.fetchOrgConfig(orgId, 'standard.json');
-    const bomConfig = await this.fetchOrgConfig(orgId, 'bom.json');
+    const materialConfig = await this.fetchOrgConfig(
+      workspaceId,
+      'material.json',
+      'table'
+    );
+    const standardConfig = await this.fetchOrgConfig(
+      workspaceId,
+      'standard.json',
+      'table'
+    );
+    const bomConfig = await this.fetchOrgConfig(
+      workspaceId,
+      'bom.json',
+      'config'
+    );
 
     let manualContext = {
       jobCardForm,
@@ -83,7 +96,7 @@ export class JobCardService {
 
       for (const section of sequence.sections) {
         const sectionUrl = await this.fileStorageService.getSignedUrl(
-          `${user?.org?.name}/${section.path}`
+          `${workspaceName}/${section.path}`
         );
 
         const templateData = await prisma.file.findFirst({
@@ -157,11 +170,15 @@ export class JobCardService {
     );
     console.log(`Job card saved to ${outputPath}`);
 
-    const jobCardUrl = await this.uploadJobCard(outputPath, user);
+    const jobCardUrl = await this.uploadJobCard(
+      outputPath,
+      user,
+      activeWorkspace
+    );
 
     // Deduct 10 credits
-    await prisma.org.update({
-      where: { id: orgId },
+    await prisma.workspace.update({
+      where: { id: workspaceId },
       data: { credits: { decrement: 10 } },
     });
 
@@ -170,9 +187,13 @@ export class JobCardService {
     return jobCardUrl;
   }
 
-  private async fetchOrgConfig(orgId: string, name: string) {
+  private async fetchOrgConfig(
+    workspaceId: string,
+    name: string,
+    type: string
+  ) {
     const configFile = await prisma.file.findFirst({
-      where: { orgId, name, type: 'config' },
+      where: { workspaceId, name, type: type as FileType },
       select: { path: true },
     });
 
@@ -343,7 +364,11 @@ export class JobCardService {
     }
   }
 
-  private async uploadJobCard(filePath: string, user: string): Promise<any> {
+  private async uploadJobCard(
+    filePath: string,
+    user: string,
+    activeWorkspace: string
+  ): Promise<any> {
     const fileBuffer = await fs.readFile(filePath);
     const fileName = filePath.split('/').pop();
     const fakeMulterFile: Express.Multer.File = {
@@ -363,7 +388,8 @@ export class JobCardService {
     const jobCard = await this.fileService.uploadFile(
       [fakeMulterFile],
       'jobCard',
-      user
+      user,
+      activeWorkspace
     );
 
     const thumbnailBuffer = await this.thumbnailService.generate(
@@ -383,18 +409,26 @@ export class JobCardService {
       // stream: Readable.from(thumbnailBuffer),
     };
 
-    await this.thumbnailService.set(thumbnailFile, jobCard[0].id, user);
+    await this.thumbnailService.set(
+      thumbnailFile,
+      jobCard[0].id,
+      user,
+      activeWorkspace
+    );
     return await this.fileStorageService.getSignedUrl(jobCard[0].path);
   }
 
-  async getJobCardNumber(org: { id: string; name: string }) {
+  async getJobCardNumber(workspace: {
+    id: string;
+    workspace: { name: string };
+  }) {
     const latest = await prisma.file.findFirst({
-      where: { orgId: org.id, type: 'jobCard' },
+      where: { workspaceId: workspace.id, type: 'jobCard' },
       orderBy: { createdAt: 'desc' },
       select: { name: true },
     });
 
-    const prefix = `${org.name.slice(0, 3).toUpperCase()}-JC-`;
+    const prefix = `${workspace.workspace.name.slice(0, 3).toUpperCase()}-JC-`;
     const lastNumber = parseInt(
       latest?.name?.split('.')[0].split('-')[2] || '0',
       10

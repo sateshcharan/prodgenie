@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useLoadingStore } from '@prodgenie/libs/store';
+import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 const isDev = import.meta.env.DEV;
 
@@ -12,6 +12,12 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Add workspace id
+  const { activeWorkspace } = useWorkspaceStore.getState();
+  if (activeWorkspace) {
+    config.headers['active-workspace-id'] = activeWorkspace.id;
   }
 
   // Trigger loading state

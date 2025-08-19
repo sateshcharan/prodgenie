@@ -12,9 +12,9 @@ export class FolderService {
     this.bucketName = process.env.BUCKET;
   }
 
-  async scaffoldFolder(orgName: string) {
-    const existingOrg = await prisma.org.findUnique({
-      where: { name: orgName },
+  async scaffoldFolder(workspaceName: string, planId: string) {
+    const existingOrg = await prisma.workspace.findFirst({
+      where: { name: workspaceName },
     });
 
     if (existingOrg) {
@@ -23,11 +23,11 @@ export class FolderService {
 
     const paths: string[] = [];
     for (const fileType of Object.values(FileType)) {
-      paths.push(`${orgName}/${fileType}/.init`);
+      paths.push(`${workspaceName}/${fileType}/.init`);
     }
 
     //other than filetype
-    paths.push(`${orgName}/thumbnail/.init`);
+    paths.push(`${workspaceName}/thumbnail/.init`);
 
     for (const path of paths) {
       const { error } = await supabase.storage
@@ -43,8 +43,15 @@ export class FolderService {
         );
       }
     }
-    await prisma.org.create({
-      data: { name: orgName },
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: workspaceName,
+
+        //default plan
+        credits: 100,
+        planId,
+      },
     });
+    return workspace;
   }
 }

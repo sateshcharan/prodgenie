@@ -3,7 +3,7 @@ import { prisma } from '@prodgenie/libs/prisma';
 export class HistoryService {
   static async record(params: {
     userId: string;
-    orgId: string;
+    workspaceId: string;
     action: string;
     details?: string;
     jobId?: string | null;
@@ -12,12 +12,12 @@ export class HistoryService {
     const recordsPerOrg = 50;
     return prisma.$transaction(async (tx) => {
       const count = await tx.history.count({
-        where: { orgId: params.orgId },
+        where: { workspaceId: params.workspaceId },
       });
 
       if (count >= recordsPerOrg) {
         const oldest = await tx.history.findFirst({
-          where: { orgId: params.orgId },
+          where: { workspaceId: params.workspaceId },
           orderBy: { createdAt: 'asc' },
           select: { id: true },
         });
@@ -32,7 +32,7 @@ export class HistoryService {
       return tx.history.create({
         data: {
           userId: params.userId,
-          orgId: params.orgId,
+          workspaceId: params.workspaceId,
           action: params.action,
           details: params.details ?? null,
           jobId: params.jobId ?? null,
@@ -41,9 +41,9 @@ export class HistoryService {
     });
   }
 
-  static async getOrgHistory(orgId: string) {
+  static async getOrgHistory(workspaceId: string) {
     return prisma.history.findMany({
-      where: { orgId: orgId },
+      where: { workspaceId: workspaceId },
       include: {
         user: {
           select: { id: true, name: true },

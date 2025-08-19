@@ -1,5 +1,6 @@
 import { useLoaderData } from 'react-router-dom';
 import { SequenceBuilder, TemplateBuilder, MaterialBuilder } from './index';
+import { TableBuilder } from './TableBuilder';
 
 const FileBuilder = () => {
   const { fileType } = useLoaderData() as {
@@ -12,8 +13,8 @@ const FileBuilder = () => {
         <SequenceBuilder />
       ) : fileType === 'template' ? (
         <TemplateBuilder />
-      ) : fileType === 'material' ? (
-        <MaterialBuilder />
+      ) : fileType === 'table' ? (
+        <TableBuilder />
       ) : null}
     </div>
   );

@@ -5,9 +5,15 @@ import {
   StepForward,
   Briefcase,
   Calculator,
-  SearchIcon,
   HelpCircleIcon,
   SettingsIcon,
+  GalleryVerticalEnd,
+  AudioWaveform,
+  Command,
+  UserCircleIcon,
+  CreditCardIcon,
+  BellIcon,
+  Table2,
 } from 'lucide-react';
 
 import { FileType } from './fileTypes.js';
@@ -23,7 +29,7 @@ export const appSidebarItems = {
   navSecondary: [
     {
       title: 'Settings',
-      url: '#',
+      url: '/dashboard/settings/account',
       icon: SettingsIcon,
     },
     {
@@ -31,10 +37,22 @@ export const appSidebarItems = {
       url: '#',
       icon: HelpCircleIcon,
     },
+  ],
+  navUser: [
     {
-      title: 'Search',
-      url: '#',
-      icon: SearchIcon,
+      title: 'Account',
+      url: '/dashboard/settings/account',
+      icon: UserCircleIcon,
+    },
+    {
+      title: 'Billing',
+      url: '/dashboard/settings/billing',
+      icon: CreditCardIcon,
+    },
+    {
+      title: 'Notifications',
+      url: '/dashboard/settings/notification',
+      icon: BellIcon,
     },
   ],
   documents: [
@@ -60,7 +78,11 @@ export const appSidebarItems = {
       url: `/dashboard/${FileType.template}`,
       icon: Calendar,
     },
-
+    {
+      title: 'Tables',
+      url: `/dashboard/${FileType.table}`,
+      icon: Table2,
+    },
     {
       title: 'Configs',
       url: `/dashboard/${FileType.config}`,
@@ -79,9 +101,10 @@ export const appSidebarItems = {
       icon: Calendar,
     },
     {
-      title: 'Material',
-      url: '/dashboard/material/builder',
+      title: 'Table',
+      url: '/dashboard/table/builder',
       icon: Briefcase,
     },
   ],
+  workspaceLogos: [GalleryVerticalEnd, AudioWaveform, Command],
 };

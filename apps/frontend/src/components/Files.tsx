@@ -8,26 +8,31 @@ import {
   downloadFile,
 } from '../services/fileService';
 import { api } from '../utils';
+import { DialogDropZone } from './DialogDropZone';
 import { SearchBanner, FileCard } from '../components';
 
 import { CardItem } from '@prodgenie/libs/types';
 import { apiRoutes, FileType } from '@prodgenie/libs/constant';
-import { useAddDialogStore, useEditDialogStore } from '@prodgenie/libs/store';
+import {
+  useAddDialogStore,
+  useEditDialogStore,
+  useWorkspaceStore,
+} from '@prodgenie/libs/store';
 import {
   Button,
   Card,
   CardContent,
   DialogEditFile,
   banner,
+  toast,
 } from '@prodgenie/libs/ui';
-
-import { DialogDropZone } from './DialogDropZone';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
   const [cardData, setCardData] = useState<CardItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [editFileId, setEditFileId] = useState<string | null>(null);
+  const { activeWorkspace } = useWorkspaceStore();
   const navigate = useNavigate();
 
   const fetchFiles = async () => {
@@ -35,7 +40,7 @@ const Files = () => {
       return;
     try {
       const files = await fetchFilesByType(fileType);
-      if (files.length) setCardData(files);
+      setCardData(files);
     } catch (err: any) {
       if (err.response?.status === 401) navigate('/');
       else console.error(`Error fetching ${fileType}:`, err);
@@ -44,20 +49,44 @@ const Files = () => {
 
   useEffect(() => {
     fetchFiles();
-  }, [fileType]);
+  }, [fileType, activeWorkspace]);
+
+  // const handleCardClick = (card_id: string, signedUrl: string) => {
+  //   if (fileType === 'sequence') {
+  //     return navigate(`/dashboard/sequence/builder?id=${card_id}`, {
+  //       state: { signedUrl },
+  //     });
+  //   } else if (fileType === 'template') {
+  //     return navigate(`/dashboard/template/builder?id=${card_id}`);
+  //   } else if (fileType === 'table') {
+  //     return navigate(`/dashboard/table/builder?id=${card_id}`);
+  //   } else {
+  //     return navigate(`/dashboard/${fileType}/${card_id}`, {
+  //       state: { signedUrl },
+  //     });
+  //   }
+  // };
 
   const handleCardClick = (card_id: string, signedUrl: string) => {
-    if (fileType === 'sequence') {
-      return navigate(`/dashboard/sequence/builder?id=${card_id}`, {
-        state: { signedUrl },
-      });
-    } else if (fileType === 'template') {
-      return navigate(`/dashboard/template/builder?id=${card_id}`);
-    } else {
-      return navigate(`/dashboard/${fileType}/${card_id}`, {
-        state: { signedUrl },
-      });
+    let path = `/dashboard/${fileType}/${card_id}`;
+    let options: { state?: { signedUrl: string } } = {};
+
+    if (
+      fileType === 'sequence' ||
+      fileType === 'template' ||
+      fileType === 'table'
+    ) {
+      path = `/dashboard/${fileType}/builder?id=${card_id}`;
     }
+
+    if (
+      fileType === 'sequence' ||
+      !['sequence', 'template', 'table'].includes(fileType)
+    ) {
+      options.state = { signedUrl };
+    }
+
+    return navigate(path, options);
   };
 
   const handleCardDelete = async (card_id: string) => {
@@ -98,7 +127,7 @@ const Files = () => {
   });
 
   const handleSequenceSync = async () => {
-    console.log('🌟 Syncing sequence...');
+    toast.info('🌟 Syncing sequence...');
     await api.post(`${apiRoutes.sequence.base}${apiRoutes.sequence.sync}`);
   };
 
@@ -159,7 +188,7 @@ const Files = () => {
         onUploadSuccess={fetchFiles}
       />
 
-      {/* Modal for adding edittign files */}
+      {/* Modal for adding editing files */}
       {editFileId && (
         <DialogEditFile
           title={`Replace ${fileType} thumbnail`}

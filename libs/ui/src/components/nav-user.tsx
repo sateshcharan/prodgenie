@@ -1,11 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  BellIcon,
-  CreditCardIcon,
-  LogOutIcon,
-  MoreVerticalIcon,
-  UserCircleIcon,
-} from 'lucide-react';
+import { LogOutIcon, MoreVerticalIcon, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../avatar';
 import {
@@ -23,6 +17,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '../sidebar';
+
+import { appSidebarItems } from '@prodgenie/libs/constant';
 
 export function NavUser({
   user,
@@ -85,18 +81,24 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <UserCircleIcon />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
+                <Sparkles />
+                Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuGroup>
+              {appSidebarItems.navUser.map((item: any) => (
+                <DropdownMenuItem
+                  key={item.title}
+                  onClick={() => navigate(item.url)}
+                >
+                  <item.icon />
+                  {item.title}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {

@@ -2,7 +2,7 @@ import { Save } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash-es';
 
 import { api } from '../utils';
 import FormBuilder from './FormBuilder';

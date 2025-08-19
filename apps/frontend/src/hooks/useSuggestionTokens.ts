@@ -1,4 +1,3 @@
-// hooks/useSuggestionTokens.ts
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { api } from '../utils';
@@ -49,7 +48,7 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
       try {
         const {
           data: { data: bomFile },
-        } = await api.get(`${apiRoutes.orgs.base}/getOrgConfig/bom.json`);
+        } = await api.get(`${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`);
         const response = await fetch(bomFile.path);
         const json = await response.json();
 

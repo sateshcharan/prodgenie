@@ -8,6 +8,9 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 const router: Router = express.Router();
 
 router.post(apiRoutes.auth.login, asyncHandler(AuthController.login));
+
+router.get(`/login/:provider`, asyncHandler(AuthController.oAuthLogin));
+
 router.post(
   apiRoutes.auth.signup.owner,
   asyncHandler(AuthController.signupOwner)

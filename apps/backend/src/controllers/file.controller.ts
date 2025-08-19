@@ -2,7 +2,6 @@ import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
 import { writeFile } from 'fs/promises';
 import path from 'path';
-
 import { FileService, ThumbnailService } from '../services/index.js';
 import { fileProcessingQueue } from '@prodgenie/libs/queues';
 
@@ -11,9 +10,14 @@ const thumbnailService = new ThumbnailService();
 
 export class FileController {
   static uploadFileController = async (req: Request, res: Response) => {
-    const user = req.user;
+    const user = req.user!;
+    const activeWorkspaceId = req.activeWorkspaceId!;
     const { fileType } = req.params;
     const files = req.files as Express.Multer.File[];
+
+    const activeWorkspace = user.memberships.find(
+      (m) => m.workspace.id === activeWorkspaceId
+    );
 
     if (!files?.length) {
       return res.status(400).json({ message: 'No files uploaded' });
@@ -24,7 +28,12 @@ export class FileController {
       id: randomUUID(),
     }));
 
-    const result = await fileService.uploadFile(filesWithId, fileType, user);
+    const result = await fileService.uploadFile(
+      filesWithId,
+      fileType,
+      user,
+      activeWorkspace
+    );
 
     for (const file of filesWithId) {
       const screenshotBuffer = await thumbnailService.generate(file, fileType);
@@ -41,7 +50,8 @@ export class FileController {
             mimetype: 'image/jpeg',
           } as any,
           file.id,
-          user
+          user,
+          activeWorkspace
         );
       }
     }
@@ -72,7 +82,7 @@ export class FileController {
   };
 
   static replaceFileController = async (req: Request, res: Response) => {
-    const user = req.user;
+    const user = req.user!;
     const { fileId, fileType } = req.params;
     const uploadedFiles = req.files as Express.Multer.File[];
 
@@ -91,47 +101,46 @@ export class FileController {
 
   static listFilesController = async (req: Request, res: Response) => {
     const { fileType } = req.params;
-    const orgId = req.user?.orgId;
-    // console.log(orgId);
-    const files = await fileService.listFiles(fileType, orgId);
+    const activeWorkspaceId = req.activeWorkspaceId!;
+
+    const files = await fileService.listFiles(fileType, activeWorkspaceId);
     return res.status(200).json(files);
   };
 
   static getFileByIdController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
-    const orgId = req.user?.orgId;
+    const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getFileById(fileId, orgId);
+    const file = await fileService.getFileById(fileId, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
   static getFileByNameController = async (req: Request, res: Response) => {
     const { fileName } = req.params;
-    const orgId = req.user?.orgId;
+    const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getFileByName(fileName, orgId);
+    const file = await fileService.getFileByName(fileName, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
   static getFileDataController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
-    const orgId = req.user?.orgId;
-
-    const file = await fileService.getFileData(fileId, orgId);
+    
+    const file = await fileService.getFileData(fileId);
     return res.status(200).json(file);
   };
 
   static getThumbnailController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
-    const orgId = req.user?.orgId;
+    const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getThumbnail(fileId, orgId);
+    const file = await fileService.getThumbnail(fileId, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
   static updateThumbnailController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
-    const user = req.user;
+    const user = req.user!;
     const files = req.files as Express.Multer.File[];
 
     if (!files?.length) {
@@ -143,16 +152,25 @@ export class FileController {
   };
 
   static deleteFileController = async (req: Request, res: Response) => {
+    const user = req.user!;
     const { fileType, fileId } = req.params;
-    const user = req.user;
+    const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const result = await fileService.deleteFile(fileId, fileType, user);
+    const activeWorkspace = user.memberships.find(
+      (m) => m.workspace.id === activeWorkspaceId
+    );
+
+    const result = await fileService.deleteFile(
+      fileId,
+      fileType,
+      user,
+      activeWorkspace
+    );
     return res.status(200).json(result);
   };
 
   static renameFileController = async (req: Request, res: Response) => {
     const { newName, fileId } = req.body;
-
     const result = await fileService.renameFile(fileId, newName);
     return res.status(200).json(result);
   };

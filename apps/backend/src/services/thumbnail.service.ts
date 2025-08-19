@@ -12,15 +12,15 @@ const storageFileService = new FileStorageService();
 export class ThumbnailService {
   async get(
     fileId: string,
-    orgId: string
+    workspaceId: string
   ): Promise<{ data: any | null; error: string | null }> {
     const dbFile = await prisma.file.findUnique({
-      where: { id: fileId, orgId },
+      where: { id: fileId, workspaceId },
     });
 
     if (!dbFile) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(dbFile.thumbnail);
+    const signedUrl = await storageFileService.getSignedUrl(dbFile.thumbnail!);
 
     return {
       data: {
@@ -31,11 +31,16 @@ export class ThumbnailService {
     };
   }
 
-  async set(uploadedFile: Express.Multer.File, fileId: string, user: any) {
+  async set(
+    uploadedFile: Express.Multer.File,
+    fileId: string,
+    user: any,
+    activeWorkspace: any
+  ) {
     if (!uploadedFile) throw new Error('No file uploaded');
 
     const storageResult = await storageFileService.uploadFile(
-      `${user.org.name}/thumbnail/${fileId}`,
+      `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
       uploadedFile,
       'thumbnail',
       user

@@ -25,17 +25,18 @@ export class UserService {
     });
   }
 
-  async listUsers(orgId: string) {
-    return await prisma.user.findMany({
-      where: {
-        org: {
-          id: orgId,
-        },
-      },
-      include: {
-        org: true,
-      },
-    });
+  async listUsers(workspaceId: string) {
+    // return await prisma.user.findMany({
+    //   where: {
+    //     org: {
+    //       id: orgId,
+    //     },
+    //   },
+    //   include: {
+    //     org: true,
+    //   },
+    // });
+    return [];
   }
 
   async deleteUser(userId: string) {

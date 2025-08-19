@@ -7,16 +7,115 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Org {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  credits   Float    @default(0)
-  createdAt DateTime @default(now())
+//
+// Core Entities
+//
 
-  users       User[]
+model User {
+  id          String              @id @default(uuid())
+  email       String              @unique
+  name        String?
+  createdAt   DateTime            @default(now())
+
+  memberships WorkspaceMember[]   
   files       File[]
-  inviteCodes InviteCode[]
   history     History[]
+  jobs        Job[]
+  invitesSent WorkspaceInvite[]   @relation("UserInvites") 
+}
+
+model Plan {
+  id                    String     @id @default(uuid())
+  name                  String
+  maxMembers            Int        
+  maxWorkspacesPerUser  Int        
+  createdAt             DateTime   @default(now())
+
+  workspaces            Workspace[]
+}
+
+model Workspace {
+  id         String            @id @default(uuid())
+  name       String
+  credits    Float             @default(0)
+  createdAt  DateTime          @default(now())
+
+  planId     String?
+  plan       Plan?              @relation(fields: [planId], references: [id])
+
+  members    WorkspaceMember[]
+  files      File[]
+  history    History[]
+  jobs       Job[]
+  invites    WorkspaceInvite[]
+}
+
+//
+// Memberships & Roles
+//
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model WorkspaceMember {
+  id           String         @id @default(uuid())
+  userId       String
+  workspaceId  String
+  role         WorkspaceRole  @default(MEMBER)
+  joinedAt     DateTime       @default(now())
+
+  user         User           @relation(fields: [userId], references: [id])
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+}
+
+//
+// Invites
+//
+
+model WorkspaceInvite {
+  id           String         @id @default(uuid())
+  workspaceId  String
+  email        String
+  role         WorkspaceRole  @default(MEMBER)
+  invitedById  String
+  expiresAt    DateTime?
+  acceptedAt   DateTime?
+
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
+  invitedBy    User           @relation("UserInvites", fields: [invitedById], references: [id])
+}
+
+//
+// Files, Jobs, and History
+//
+
+enum FileType {
+  drawing
+  template
+  sequence
+  jobCard
+  config
+  table
+}
+
+model File {
+  id          String      @id @default(uuid())
+  workspaceId String
+  uploadedBy  String
+  name        String
+  path        String
+  type        FileType
+  data        Json?
+  thumbnail   String?
+  createdAt   DateTime    @default(now())
+
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id])
+  user        User        @relation(fields: [uploadedBy], references: [id])
   jobs        Job[]
 }
 
@@ -27,100 +126,34 @@ enum JobStatus {
   failed
 }
 
-model History {
-  id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  job   Job?    @relation(fields: [jobId], references: [id])
-  jobId String?
-
-  org   Org    @relation(fields: [orgId], references: [id])
-  orgId String
-
-  action    String
-  status    JobStatus @default(pending)
-  details   String?
-  createdAt DateTime  @default(now())
-}
-
-enum UserType {
-  ADMIN
-  OWNER
-  MEMBER
-}
-
-model User {
-  id       String    @id @default(uuid())
-  name     String?
-  email    String    @unique
-  password String
-  type     UserType?
-  orgId    String?
-  org      Org?      @relation(fields: [orgId], references: [id])
-
-  files     File[]
-  createdAt DateTime  @default(now())
-  history   History[]
-  jobs      Job[]
-
-  inviteCode     InviteCode? @relation("UserInviteCode")
-  InviteCode     InviteCode? @relation(fields: [inviteCodeCode], references: [code])
-  inviteCodeCode String?
-}
-
-enum FileType {
-  drawing
-  template
-  sequence
-  jobCard
-  config
-}
-
-model File {
-  id        String   @id @default(uuid())
-  name      String
-  path      String
-  type      FileType
-  userId    String
-  orgId     String
-  data      Json?
-  thumbnail String?
-
-  user      User     @relation(fields: [userId], references: [id])
-  org       Org      @relation(fields: [orgId], references: [id])
-  createdAt DateTime @default(now())
-  jobs      Job[]
-}
-
-model InviteCode {
-  code  String @id
-  org   Org    @relation(fields: [orgId], references: [id])
-  orgId String
-
-  usedBy    String?   @unique
-  user      User?     @relation("UserInviteCode", fields: [usedBy], references: [id])
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
-  User      User[]
-}
-
 model Job {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  orgId String
-  org   Org    @relation(fields: [orgId], references: [id])
-
-  fileId String
-  file   File   @relation(fields: [fileId], references: [id])
-
+  id            String      @id @default(uuid())
+  workspaceId   String
+  fileId        String
+  createdById   String
   jobCardNumber Int
   config        Json
-  jobStatus     JobStatus @default(pending)
+  status        JobStatus   @default(pending)
   creditsUsed   Float
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime    @default(now())
 
-  history History[]
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id])
+  file          File        @relation(fields: [fileId], references: [id])
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  history       History[]
+}
+
+model History {
+  id           String      @id @default(uuid())
+  workspaceId  String
+  userId       String
+  jobId        String?
+  action       String
+  status       JobStatus   @default(pending)
+  details      String?
+  createdAt    DateTime    @default(now())
+
+  workspace    Workspace   @relation(fields: [workspaceId], references: [id])
+  user         User        @relation(fields: [userId], references: [id])
+  job          Job?        @relation(fields: [jobId], references: [id])
 }

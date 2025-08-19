@@ -14,7 +14,7 @@ import {
 } from '../';
 
 import { cn } from '@prodgenie/libs/utils';
-import { useAuthModalStore } from '@prodgenie/libs/store';
+import { useAuthStore } from '@prodgenie/libs/store';
 
 // import { createClient } from '@supabase/supabase-js';
 
@@ -58,7 +58,7 @@ const AuthForm = ({
     resolver: zodResolver(validationSchema),
   });
 
-  const { openModal } = useAuthModalStore();
+  const { setAuthType } = useAuthStore();
 
   // Track changes to all fields and notify parent
   useEffect(() => {
@@ -103,7 +103,7 @@ const AuthForm = ({
                     placeholder={placeholder}
                   />
                   <p className="text-sm text-red-500">
-                    {errors?.[name as keyof typeof errors]?.message as string}
+                    {errors?.[name]?.message as string}
                   </p>
                 </div>
               ))}
@@ -117,7 +117,7 @@ const AuthForm = ({
                   Don&apos;t have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => openModal('signup')}
+                    onClick={() => setAuthType('signup')}
                     className="underline underline-offset-4 text-primary hover:text-primary/80"
                   >
                     Sign up
@@ -128,7 +128,7 @@ const AuthForm = ({
                   Already have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => openModal('login')}
+                    onClick={() => setAuthType('login')}
                     className="underline underline-offset-4 text-primary hover:text-primary/80"
                   >
                     Login

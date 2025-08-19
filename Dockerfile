@@ -16,7 +16,10 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# COPY imagemagick-policy.xml /etc/ImageMagick-6/policy.xml
+# Tell Puppeteer to use system Chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
 # Set working directory
 WORKDIR /app
 COPY . .
@@ -25,22 +28,18 @@ COPY . .
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 
-# Install pnpm and dependencies
+# Install pnpm and dependencies & clear pnpm store to avoid aritfacts
 RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Clear pnpm store to avoid aritfacts
 RUN pnpm store prune && rm -rf ~/.pnpm-store
 RUN pnpm install --frozen-lockfile
 
-# Ensure prisma schema is valid
+# Ensure prisma schema is valid & Build backend
 # RUN pnpm exec prisma validate
 RUN pnpm exec prisma generate
-
-# Build backend
 RUN pnpm nx build backend
 
 # Install puppeteer
-RUN npx puppeteer browsers install chrome
+# RUN npx puppeteer browsers install chrome
 
 # Setup Python virtual environment
 # RUN python3 -m venv /opt/venv && \

@@ -1,28 +1,30 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 
 import { FolderService } from './folder.service.js';
 
 import { prisma } from '@prodgenie/libs/prisma';
+import { supabase } from '@prodgenie/libs/supabase';
+// import { createClient } from '@supabase/supabase-js';
+import {
+  createServerClient,
+  parseCookieHeader,
+  serializeCookieHeader,
+} from '@supabase/ssr';
 import { signupSchema } from '@prodgenie/libs/schema';
 
-// import { supabase } from '@prodgenie/libs/supabase';
-import {createClient} from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const folderService = new FolderService();
 
 const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
 
-const folderService = new FolderService();
-
 if (!SECRET_KEY) {
   throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
+}
+if (!ADMIN_PASSWORD) {
+  throw new Error('ADMIN_PASSWORD is not defined in environment variables');
 }
 
 interface SignupOwnerPayload {
@@ -146,13 +148,7 @@ export class AuthService {
     password,
     confirmPassword,
     orgName,
-  }: {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    orgId: string;
-  }) {
+  }: SignupOwnerPayload) {
     // Sign up user in Supabase
     const { data, error } = await supabase.auth.admin.createUser({
       email,
@@ -200,12 +196,7 @@ export class AuthService {
     password,
     name,
     inviteCode,
-  }: {
-    email: string;
-    password: string;
-    name: string;
-    inviteCode: string;
-  }) {
+  }: SignupInvitePayload) {
     const invite = await prisma.inviteCode.findUnique({
       where: { code: inviteCode },
       include: { org: true },
@@ -246,13 +237,104 @@ export class AuthService {
       password,
     });
 
-    // Token from Supabase session (optional: use your own JWT here)
-    const token = data.session?.access_token;
+    if (error) {
+      throw new Error(error.message || 'Invalid email or password');
+    }
 
+    const token = data.session?.access_token;
     if (!token) {
       throw new Error('Token not received from Supabase');
     }
 
     return token;
+  }
+
+  // supabase = createClient(
+  //   process.env.SUPABASE_URL!,
+  //   process.env.SUPABASE_ANON_KEY!,
+  //   {
+  //     auth: {
+  //       detectSessionInUrl: true,
+  //       flowType: 'pkce',
+  //       storage: {
+  //         getItem: () => Promise.resolve('FETCHED_TOKEN'),
+  //         setItem: () => {},
+  //         removeItem: () => {},
+  //       },
+  //     },
+  //   }
+  // );
+
+  static async oAuthLogin(provider: string) {
+    console.log(provider);
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider as any,
+      options: {
+        redirectTo: `${process.env.BACKEND_URL}/auth/callback`,
+      },
+    });
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  static async oAuthCallback(req: Request, res: Response) {
+    const code = req.query.code;
+    const next = req.query.next ?? '/';
+
+    if (code) {
+      const supabase = createServerClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return parseCookieHeader(req.headers.cookie ?? '');
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                res.appendHeader(
+                  'Set-Cookie',
+                  serializeCookieHeader(name, value, options)
+                )
+              );
+            },
+          },
+        }
+      );
+
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error) {
+        throw new Error(`OAuth callback error: ${error.message}`);
+      }
+
+      // Optional: Store user data in your database if needed
+      if (data.user) {
+        const supabaseUser = data.user;
+
+        // Check if user exists in your database
+        let user = await prisma.user.findUnique({
+          where: { id: supabaseUser.id },
+        });
+
+        // Create user if doesn't exist
+        if (!user && supabaseUser.email) {
+          user = await prisma.user.create({
+            data: {
+              id: supabaseUser.id,
+              email: supabaseUser.email,
+              name:
+                supabaseUser.user_metadata?.full_name ||
+                supabaseUser.user_metadata?.name ||
+                '',
+              type: supabaseUser.user_metadata?.type || 'MEMBER',
+              // Note: You might need to handle orgId assignment for OAuth users
+            },
+          });
+        }
+      }
+    }
+
+    return { url: `/${next.slice(1)}` };
   }
 }

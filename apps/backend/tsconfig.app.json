@@ -12,8 +12,8 @@
   },
   "include": [
     "src/**/*.ts"
-    // "src/worker/worker.js",
-    // "src/routes/file.routes",
+, "src/services/_file_service_ts_bkp"    // "src/worker/worker.js",
+, "src/controllers/_file_controller_ts_bkp"    // "src/routes/file.routes",
     // "../../libs/db/src/lib/user.service.ts"
   ],
   "exclude": [

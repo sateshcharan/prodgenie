@@ -65,11 +65,18 @@ export const apiRoutes = {
     upiOrder: '/upi/order',
   },
 
-  orgs: {
-    base: '/api/orgs',
+  workspace: {
+    base: '/api/workspace',
     check: '/check',
-    getOrgUsers: '/getOrgUsers',
-    getOrgHistory: '/getOrgHistory',
-    getOrgConfig: (configName: string) => `/getOrgConfig/${configName}`,
+    createNewWorkspace: '/createNewWorkspace',
+    getWorkspaceUsers: '/getWorkspaceUsers',
+    getWorkspaceHistory: '/getWorkspaceHistory',
+    getWorkspaceConfig: (configName: string) =>
+      `/getWorkspaceConfig/${configName}`,
+  },
+
+  projectWide: {
+    base: '/api/projectWide',
+    getPlans: '/getPlans',
   },
 };

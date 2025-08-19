@@ -14,13 +14,17 @@ import {
   ModeToggle,
   logo,
 } from '@prodgenie/libs/ui';
-import { useAuthModalStore } from '@prodgenie/libs/store';
+import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
 
 const PublicHeader = () => {
   const navigate = useNavigate();
-  const { openModal } = useAuthModalStore();
+  // const { openModal } = useAuthModalStore();
+  const { openModal } = useModalStore();
+  const { setAuthType } = useAuthStore();
   const handleLoginClick = () => {
-    openModal('login');
+    // openModal('login');
+    setAuthType('login');
+    openModal('auth');
   };
   return (
     <header className="relative z-10 px-6 py-6">
@@ -51,7 +55,7 @@ const PublicHeader = () => {
             </SelectContent>
           </Select>
           <Button
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-2 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+            className=" px-6 py-2  hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             onClick={handleLoginClick}
           >
             Log in

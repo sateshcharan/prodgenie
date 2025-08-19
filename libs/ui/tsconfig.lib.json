@@ -36,6 +36,9 @@
   ],
   "references": [
     {
+      "path": "../constant/tsconfig.lib.json"
+    },
+    {
       "path": "../store/tsconfig.lib.json"
     },
     {

@@ -22,7 +22,7 @@ import {
   useSidebar,
 } from '../sidebar';
 
-import { useUserStore } from '@prodgenie/libs/store';
+// import { useUserStore } from '@prodgenie/libs/store';
 
 export function NavConfigurations({
   items,
@@ -34,20 +34,14 @@ export function NavConfigurations({
   }[];
 }) {
   const { isMobile } = useSidebar();
-  const user = useUserStore((state) => state.user);
-
-  const visibleItems = items.filter((item) => {
-    if (item.title === 'Configs' && user?.type !== 'ADMIN') {
-      return false;
-    }
-    return true;
-  });
+  // const user = useUserStore((state) => state.user);
+  
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Configurations</SidebarGroupLabel>
       <SidebarMenu>
-        {visibleItems.map((item, index) => (
+        {items.map((item, index) => (
           <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
               <Link to={item.url}>

@@ -14,6 +14,7 @@ interface jobCardRequest {
     detail: string;
     color: string;
   }[];
+  activeWorkspace: any;
 }
 
 export type jobCard = typeof jobCardFields;

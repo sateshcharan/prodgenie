@@ -16,7 +16,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Save, Trash, FolderSync } from 'lucide-react';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash-es';
 
 import FormulaBuilder from './FormulaBuilder';
 import { api, ExcelHTMLViewer } from '../utils';

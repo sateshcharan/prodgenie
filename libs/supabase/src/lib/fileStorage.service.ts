@@ -1,5 +1,10 @@
-import { supabase } from './supabase.js';
+import { createClient } from '@supabase/supabase-js';
 // import { HistoryService } from '@prodgenie/libs/db';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export class FileStorageService {
   private readonly bucketName: string;
@@ -50,7 +55,6 @@ export class FileStorageService {
 
   async getSignedUrl(filePath: string): Promise<string> {
     if (!filePath) throw new Error('File path not provided');
-
     try {
       const { data, error } = await supabase.storage
         .from(this.bucketName)

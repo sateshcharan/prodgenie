@@ -69,7 +69,7 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
     //     try {
     //       const {
     //         data: { data: bomFile },
-    //       } = await api.get(`${apiRoutes.orgs.base}/getOrgConfig/bom.json`);
+    //       } = await api.get(`${apiRoutes.workspaces.base}/getWorkspaceConfig/bom.json`);
     //       const response = await fetch(bomFile.path);
     //       if (!response.ok) throw new Error('Failed to load config');
     //       const json = await response.json();

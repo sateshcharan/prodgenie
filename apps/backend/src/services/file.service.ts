@@ -1,20 +1,25 @@
-import { FileType } from '@prisma/client';
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { ThumbnailService } from './thumbnail.service';
+import { FileType } from '@prisma/client';
 
 const storageFileService = new FileStorageService();
 const thumbnailService = new ThumbnailService();
 
 export class FileService {
-  async uploadFile(filesWithId: any[], fileType: string, user: any) {
+  async uploadFile(
+    filesWithId: any[],
+    fileType: string,
+    user: any,
+    activeWorkspace: any
+  ) {
     const savedFiles: any[] = [];
-    const orgId = user?.org?.id;
+    const workspaceId = activeWorkspace?.workspace?.id;
     const userId = user?.id;
-    const folder = user?.org?.name?.trim();
+    const folder = activeWorkspace?.workspace?.name.trim();
 
-    if (!folder || !orgId || !userId) {
-      throw new Error('Organization or user information is missing');
+    if (!folder || !workspaceId || !userId) {
+      throw new Error('Workspace or user information is missing');
     }
 
     for (const file of filesWithId) {
@@ -29,18 +34,15 @@ export class FileService {
             id: file.id,
             name: file.originalname,
             path: uploadPath,
-            userId,
-            orgId,
+            uploadedBy: userId,
+            workspaceId, // fix this is incorrect
             type: fileType as FileType,
           },
         });
 
         savedFiles.push(savedFile);
-
-        // await thumbnailService.set(file, file.id, user);
       } catch (err) {
         console.error(`Upload failed for ${file.originalname}:`, err);
-        // Optional rollback logic here if required
       }
     }
 
@@ -81,9 +83,9 @@ export class FileService {
     });
   }
 
-  async listFiles(fileType: string, orgId: string) {
+  async listFiles(fileType: string, activeWorkspaceId: string) {
     const files = await prisma.file.findMany({
-      where: { orgId, type: fileType as FileType },
+      where: { workspaceId: activeWorkspaceId, type: fileType as FileType },
     });
 
     if (!files.length) return { data: null, error: 'No files found' };
@@ -98,17 +100,19 @@ export class FileService {
     return { data, error: null };
   }
 
-  async getFileById(fileId: string, orgId: string) {
-    const file = await prisma.file.findUnique({ where: { id: fileId, orgId } });
+  async getFileById(fileId: string, workspaceId: string) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId, workspaceId },
+    });
     if (!file) return { data: null, error: 'No file found' };
 
     const signedUrl = await storageFileService.getSignedUrl(file.path);
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
-  async getFileByName(fileName: string, orgId: string) {
+  async getFileByName(fileName: string, workspaceId: string) {
     const file = await prisma.file.findFirst({
-      where: { name: fileName, orgId },
+      where: { name: fileName, workspaceId },
     });
     if (!file) return { data: null, error: 'No file found' };
 
@@ -125,8 +129,10 @@ export class FileService {
     return data;
   }
 
-  async getThumbnail(fileId: string, orgId: string) {
-    const file = await prisma.file.findUnique({ where: { id: fileId, orgId } });
+  async getThumbnail(fileId: string, workspaceId: string) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId, workspaceId },
+    });
     if (!file) return { data: null, error: 'No file found' };
 
     const signedUrl = await storageFileService.getSignedUrl(file.thumbnail);
@@ -161,20 +167,23 @@ export class FileService {
     });
   }
 
-  async deleteFile(fileId: string, fileType: string, user: any) {
-    const org = user?.org;
+  async deleteFile(
+    fileId: string,
+    fileType: string,
+    user: any,
+    activeWorkspace: any
+  ) {
     const userId = user?.id;
-    const folder = org?.name?.trim();
+    const folder = activeWorkspace?.workspace.name.trim();
 
-    if (!folder || !org?.id || !userId) {
-      throw new Error('User or organization details missing');
+    if (!folder || !userId) {
+      throw new Error('User or workspace details missing');
     }
 
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
     await storageFileService.deleteFile(file.path, fileType, user);
-
     return prisma.file.delete({ where: { id: fileId } });
   }
 

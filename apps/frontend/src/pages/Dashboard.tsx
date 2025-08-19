@@ -3,62 +3,69 @@ import { useQuery } from '@tanstack/react-query';
 
 import api from '../utils/api';
 // import data from './data.json';
-import OrgUsers from '../components/OrgUsers';
 import { SectionCards } from '../components/section-cards';
 
 import {
   ChartAreaInteractive,
   HistoryTable,
   DataTable,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useUserStore } from '@prodgenie/libs/store';
+import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import WorkspaceUsers from '../components/WorkspaceUsers';
 
 const Dashboard = () => {
   const user = useUserStore((state) => state.user);
-  const orgId = user?.org?.id;
-  const credits = user?.org?.credits;
-  const isOwner = user?.type === 'OWNER';
-  const isAdmin = user?.type === 'ADMIN';
+  const { activeWorkspace } = useWorkspaceStore((state) => state);
+
+  const [workspaceHistory, setWorkspaceHistory] = useState([]);
+
+  const workspaceId = activeWorkspace?.id;
+  const credits = activeWorkspace?.credits;
+  const role = user?.memberships.find((m) => m.workspace.id === workspaceId)?.role;
 
   useEffect(() => {
     const fetchHistoryData = async () => {
       try {
-        // const fetchHistoryData = async () => {
-        //   const { data: historyData } = await api.get('/api/orgs/getOrgHistory');
-        //   setOrgHistory(historyData.data);
-        // };
+        const fetchHistoryData = async () => {
+          const { data: historyData } = await api.get(
+            '/api/workspaces/getWorkspaceHistory'
+          );
+          setWorkspaceHistory(historyData.data);
+        };
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
     };
 
-    // fetchHistoryData();
+    fetchHistoryData();
   }, []);
 
-  // const [orgHistory, setOrgHistory] = useState([]);
-
-  // // polling with react-query
+  // polling with react-query
   // const {
-  //   data: orgHistory,
+  //   data: workspaceHistory,
   //   refetch,
   //   isLoading,
   // } = useQuery({
-  //   queryKey: ['orgHistory'],
+  //   queryKey: ['workspaceHistory'],
   //   queryFn: async () => {
-  //     const { data } = await api.get('/api/orgs/getOrgHistory');
+  //     const { data } = await api.get('/api/workspaces/getWorkspaceHistory');
   //     return data.data;
   //   },
-  //   enabled: !!orgId, // only start when orgId is loaded
+  //   enabled: !!workspaceId, // only start when workspaceId is loaded
   //   refetchInterval: 30000, // polling every 5s
   //   refetchIntervalInBackground: false, // don't poll when tab is hidden
   // });
 
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-      {(isOwner || isAdmin) && (
+    <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
+      {(role === 'OWNER' || role === 'ADMIN') && (
         <>
-          <OrgUsers orgId={orgId} />
+          <WorkspaceUsers />
           <SectionCards credits={credits} />
         </>
       )}
@@ -67,11 +74,22 @@ const Dashboard = () => {
         {isLoading ? (
           <div>Loading...</div>
         ) : (
-          <HistoryTable history={orgHistory ?? []} />
+          <HistoryTable history={workspaceHistory ?? []} />
         )}
       </div> */}
 
-      {/* <HistoryTable history={orgHistory ?? []} /> */}
+      <Tabs defaultValue="data">
+        <TabsList>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="data">Data</TabsTrigger>
+        </TabsList>
+        <TabsContent value="history">
+          <HistoryTable history={workspaceHistory ?? []} />
+        </TabsContent>
+        <TabsContent value="data">
+          <ChartAreaInteractive />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpCircleIcon } from 'lucide-react';
+import { ArrowUpCircleIcon, GalleryVerticalEnd } from 'lucide-react';
+
+import { api } from '../utils';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   NavMain,
   NavDocuments,
   NavConfigurations,
@@ -17,52 +17,22 @@ import {
   NavSecondary,
   NavUser,
 } from '@prodgenie/libs/ui';
-import { useUserStore } from '@prodgenie/libs/store';
-import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
 import { StringService } from '@prodgenie/libs/frontend-services';
-
-import { api } from '../utils';
+import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
+import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 const stringService = new StringService();
 
 export default function AppSidebar(
   props: React.ComponentProps<typeof Sidebar>
 ) {
+  const { workspaces } = useWorkspaceStore((state) => state);
   const user = useUserStore((state) => state.user);
-  // const setUser = useUserStore((state) => state.setUser);
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const { data } = await api.get(`${apiRoutes.users.base}/getProfile/me`);
-  //       setUser(data);
-  //     } catch (error) {
-  //       console.error('Failed to fetch user data:', error);
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, [setUser]);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <Link to="/dashboard">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold capitalize">
-                  {/* {user?.org && stringService.camelToNormal(user?.org?.name)} */}
-                  {user?.org && stringService.camelToNormal(user?.org?.name)}
-                </span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {workspaces?.length > 0 && <WorkspaceSwitcher />}
       </SidebarHeader>
 
       <SidebarContent>

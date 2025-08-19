@@ -1,5 +1,7 @@
+import { toast } from 'sonner';
 import { useState } from 'react';
-// import axios from 'axios';
+
+import api from '../utils/api';
 
 import {
   Dialog,
@@ -11,10 +13,8 @@ import {
   Button,
 } from '@prodgenie/libs/ui';
 import { useAddDialogStore } from '@prodgenie/libs/store';
+import { useWorkspaceStore } from '@prodgenie/libs/store';
 import { FileDropzone } from '@prodgenie/libs/ui/components/FileDropzone';
-import { toast } from 'sonner';
-
-import api from '../utils/api';
 
 interface DialogDropZoneProps {
   title: string;
@@ -31,6 +31,7 @@ export function DialogDropZone({
 }: DialogDropZoneProps) {
   const { isOpen, close } = useAddDialogStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const { activeWorkspace } = useWorkspaceStore();
 
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
@@ -38,21 +39,15 @@ export function DialogDropZone({
 
   const handleFileUpload = async () => {
     if (!selectedFiles || selectedFiles.length === 0) return;
-
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
+    if (activeWorkspace?.id) {
+      formData.append('activeWorkspace', JSON.stringify(activeWorkspace));
+    }
 
     try {
-      //   await axios.post(submitUrl, formData, {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem('token')}`,
-      //     },
-      //   });
-
       await api.post(submitUrl, formData);
-
       toast.success('upload successful');
-
       if (onUploadSuccess) {
         onUploadSuccess(); // 👈 Notify parent
       }

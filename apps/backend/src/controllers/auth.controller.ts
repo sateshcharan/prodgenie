@@ -56,8 +56,26 @@ export class AuthController {
     //     return res.json({ success: true, token });
     //   }
     // )(req, res);
-    const { email, password } = req.body;
-    const token = await AuthService.login(email, password);
-    res.status(201).json({ success: true, token });
+    try {
+      const { email, password } = req.body;
+      const token = await AuthService.login(email, password);
+      res.status(200).json({ success: true, token });
+    } catch (err: any) {
+      res.status(401).json({
+        success: false,
+        message: err.message || 'Authentication failed',
+      });
+    }
+  }
+
+  static async oAuthLogin(req: Request, res: Response) {
+    const { provider } = req.params;
+    const data = await AuthService.oAuthLogin(provider);
+    res.redirect(data.url);
+  }
+
+  static async oAuthCallback(req: Request, res: Response) {
+    const { url } = await AuthService.oAuthCallback(req, res);
+    res.redirect(url);
   }
 }

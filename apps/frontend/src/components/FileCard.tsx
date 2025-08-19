@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { X, Download, Pencil, Briefcase, Calculator } from 'lucide-react';
 
-import { getThumbnail } from '../services/fileService';
 import PdfThumbnail from './PdfThumbnail';
-import { EditableTitle } from './EditableTitle';
 import { ExcelHTMLViewer } from '../utils';
+import { getThumbnail } from '../services/fileService';
+import { EditableTitle } from './EditableTitle';
 
 import {
   Card,
@@ -16,6 +16,7 @@ import {
   AvatarFallback,
 } from '@prodgenie/libs/ui';
 import { StringService } from '@prodgenie/libs/frontend-services';
+import { useWorkspaceStore } from '@prodgenie/libs/store';
 
 interface FileCardProps {
   card: {
@@ -43,6 +44,8 @@ const FileCard = ({
 }: FileCardProps) => {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
+  const { activeWorkspace } = useWorkspaceStore();
+
   useEffect(() => {
     const loadThumbnail = async () => {
       if (card.thumbnail) {
@@ -55,13 +58,12 @@ const FileCard = ({
       }
     };
     loadThumbnail();
-  }, [card.thumbnail]);
+  }, [card.thumbnail, activeWorkspace?.id]);
 
   return (
     <Card key={card.id} className="shadow-lg rounded-xl p-2 overflow-hidden">
       {/* Action Buttons */}
       <div className="flex justify-end gap-2 mb-2">
-        
         <Button onClick={() => onEdit(card.id)} variant="secondary" size="icon">
           <Pencil className="w-4 h-4" />
         </Button>
@@ -105,13 +107,12 @@ const FileCard = ({
               alt="Thumbnail"
               className="rounded h-full object-contain"
             />
-          ) 
-          // : fileType === 'drawing' || fileType === 'jobCard' ? (
-          //   <PdfThumbnail url={card.path} />
-          // ) : fileType === 'template' ? (
-          //   <ExcelHTMLViewer url={card.path} />
-          // ) 
-          : (
+          ) : (
+            // : fileType === 'drawing' || fileType === 'jobCard' ? (
+            //   <PdfThumbnail url={card.path} />
+            // ) : fileType === 'template' ? (
+            //   <ExcelHTMLViewer url={card.path} />
+            // )
             // <div className="text-gray-400">No Preview</div>
             <AvatarFallback className="rounded-lg w-full h-[120px]">
               {stringService.getInitials(card?.name)}

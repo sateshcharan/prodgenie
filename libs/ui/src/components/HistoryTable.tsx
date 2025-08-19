@@ -49,7 +49,7 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
   };
 
   return (
-    <div className="overflow-auto border border-gray-200 shadow-sm mt-4 rounded-lg">
+    <>
       <Table>
         <TableHeader className="sticky top-0 z-10 bg-muted">
           <TableRow>
@@ -130,6 +130,6 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };
