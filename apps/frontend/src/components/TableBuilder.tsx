@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@prodgenie/libs/ui';
+
+import { Button, Input } from '@prodgenie/libs/ui';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@prodgenie/libs/ui/table';
 import { useSearchParams } from 'react-router-dom';
-import { api } from '../utils';
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { api } from '../utils';
 
 type ColumnType = 'text' | 'number';
 
@@ -14,59 +24,77 @@ interface ColumnConfig<T> {
 }
 
 interface TableBuilderProps<T> {
-  initialData?: T[]; // optional now
-  columns: ColumnConfig<T>[];
-  onSave: (rows: T[]) => void;
-  fetchData?: () => Promise<T[]>;
+  initialData?: T[];
+  columns?: ColumnConfig<T>[];
+  onSave?: (fileName: string, rows: T[], columns: ColumnConfig<T>[]) => void;
 }
 
-export function TableBuilder<T extends Record<string, any>>({
+export default function TableBuilder<T extends Record<string, any>>({
   initialData = [],
-  columns = [], // ✅ fallback to empty array
+  columns = [],
   onSave,
-  fetchData,
 }: TableBuilderProps<T>) {
   const [rows, setRows] = useState<T[]>(initialData);
+  const [tableColumns, setTableColumns] = useState(columns);
+  const [fileName, setFileName] = useState('');
 
   const [searchParams] = useSearchParams();
   const id = searchParams.get('id');
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!id) {
+        setTableColumns([
+          { key: 'col1' as keyof T, label: 'Column 1', type: 'text' },
+          { key: 'col2' as keyof T, label: 'Column 2', type: 'text' },
+        ]);
+        setRows([{ col1: '', col2: '' } as T]);
+        return;
+      }
+
       try {
         const {
           data: { data: tableFile },
         } = await api.get(`${apiRoutes.files.base}/getById/${id}`);
+
         const tableFileContent = await fetch(tableFile.path).then((res) =>
           res.json()
         );
 
-        setRows(tableFileContent);
-        console.log(tableFileContent);
+        if (tableFileContent.columns && tableFileContent.rows) {
+          setTableColumns(tableFileContent.columns);
+          setRows(tableFileContent.rows);
+          setFileName(tableFile.name || '');
+        } else {
+          const cols = [
+            { key: 'name', label: 'Name', type: 'text' },
+            { key: 'value', label: 'Value', type: 'number' },
+          ] as ColumnConfig<T>[];
+
+          const converted = Object.entries(tableFileContent).map(([k, v]) => ({
+            name: k,
+            value: v,
+          })) as T[];
+
+          setTableColumns(cols);
+          setRows(converted);
+        }
       } catch (err) {
         console.error('Error loading table data:', err);
-        setRows([]);
       }
     };
     fetchData();
   }, [id]);
 
-  if (!columns || columns.length === 0) {
-    return (
-      <div className="p-4 text-gray-500 border rounded">
-        ⚠️ No columns configured for this table
-      </div>
-    );
-  }
-
-  const handleChange = (index: number, key: keyof T, value: any) => {
+  // === Row management ===
+  const handleChange = (rowIndex: number, key: keyof T, value: any) => {
     setRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [key]: value } : row))
+      prev.map((row, i) => (i === rowIndex ? { ...row, [key]: value } : row))
     );
   };
 
   const addRow = () => {
-    const emptyRow = columns.reduce((acc, col) => {
+    const emptyRow = tableColumns.reduce((acc, col) => {
       acc[col.key] = col.type === 'number' ? 0 : '';
       return acc;
     }, {} as T);
@@ -77,62 +105,136 @@ export function TableBuilder<T extends Record<string, any>>({
     setRows((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // === Column management ===
+  const addColumn = () => {
+    const newKey = `col${tableColumns.length + 1}` as keyof T;
+    const newCol: ColumnConfig<T> = {
+      key: newKey,
+      label: `Column ${tableColumns.length + 1}`,
+      type: 'text',
+    };
+
+    setTableColumns((prev) => [...prev, newCol]);
+    setRows((prev) => prev.map((row) => ({ ...row, [newKey]: '' })));
+  };
+
+  const updateColumnLabel = (index: number, label: string) => {
+    setTableColumns((prev) =>
+      prev.map((col, i) => (i === index ? { ...col, label } : col))
+    );
+  };
+
+  const removeColumn = (index: number) => {
+    const keyToRemove = tableColumns[index].key;
+    setTableColumns((prev) => prev.filter((_, i) => i !== index));
+    setRows((prev) =>
+      prev.map((row) => {
+        const { [keyToRemove]: _, ...rest } = row;
+        return rest as T;
+      })
+    );
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white border rounded shadow space-y-4">
-      {/* header row */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 font-semibold text-sm border-b pb-2">
-        {columns.map((col) => (
-          <div key={String(col.key)}>{col.label}</div>
-        ))}
-        <div></div>
-      </div>
+    <div className="w-full mt-[200px] flex justify-center items-center">
+      <div className="max-w-4xl mx-auto p-4 bg-white border rounded shadow space-y-4">
+        {/* File name input */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">File Name:</label>
+          <Input
+            type="text"
+            value={fileName}
+            onChange={(e) => setFileName(e.target.value)}
+            placeholder="Enter file name"
+            className="flex-1"
+          />
+        </div>
 
-      {/* rows */}
-      {rows.length > 0 ? (
-        rows.map((row, rowIndex) => (
-          <div
-            key={rowIndex}
-            className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2 items-center mb-2"
+        {/* Table */}
+        <div className="overflow-x-auto border rounded">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {tableColumns.map((col, colIndex) => (
+                  <TableHead
+                    key={String(col.key)}
+                    className="whitespace-nowrap"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="text"
+                        value={col.label}
+                        onChange={(e) =>
+                          updateColumnLabel(colIndex, e.target.value)
+                        }
+                        className="h-7 px-2 py-0.5 text-xs"
+                      />
+                      <button
+                        onClick={() => removeColumn(colIndex)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                        disabled={tableColumns.length <= 1}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </TableHead>
+                ))}
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {rows.map((row, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {tableColumns.map((col) => (
+                    <TableCell key={String(col.key)}>
+                      <Input
+                        type={col.type}
+                        placeholder={col.placeholder || col.label}
+                        value={row[col.key]}
+                        onChange={(e) =>
+                          handleChange(
+                            rowIndex,
+                            col.key,
+                            col.type === 'number'
+                              ? parseFloat(e.target.value) || 0
+                              : e.target.value
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </TableCell>
+                  ))}
+                  <TableCell className="text-center">
+                    <button
+                      onClick={() => removeRow(rowIndex)}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                      disabled={rows.length === 1}
+                    >
+                      ✕
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-4">
+          <Button onClick={addRow} variant="outline">
+            + Add Row
+          </Button>
+          <Button onClick={addColumn} variant="outline">
+            + Add Column
+          </Button>
+          <Button
+            onClick={() => onSave?.(fileName, rows, tableColumns)}
+            disabled={!fileName}
           >
-            {columns.map((col) => (
-              <input
-                key={String(col.key)}
-                type={col.type}
-                placeholder={col.placeholder}
-                value={row[col.key]}
-                onChange={(e) =>
-                  handleChange(
-                    rowIndex,
-                    col.key,
-                    col.type === 'number'
-                      ? parseFloat(e.target.value) || 0
-                      : e.target.value
-                  )
-                }
-                className="border rounded px-2 py-1 text-sm"
-              />
-            ))}
-            <button
-              onClick={() => removeRow(rowIndex)}
-              className="text-red-500 hover:text-red-700 text-sm"
-              disabled={rows.length === 1}
-            >
-              ✕
-            </button>
-          </div>
-        ))
-      ) : (
-        <div className="text-sm text-gray-500 italic">No data available</div>
-      )}
-
-      {/* actions */}
-      <div className="flex items-center gap-4">
-        <Button onClick={addRow} variant="outline">
-          + Add Row
-        </Button>
-        <Button onClick={() => onSave(rows)} disabled={rows.length === 0}>
-          Save
-        </Button>
+            Save
+          </Button>
+        </div>
       </div>
     </div>
   );

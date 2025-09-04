@@ -6,11 +6,13 @@ import { UploadCloud } from 'lucide-react';
 interface FileDropzoneProps {
   onFilesSelected: (files: File[]) => void;
   accept?: Record<string, string[]>;
+  multiple?: boolean;
 }
 
 export const FileDropzone: React.FC<FileDropzoneProps> = ({
   accept,
   onFilesSelected,
+  multiple = true,
 }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -23,6 +25,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     onDrop,
     noClick: true,
     noKeyboard: true,
+    multiple,
     accept: {
       'application/json': ['.json'],
       'application/pdf': ['.pdf'],
@@ -48,7 +51,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
       />
       <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
       <p className="text-sm text-muted-foreground">
-        Drag and drop files here, or
+        {multiple
+          ? 'Drag and drop files here, or'
+          : 'Drag and drop a file here, or'}
       </p>
       <Button type="button" variant="outline" className="mt-3" onClick={open}>
         Browse

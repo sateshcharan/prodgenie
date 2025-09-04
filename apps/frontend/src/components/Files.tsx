@@ -1,5 +1,5 @@
-import { FolderSync } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { FolderSync, Plus, Upload } from 'lucide-react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
 import {
@@ -8,7 +8,6 @@ import {
   downloadFile,
 } from '../services/fileService';
 import { api } from '../utils';
-import { DialogDropZone } from './DialogDropZone';
 import { SearchBanner, FileCard } from '../components';
 
 import { CardItem } from '@prodgenie/libs/types';
@@ -17,15 +16,9 @@ import {
   useAddDialogStore,
   useEditDialogStore,
   useWorkspaceStore,
+  useModalStore,
 } from '@prodgenie/libs/store';
-import {
-  Button,
-  Card,
-  CardContent,
-  DialogEditFile,
-  banner,
-  toast,
-} from '@prodgenie/libs/ui';
+import { Button, Card, CardContent, banner, toast } from '@prodgenie/libs/ui';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -33,6 +26,7 @@ const Files = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editFileId, setEditFileId] = useState<string | null>(null);
   const { activeWorkspace } = useWorkspaceStore();
+  const { openModal } = useModalStore();
   const navigate = useNavigate();
 
   const fetchFiles = async () => {
@@ -50,22 +44,6 @@ const Files = () => {
   useEffect(() => {
     fetchFiles();
   }, [fileType, activeWorkspace]);
-
-  // const handleCardClick = (card_id: string, signedUrl: string) => {
-  //   if (fileType === 'sequence') {
-  //     return navigate(`/dashboard/sequence/builder?id=${card_id}`, {
-  //       state: { signedUrl },
-  //     });
-  //   } else if (fileType === 'template') {
-  //     return navigate(`/dashboard/template/builder?id=${card_id}`);
-  //   } else if (fileType === 'table') {
-  //     return navigate(`/dashboard/table/builder?id=${card_id}`);
-  //   } else {
-  //     return navigate(`/dashboard/${fileType}/${card_id}`, {
-  //       state: { signedUrl },
-  //     });
-  //   }
-  // };
 
   const handleCardClick = (card_id: string, signedUrl: string) => {
     let path = `/dashboard/${fileType}/${card_id}`;
@@ -99,14 +77,12 @@ const Files = () => {
   };
 
   const handleCardEdit = async (card_id: string) => {
-    setEditFileId(card_id);
-    useEditDialogStore.getState().open();
-    // try {
-    //   await deleteFile(fileType, card_id);
-    //   setCardData((prev) => prev.filter((card) => card.id !== card_id));
-    // } catch (err) {
-    //   console.error(`Error deleting file ${card_id}:`, err);
-    // }
+    openModal('workspace:editThumbnail', {
+      title: `Replace ${fileType} thumbnail`,
+      description: `Select or drag and drop files to replace ${fileType} thumbnail`,
+      submitUrl: `/api/thumbnail/update/${card_id}`,
+      onUploadSuccess: fetchFiles,
+    });
   };
 
   const handleCardDownload = (path: string, name: string) => {
@@ -116,10 +92,16 @@ const Files = () => {
   };
 
   const handleAddFileClick = () => {
-    // fileType === 'sequence'
-    //   ? navigate('/dashboard/builder/sequence')
-    //   : useDialogStore.getState().open();
-    useAddDialogStore.getState().open();
+    openModal('workspace:fileUpload', {
+      title: `Upload file to ${fileType}`,
+      description: `Select or drag and drop files to upload to ${fileType}`,
+      submitUrl: `/api/files/${fileType}/upload`,
+      onUploadSuccess: fetchFiles,
+    });
+  };
+
+  const handleCreateNewClick = () => {
+    navigate(`/dashboard/${fileType}/builder`);
   };
 
   const filteredCards = cardData.filter((card) => {
@@ -168,39 +150,43 @@ const Files = () => {
           ))}
 
           {/* Add File Card */}
-          <Card
-            onClick={handleAddFileClick}
-            className="shadow-lg rounded-xl flex items-center justify-center cursor-pointer bg-forground hover:bg-gray-100 transition-colors duration-200 min-h-[250px]"
-          >
-            <CardContent className="flex flex-col items-center justify-center h-full">
-              <div className="text-4xl text-gray-400">+</div>
-              <p className="mt-2 text-gray-600 text-sm">Add File</p>
-            </CardContent>
+          <Card className="shadow-lg rounded-xl flex flex-col cursor-pointer bg-background min-h-[250px]">
+            {fileType === 'template' ||
+            fileType === 'sequence' ||
+            fileType === 'table' ? (
+              // Dual Action Internals
+              <div className="flex flex-col flex-1 divide-y divide-gray-200">
+                {/* Upload File */}
+                <div
+                  onClick={handleAddFileClick}
+                  className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
+                >
+                  <Upload size={20} className="text-gray-500" />
+                  <p className="mt-2 text-gray-600 text-sm">Upload File</p>
+                </div>
+
+                {/* Create New */}
+                <div
+                  onClick={handleCreateNewClick}
+                  className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
+                >
+                  <Plus size={20} className="text-gray-500" />
+                  <p className="mt-2 text-gray-600 text-sm">Create New</p>
+                </div>
+              </div>
+            ) : (
+              // Single Action Internals
+              <CardContent
+                onClick={handleAddFileClick}
+                className="flex flex-col items-center justify-center h-full"
+              >
+                <Upload size={20} className="text-gray-500" />
+                <p className="mt-2 text-gray-600 text-sm">Upload File</p>
+              </CardContent>
+            )}
           </Card>
         </div>
       </div>
-
-      {/* Modal for adding files */}
-      <DialogDropZone
-        title={`Upload file to ${fileType}`}
-        description={`Select or drag and drop files to upload to ${fileType}`}
-        submitUrl={`/api/files/${fileType}/upload`}
-        onUploadSuccess={fetchFiles}
-      />
-
-      {/* Modal for adding editing files */}
-      {editFileId && (
-        <DialogEditFile
-          title={`Replace ${fileType} thumbnail`}
-          description={`Select or drag and drop files to replace ${fileType} thumbnail`}
-          submitUrl={`/api/thumbnail/update/${editFileId}`}
-          onUploadSuccess={fetchFiles}
-          fileId={editFileId}
-          onOpenChange={(open) => {
-            if (!open) setEditFileId(null);
-          }}
-        />
-      )}
     </div>
   );
 };

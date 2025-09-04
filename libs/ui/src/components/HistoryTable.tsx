@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
+// import { Clock, Loader2, CheckCircle, XCircle } from 'lucide-react';
+
 import {
   Table,
   TableBody,
@@ -8,8 +10,7 @@ import {
   TableHeader,
   TableRow,
   Button,
-} from '..';
-import { Clock, Loader2, CheckCircle, XCircle } from 'lucide-react';
+} from '../';
 
 type History = {
   id: string;
@@ -33,12 +34,13 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-  const statusIconMap = {
-    pending: <Clock className="text-yellow-500" size={16} />,
-    processing: <Loader2 className="animate-spin text-blue-500" size={16} />,
-    completed: <CheckCircle className="text-green-500" size={16} />,
-    failed: <XCircle className="text-red-500" size={16} />,
-  };
+
+  // const statusIconMap = {
+  //   pending: <Clock className="text-yellow-500" size={16} />,
+  //   processing: <Loader2 className="animate-spin text-blue-500" size={16} />,
+  //   completed: <CheckCircle className="text-green-500" size={16} />,
+  //   failed: <XCircle className="text-red-500" size={16} />,
+  // };
 
   const handlePrev = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -57,7 +59,7 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
             <TableHead>Action</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Details</TableHead>
-            <TableHead className="text-right">Date</TableHead>
+            <TableHead className="text-right">Date, Time</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -77,26 +79,21 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
                   <div className="text-sm text-gray-500">{item.user?.id}</div>
                 </TableCell>
 
-                <TableCell className="text-sm">{item.action}</TableCell>
+                {/* Action → actually "type" */}
+                {/* <TableCell className="text-sm">{item.type}</TableCell> */}
 
-                <TableCell className="text-sm">
-                  <motion.div
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center gap-2"
-                  >
-                    {statusIconMap[item.status as keyof typeof statusIconMap] ||
-                      null}
-                    <span className="capitalize text-muted-foreground text-xs">
-                      {item.status.toLowerCase()}
-                    </span>
-                  </motion.div>
+                {/* Remove status col or keep empty */}
+                <TableCell className="text-sm text-gray-400 italic">
+                  —
                 </TableCell>
 
-                <TableCell className="max-w-[300px] truncate text-sm text-gray-700">
-                  {item.details || '—'}
-                </TableCell>
+                {/* Details (string or object) */}
+                {/* <TableCell className="max-w-[300px] truncate text-sm text-gray-700">
+                  {typeof item.details === 'string'
+                    ? item.details
+                    : item.details?.message || '—'}
+                </TableCell> */}
+
                 <TableCell className="text-right text-sm text-gray-500">
                   {new Date(item.createdAt).toLocaleString()}
                 </TableCell>

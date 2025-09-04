@@ -53,6 +53,7 @@ export default defineConfig(() => ({
         __dirname,
         '../../libs/frontend-services/src'
       ),
+      '@prodgenie/libs/types': path.resolve(__dirname, '../../libs/types/src'),
     },
   },
   build: {

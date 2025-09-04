@@ -5,14 +5,15 @@ const isDev = import.meta.env.DEV;
 
 const api = axios.create({
   baseURL: isDev ? 'http://localhost:3000' : import.meta.env.VITE_API_URL,
+    withCredentials: true, // 👈 important: send cookies
 });
 
 // Add request interceptor
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // const token = localStorage.getItem('token');
+  // if (token) {
+  //   config.headers.Authorization = `Bearer ${token}`;
+  // }
 
   // Add workspace id
   const { activeWorkspace } = useWorkspaceStore.getState();
@@ -39,7 +40,7 @@ api.interceptors.response.use(
     stopLoading();
 
     if (err.response?.status === 401) {
-      localStorage.removeItem('token');
+      // localStorage.removeItem('token');
       window.location.href = '/';
     }
 

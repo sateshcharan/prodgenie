@@ -1,104 +1,134 @@
-import { useEffect, useState } from 'react';
-import { api } from '../utils';
+import { useState } from 'react';
 
-import { Input } from '@prodgenie/libs/ui/input';
-import { Button } from '@prodgenie/libs/ui/button';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@prodgenie/libs/ui/card';
-import { Separator } from '@prodgenie/libs/ui/separator';
+  Button,
+  Input,
+  toast,
+} from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useUserStore, useWorkspaceModalStore } from '@prodgenie/libs/store';
+import { useModalStore, useUserStore } from '@prodgenie/libs/store';
 
-export function AccountSettings() {
-  const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
-  const { openModal } = useWorkspaceModalStore();
+import { api } from '../utils';
+import { EditableField } from './EditableField';
 
-  const [name, setName] = useState(user?.name ?? '');
-  const [email, setEmail] = useState(user?.email ?? '');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
+const AccountSettings = () => {
+  const { user } = useUserStore();
 
-  useEffect(() => {
-    if (user) {
-      setName(user.name ?? '');
-      setEmail(user.email ?? '');
-    }
-  }, [user]);
+  // Keep original values + edited values
+  const [originalValues] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+  });
+  const [editedValues, setEditedValues] = useState(originalValues);
 
-  const handleSave = async () => {
+  const hasChanges =
+    editedValues.name !== originalValues.name ||
+    editedValues.email !== originalValues.email;
+
+  const { openModal } = useModalStore();
+
+  const handleResetPassword = () => {
+    openModal('workspace:replacePassword');
+  };
+
+  const handleUserDelete = () => {
+    openModal('workspace:deleteUser');
+  };
+
+  const handleUpdateUserProfile = (data: any) => {
     try {
-      setLoading(true);
-      setSuccess(null);
-
-      const { data } = await api.put(`${apiRoutes.users.base}/updateProfile`, {
-        name,
-        email,
-      });
-
-      setUser(data);
-      setSuccess('Profile updated successfully');
-    } catch (err) {
-      console.error(err);
-      setSuccess('Failed to update profile');
-    } finally {
-      setLoading(false);
+      const response = api.patch(
+        `${apiRoutes.users.base}${apiRoutes.users.updateProfile}`,
+        {
+          data: data,
+        }
+      );
+      toast.success('User profile updated successfully!');
+    } catch (error) {
+      console.error(error);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-8">
+    <div className="space-y-6 p-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Account Settings</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your personal information and security preferences
+        </p>
+      </div>
+
       {/* Profile Info */}
-      <Card>
+      <Card className="rounded-2xl shadow-sm">
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
+          <CardTitle>User Profile</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
-          </Button>
-          {success && <p className="text-sm text-green-600">{success}</p>}
+          <EditableField
+            label="Full Name"
+            value={user?.name || ''}
+            type="name"
+            onChange={(val: string) =>
+              setEditedValues((prev) => ({ ...prev, name: val }))
+            }
+            onSave={handleUpdateUserProfile}
+          />
+          <EditableField
+            label="Email"
+            value={user?.email || ''}
+            type="email"
+            onChange={(val: string) =>
+              setEditedValues((prev) => ({ ...prev, email: val }))
+            }
+            onSave={handleUpdateUserProfile}
+          />
         </CardContent>
       </Card>
 
-      <Separator />
+      {/* Password Section */}
+      <Card className="rounded-2xl shadow-sm">
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Current Password</label>
+            <div className="flex gap-4">
+              <Input type="password" placeholder="********" />
+              <Button variant="outline" onClick={handleResetPassword}>
+                Reset Password
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Danger Zone */}
-      <Card>
+      <Card className="rounded-2xl border border-destructive/30 bg-destructive/5">
         <CardHeader>
           <CardTitle className="text-red-600">Danger Zone</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Deleting your account is irreversible. All your data and workspaces
-            will be permanently removed.
-          </p>
-          <Button
-            variant="destructive"
-            //   onClick={() => openModal('deleteUser')}
-          >
-            Delete Account
-          </Button>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Delete Account</p>
+              <p className="text-sm text-muted-foreground">
+                Permanently remove your account and all associated data. This
+                action cannot be undone.
+              </p>
+            </div>
+            <Button variant="destructive" onClick={handleUserDelete}>
+              Delete My Account
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
-}
+};
+
+export default AccountSettings;

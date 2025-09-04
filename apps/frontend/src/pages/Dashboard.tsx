@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import api from '../utils/api';
-// import data from './data.json';
-import { SectionCards } from '../components/section-cards';
-
 import {
   ChartAreaInteractive,
   HistoryTable,
-  DataTable,
   Tabs,
   TabsList,
   TabsTrigger,
@@ -16,34 +11,42 @@ import {
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
-import WorkspaceUsers from '../components/WorkspaceUsers';
+
+import api from '../utils/api';
+import { SectionCards, TransactionTable, WorkspaceUsers } from '../components';
 
 const Dashboard = () => {
   const user = useUserStore((state) => state.user);
   const { activeWorkspace } = useWorkspaceStore((state) => state);
 
-  const [workspaceHistory, setWorkspaceHistory] = useState([]);
+  const [workspaceActivity, setWorkspaceActivity] = useState([]);
+  const [workspaceTransactions, setWorkspaceTransactions] = useState([]);
 
   const workspaceId = activeWorkspace?.id;
   const credits = activeWorkspace?.credits;
-  const role = user?.memberships.find((m) => m.workspace.id === workspaceId)?.role;
+  const role = user?.memberships.find(
+    (m) => m.workspace.id === workspaceId
+  )?.role;
 
   useEffect(() => {
-    const fetchHistoryData = async () => {
+    const fetchData = async () => {
       try {
-        const fetchHistoryData = async () => {
-          const { data: historyData } = await api.get(
-            '/api/workspaces/getWorkspaceHistory'
-          );
-          setWorkspaceHistory(historyData.data);
-        };
+        const { data: activityData } = await api.get(
+          `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceActivity}`
+        );
+        const { data: transactionData } = await api.get(
+          `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceTransactions}`
+        );
+
+        setWorkspaceActivity(activityData.data);
+        setWorkspaceTransactions(transactionData.data);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
     };
 
-    fetchHistoryData();
-  }, []);
+    fetchData();
+  }, [workspaceId]);
 
   // polling with react-query
   // const {
@@ -66,28 +69,24 @@ const Dashboard = () => {
       {(role === 'OWNER' || role === 'ADMIN') && (
         <>
           <WorkspaceUsers />
-          <SectionCards credits={credits} />
+          <SectionCards />
         </>
       )}
 
-      {/* <div className="px-4 lg:px-6">
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          <HistoryTable history={workspaceHistory ?? []} />
-        )}
-      </div> */}
-
-      <Tabs defaultValue="data">
+      <Tabs defaultValue="trend">
         <TabsList>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="data">Data</TabsTrigger>
+          <TabsTrigger value="trend">Trend</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="transaction">Transaction</TabsTrigger>
         </TabsList>
-        <TabsContent value="history">
-          <HistoryTable history={workspaceHistory ?? []} />
-        </TabsContent>
-        <TabsContent value="data">
+        <TabsContent value="trend">
           <ChartAreaInteractive />
+        </TabsContent>
+        <TabsContent value="activity">
+          <HistoryTable history={workspaceActivity ?? []} />
+        </TabsContent>
+        <TabsContent value="transaction">
+          <TransactionTable transactions={workspaceTransactions ?? []} />
         </TabsContent>
       </Tabs>
     </div>

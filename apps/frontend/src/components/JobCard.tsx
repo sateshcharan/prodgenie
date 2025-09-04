@@ -3,12 +3,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { api } from '../utils';
-import BomTable from './BomTable';
-import TitleBlock from './TitleBlock';
-import PrintingDetail from './PrintingDetail';
-import { generateJobCard } from '../services/jobCardService';
-
 import {
   Tabs,
   TabsContent,
@@ -31,6 +25,12 @@ import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
+
+import { api } from '../utils';
+import BomTable from './BomTable';
+import TitleBlock from './TitleBlock';
+import PrintingDetail from './PrintingDetail';
+import { generateJobCard } from '../services/jobCardService';
 
 interface JobCardProps {
   tables: {

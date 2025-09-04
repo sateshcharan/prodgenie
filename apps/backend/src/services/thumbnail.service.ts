@@ -54,7 +54,12 @@ export class ThumbnailService {
     return updated;
   }
 
-  async update(uploadedFile: Express.Multer.File, fileId: string, user: any) {
+  async update(
+    uploadedFile: Express.Multer.File,
+    fileId: string,
+    user: any,
+    activeWorkspaceId: any
+  ) {
     if (!uploadedFile) throw new Error('No file uploaded');
 
     const dbFile = await prisma.file.findUnique({
@@ -62,11 +67,15 @@ export class ThumbnailService {
       select: { thumbnail: true },
     });
 
+    const activeWorkspace = user.memberships.find(
+      (m) => m.workspace.id === activeWorkspaceId
+    );
+
     let result;
     if (!dbFile?.thumbnail) {
       // No previous thumbnail, upload new
       result = await storageFileService.uploadFile(
-        `${user.org.name}/thumbnail/${fileId}`,
+        `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
         uploadedFile,
         'thumbnail',
         user
@@ -155,7 +164,11 @@ export class ThumbnailService {
       }
     }
 
-    if (fileType === 'config' || fileType === 'sequence') {
+    if (
+      fileType === 'config' ||
+      fileType === 'sequence' ||
+      fileType === 'table'
+    ) {
       try {
         const browser = await puppeteer.launch({
           headless: true,

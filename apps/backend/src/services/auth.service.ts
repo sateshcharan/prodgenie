@@ -31,207 +31,69 @@ interface SignupOwnerPayload {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  orgName: string;
-}
-
-interface SignupInvitePayload {
-  email: string;
-  password: string;
-  name: string;
-  inviteCode: string;
 }
 
 export class AuthService {
-  // custom auth
-  // for owner
-  // static async signupOwner({
-  //   name,
-  //   email,
-  //   password,
-  //   confirmPassword,
-  //   orgName,
-  // }: SignupOwnerPayload) {
-  //   const result = signupSchema.safeParse({
-  //     name,
-  //     email,
-  //     password,
-  //     confirmPassword,
-  //     orgName,
-  //   });
-  //   if (!result.success) {
-  //     const formatted = result.error.issues.map((i) => i.message).join(', ');
-  //     throw new Error(`Validation failed: ${formatted}`);
-  //   }
-  //   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  //   // Scaffold storage folder for the new organization
-  //   await folderService.scaffoldFolder(orgName);
-  //   // Create org if not exists (optional safety)
-  //   const org = await prisma.org.upsert({
-  //     where: { name: orgName },
-  //     update: {},
-  //     create: { name: orgName },
-  //   });
-  //   // Create user with org association
-  //   const user = await prisma.user.create({
-  //     data: {
-  //       email,
-  //       password: hashedPassword,
-  //       name,
-  //       type: 'OWNER',
-  //       orgId: org.id,
-  //     },
-  //   });
-  //   //create admin user
-  //   const adminUser = await prisma.user.create({
-  //     data: {
-  //       email: `admin@${orgName}.com`,
-  //       password: await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS),
-  //       name: 'admin',
-  //       type: 'ADMIN',
-  //       orgId: org.id,
-  //     },
-  //   });
-  //   return user;
-  // }
-  // // for member
-  // static async signupWithInvite({
-  //   email,
-  //   password,
-  //   name,
-  //   inviteCode,
-  // }: SignupInvitePayload) {
-  //   const invite = await prisma.inviteCode.findUnique({
-  //     where: { code: inviteCode },
-  //     include: { org: true },
-  //   });
-  //   if (!invite || (invite.expiresAt && new Date() > invite.expiresAt)) {
-  //     throw new Error('Invalid or expired invite code');
-  //   }
-  //   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  //   const user = await prisma.user.create({
-  //     data: {
-  //       email,
-  //       password: hashedPassword,
-  //       name,
-  //       type: 'MEMBER',
-  //       orgId: invite.orgId,
-  //     },
-  //   });
-  //   await prisma.inviteCode.update({
-  //     where: { code: inviteCode },
-  //     data: { usedBy: user.id },
-  //   });
-  //   return user;
-  // }
-  // static generateToken(payload: { id: string; email: string }): string {
-  //   return jwt.sign(payload, SECRET_KEY, {
-  //     expiresIn: '1h',
-  //   });
-  // }
-  // static async generateInviteCode(orgId: string, expiresInHours = 24) {
-  //   const code = crypto.randomUUID().slice(0, 8); // simple 8-char code
-  //   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
-  //   return prisma.inviteCode.create({
-  //     data: {
-  //       code,
-  //       orgId,
-  //       expiresAt,
-  //     },
-  //   });
-  // }
-
-  // supabase auth
-  static async signupOwner({
-    name,
-    email,
-    password,
-    confirmPassword,
-    orgName,
-  }: SignupOwnerPayload) {
+  static async signupEmail({ name, email, password }: SignupOwnerPayload) {
     // Sign up user in Supabase
-    const { data, error } = await supabase.auth.admin.createUser({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      user_metadata: {
-        name,
-        type: 'OWNER',
+      options: {
+        data: {
+          name,
+          type: 'OWNER',
+        },
       },
     });
     if (error) throw new Error(error.message);
     const supabaseUserId = data.user?.id;
     if (!supabaseUserId) throw new Error('User ID not returned');
+
     // Scaffold storage folders
-    await folderService.scaffoldFolder(orgName);
-    // Create or upsert Org
-    const org = await prisma.org.upsert({
-      where: { name: orgName },
-      update: {},
-      create: { name: orgName },
+    await folderService.scaffoldFolder(name, 'free');
+    // // Create or upsert Workspace
+    // const workspace = await prisma.workspace.upsert({
+    //   where: { name: name },
+    //   update: {},
+    //   create: { name: name },
+    // });
+
+    let workspace = await prisma.workspace.findFirst({
+      where: { name: name },
     });
+
+    if (!workspace) {
+      workspace = await prisma.workspace.create({
+        data: { name: name },
+      });
+    }
+
     // Store user metadata in your DB
     await prisma.user.create({
       data: {
         id: supabaseUserId, // Use Supabase UID
         email,
         name,
-        type: 'OWNER',
-        orgId: org.id,
       },
     });
-    // Optionally create an admin user (for internal use only)
-    await prisma.user.create({
+
+    // Store user metadata in your DB
+    await prisma.workspaceMember.create({
       data: {
-        email: `admin@${orgName}.com`,
-        password: await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS),
-        name: 'admin',
-        type: 'ADMIN',
-        orgId: org.id,
+        workspaceId: workspace.id,
+        userId: supabaseUserId,
+        role: 'OWNER',
       },
     });
-    return data.user;
-  }
-  static async signupWithInvite({
-    email,
-    password,
-    name,
-    inviteCode,
-  }: SignupInvitePayload) {
-    const invite = await prisma.inviteCode.findUnique({
-      where: { code: inviteCode },
-      include: { org: true },
-    });
-    if (!invite || (invite.expiresAt && new Date() > invite.expiresAt)) {
-      throw new Error('Invalid or expired invite code');
-    }
-    const { data, error } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      user_metadata: {
-        name,
-        type: 'MEMBER',
-      },
-    });
-    if (error) throw new Error(error.message);
-    const supabaseUserId = data.user?.id;
-    if (!supabaseUserId) throw new Error('No user ID returned');
-    await prisma.user.create({
-      data: {
-        id: supabaseUserId,
-        email,
-        name,
-        type: 'MEMBER',
-        orgId: invite.orgId,
-      },
-    });
-    await prisma.inviteCode.update({
-      where: { code: inviteCode },
-      data: { usedBy: supabaseUserId },
-    });
-    return data.user;
+
+    // sync user confirmation status
+    // await this.acceptPendingInvites(supabaseUserId, email);
+
+    return { user: data.user, session: data.session };
   }
 
-  static async login(email: string, password: string) {
+  static async loginEmail(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -241,100 +103,130 @@ export class AuthService {
       throw new Error(error.message || 'Invalid email or password');
     }
 
-    const token = data.session?.access_token;
-    if (!token) {
-      throw new Error('Token not received from Supabase');
+    // supabase auth session
+    if (!data.session) throw new Error('No session returned from Supabase');
+
+    // sync user confirmation status
+    const supabaseUserId = data.user?.id;
+    if (supabaseUserId && data.user?.email) {
+      await prisma.user.upsert({
+        where: { id: supabaseUserId },
+        update: { email: data.user.email, name: data.user.user_metadata?.name },
+        create: {
+          id: supabaseUserId,
+          email: data.user.email,
+          name: data.user.user_metadata?.name || '',
+        },
+      });
+
+      // await this.acceptPendingInvites(supabaseUserId, data.user.email);
     }
 
-    return token;
+    return data.session; // contains access_token + refresh_token
   }
 
-  // supabase = createClient(
-  //   process.env.SUPABASE_URL!,
-  //   process.env.SUPABASE_ANON_KEY!,
-  //   {
-  //     auth: {
-  //       detectSessionInUrl: true,
-  //       flowType: 'pkce',
-  //       storage: {
-  //         getItem: () => Promise.resolve('FETCHED_TOKEN'),
-  //         setItem: () => {},
-  //         removeItem: () => {},
-  //       },
-  //     },
-  //   }
-  // );
-
-  static async oAuthLogin(provider: string) {
-    console.log(provider);
+  static async continueWithProvider(provider: string) {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: provider as any,
+      provider: provider as 'google',
       options: {
         redirectTo: `${process.env.BACKEND_URL}/auth/callback`,
       },
     });
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  static async resetPassword(email: string) {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) throw new Error(error.message);
     return data;
   }
 
   static async oAuthCallback(req: Request, res: Response) {
-    const code = req.query.code;
-    const next = req.query.next ?? '/';
+    const code = req.query.code as string;
+    if (!code) return res.status(400).send('Missing code');
 
-    if (code) {
-      const supabase = createServerClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return parseCookieHeader(req.headers.cookie ?? '');
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                res.appendHeader(
-                  'Set-Cookie',
-                  serializeCookieHeader(name, value, options)
-                )
-              );
-            },
-          },
-        }
-      );
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) return res.status(401).json({ error: error.message });
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { session } = data;
+    if (!session) return res.status(401).send('No session');
 
-      if (error) {
-        throw new Error(`OAuth callback error: ${error.message}`);
-      }
+    // set cookie (same as email login)
+    res.cookie('sb-access-token', session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
 
-      // Optional: Store user data in your database if needed
-      if (data.user) {
-        const supabaseUser = data.user;
+    // optional: refresh token cookie
+    res.cookie('sb-refresh-token', session.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
+    });
 
-        // Check if user exists in your database
-        let user = await prisma.user.findUnique({
-          where: { id: supabaseUser.id },
-        });
+    // sync user confirmation status
+    if (data.user) {
+      const supabaseUser = data.user;
 
-        // Create user if doesn't exist
-        if (!user && supabaseUser.email) {
-          user = await prisma.user.create({
-            data: {
-              id: supabaseUser.id,
-              email: supabaseUser.email,
-              name:
-                supabaseUser.user_metadata?.full_name ||
-                supabaseUser.user_metadata?.name ||
-                '',
-              type: supabaseUser.user_metadata?.type || 'MEMBER',
-              // Note: You might need to handle orgId assignment for OAuth users
-            },
-          });
-        }
+      // Ensure in your User table
+      let user = await prisma.user.upsert({
+        where: { id: supabaseUser.id },
+        update: {
+          email: supabaseUser.email!,
+          name:
+            supabaseUser.user_metadata?.full_name ||
+            supabaseUser.user_metadata?.name ||
+            '',
+        },
+        create: {
+          id: supabaseUser.id,
+          email: supabaseUser.email!,
+          name:
+            supabaseUser.user_metadata?.full_name ||
+            supabaseUser.user_metadata?.name ||
+            '',
+        },
+      });
+
+      // Step 3: Accept invites
+      if (supabaseUser.email) {
+        // await this.acceptPendingInvites(supabaseUser.id, supabaseUser.email);
       }
     }
 
-    return { url: `/${next.slice(1)}` };
+    // redirect frontend
+    res.redirect('http://localhost:4200/dashboard');
   }
+
+  // static async acceptPendingInvites(userId: string, email: string) {
+  //   const invites = await prisma.workspaceInvite.findMany({
+  //     where: {
+  //       email,
+  //       acceptedAt: null,
+  //       expiresAt: { gt: new Date() }, // not expired
+  //     },
+  //   });
+
+  //   for (const invite of invites) {
+  //     await prisma.workspaceMember.create({
+  //       data: {
+  //         userId,
+  //         workspaceId: invite.workspaceId,
+  //         role: invite.role,
+  //       },
+  //     });
+
+  //     await prisma.workspaceInvite.update({
+  //       where: { id: invite.id },
+  //       data: { acceptedAt: new Date() },
+  //     });
+  //   }
+
+  //   return invites;
+  // }
 }

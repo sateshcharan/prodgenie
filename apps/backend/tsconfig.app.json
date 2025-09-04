@@ -10,12 +10,7 @@
     // "resolveJsonModule": true, // for json imports
     // "esModuleInterop": true // for json imports
   },
-  "include": [
-    "src/**/*.ts"
-, "src/services/_file_service_ts_bkp"    // "src/worker/worker.js",
-, "src/controllers/_file_controller_ts_bkp"    // "src/routes/file.routes",
-    // "../../libs/db/src/lib/user.service.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "out-tsc",
     "dist",

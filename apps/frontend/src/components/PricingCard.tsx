@@ -1,100 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { PricingCard as PricingCardUI } from "@prodgenie/libs/ui";
+import { useAuthStore } from "@prodgenie/libs/store";
+import { cn } from "@prodgenie/libs/utils";
 
-import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
-import { useAuthStore } from '@prodgenie/libs/store';
+import handleCheckout from "./HandleCheckout";
 
-const PricingCard = () => {
-  const PRICE_IDS = {
-    starter: {
-      monthly: 'price_StarterMonthly',
-      annual: 'price_StarterAnnual',
-    },
-    pro: {
-      monthly: 'price_ProMonthly',
-      annual: 'price_ProAnnual',
-    },
-    enterprise: {
-      monthly: 'price_EnterpriseMonthly',
-      annual: 'price_EnterpriseAnnual',
-    },
-  };
-
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>(
-    'monthly'
+const PricingCard = ({ variant = "page" }: { variant?: "page" | "modal" }) => {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    "monthly"
   );
 
   const { setAuthType } = useAuthStore();
-  const handleClick = () => {
-    setAuthType('signup');
-  };
+  const handleClick = () => setAuthType("signup");
+
+  // ✅ Plan definitions in one place
+  const plans = [
+    {
+      id: "free",
+      title: "Free",
+      price: 0,
+      features: [
+        "Up to 50 job cards / month",
+        "Basic drawing import",
+        "Email support",
+      ],
+    },
+    {
+      id: "starter",
+      title: "Starter",
+      price: 99,
+      features: [
+        "Up to 500 job cards / month",
+        "BOM extraction",
+        "Standard integrations",
+        "Priority email support",
+      ],
+    },
+    {
+      id: "enterprise",
+      title: "Enterprise",
+      price: 299,
+      features: [
+        "Unlimited job cards",
+        "Custom workflows & API access",
+        "Dedicated account manager",
+        "24/7 phone support",
+      ],
+    },
+  ];
+
+  const computePrice = (base: number) =>
+    billingCycle === "monthly" ? base : base * 10;
 
   return (
-    <section className="py-20 bg-muted/50">
-      <div className="container mx-auto px-4 text-center">
-        <h2 className="text-3xl font-bold mb-6">Choose Your Plan</h2>
+    <section
+      className={cn(
+        "bg-muted/50",
+        variant === "page" && "py-20",
+        variant === "modal" && "p-4 max-h-[70vh] overflow-y-auto rounded-lg"
+      )}
+    >
+      <div
+        className={cn(
+          "mx-auto text-center",
+          variant === "page" ? "container px-4" : ""
+        )}
+      >
+        <h2
+          className={cn(
+            "font-bold mb-6",
+            variant === "page" ? "text-3xl" : "text-xl"
+          )}
+        >
+          Choose Your Plan
+        </h2>
 
-        {/* Toggle */}
-        <div className="inline-flex rounded-lg bg-white p-1 mb-12">
-          {(['monthly', 'annual'] as const).map((cycle) => (
+        {/* Billing Cycle Toggle */}
+        <div className="inline-flex rounded-lg bg-white p-1 mb-8">
+          {(["monthly", "annual"] as const).map((cycle) => (
             <button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
-              className={`
-          px-4 py-2 rounded-lg
-          ${
-            billingCycle === cycle
-              ? 'bg-black text-white'
-              : 'text-gray-700 hover:bg-gray-100'
-          }
-        `}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm transition",
+                billingCycle === cycle
+                  ? "bg-black text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              )}
             >
-              {cycle === 'monthly' ? 'Monthly' : 'Annual (2 months free)'}
+              {cycle === "monthly" ? "Monthly" : "Annual (2 months free)"}
             </button>
           ))}
         </div>
 
-        {/* Cards */}
-        <div className="flex flex-col md:flex-row justify-center items-stretch gap-8">
-          {/* Starter */}
-          <PricingCardUI
-            title="Starter"
-            price={billingCycle === 'monthly' ? 29 : 29 * 10} // e.g. 10 months paid instead of 12
-            cycle={billingCycle}
-            features={[
-              'Up to 50 job cards / month',
-              'Basic drawing import',
-              'Email support',
-            ]}
-            onClick={handleClick}
-          />
-
-          {/* Pro */}
-          <PricingCardUI
-            title="Pro"
-            price={billingCycle === 'monthly' ? 99 : 99 * 10}
-            cycle={billingCycle}
-            features={[
-              'Up to 500 job cards / month',
-              'BOM extraction',
-              'Standard integrations',
-              'Priority email support',
-            ]}
-            onClick={handleClick}
-          />
-
-          {/* Enterprise */}
-          <PricingCardUI
-            title="Enterprise"
-            price={billingCycle === 'monthly' ? 299 : 299 * 10}
-            cycle={billingCycle}
-            features={[
-              'Unlimited job cards',
-              'Custom workflows & API access',
-              'Dedicated account manager',
-              '24/7 phone support',
-            ]}
-            onClick={handleClick}
-          />
+        {/* Pricing Cards */}
+        <div className="flex flex-col md:flex-row justify-center items-stretch gap-6">
+          {plans.map((plan) => (
+            <PricingCardUI
+              key={plan.id}
+              title={plan.title}
+              price={computePrice(plan.price)}
+              cycle={billingCycle}
+              features={plan.features}
+              onClick={plan.price === 0 ? handleClick : handleCheckout}
+            />
+          ))}
         </div>
       </div>
     </section>

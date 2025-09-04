@@ -8,12 +8,12 @@ export const fetchFilesByType = async (fileType: string) => {
 };
 
 export const getThumbnail = async (fileId: string) => {
-  const { data } = await api.get(`/api/thumbnail/get/${fileId}`);
+  const { data } = await api.get(`${apiRoutes.thumbnail.base}/get/${fileId}`);
   return data?.data?.path;
 };
 
 export const deleteFile = async (fileType: string, fileId: string) => {
-  await api.delete(`/api/files/${fileType}/${fileId}`);
+  await api.delete(`${apiRoutes.files.base}/${fileType}/${fileId}`);
 };
 
 export const downloadFile = async (path: string, name: string) => {

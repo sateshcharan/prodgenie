@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  // useState
+} from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 
 import { api } from '../utils';
-import Modal from '../components/Modal';
 import { PrivateHeader } from '../navigation';
-import DeleteUser from '../components/DeleteUser';
-import { AppSidebar, CreateWorkspace } from '../components';
+// import DeleteUser from '../components/DeleteUser';
+import {
+  AppSidebar,
+  //  CreateWorkspace,
+  ModalManager,
+} from '../components';
 import ChatWidget from '../components/ChatWidget';
-// import { DeleteUserModal } from '../components/DeleteUserModal';
-// import { CreateWorkspaceModal } from '../components/CreateWorkspaceModal.backup';
 
 import {
   useUserStore,
   useWorkspaceStore,
-  useWorkspaceModalStore,
+  // useWorkspaceModalStore,
 } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
@@ -26,7 +30,8 @@ const PrivateLayout = () => {
     setWorkspaceUsers,
     activeWorkspace,
   } = useWorkspaceStore((state) => state);
-  const { modalType } = useWorkspaceModalStore((state) => state);
+
+  // const { modalType } = useWorkspaceModalStore((state) => state);
 
   let { fileType } = useParams();
 
@@ -39,7 +44,9 @@ const PrivateLayout = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { data } = await api.get(`${apiRoutes.users.base}/getProfile/me`);
+      const { data } = await api.get(
+        `${apiRoutes.users.base}${apiRoutes.users.getProfile}`
+      );
       setUser(data);
       const workspaces = data.memberships.map((m) => m.workspace);
       setWorkspaces(workspaces);
@@ -64,37 +71,20 @@ const PrivateLayout = () => {
     <>
       <SidebarProvider>
         <AppSidebar variant="inset" />
-
         <SidebarInset className="flex flex-col h-screen">
-          <div className="shrink-0 sticky top-0 z-10 bg-white">
+          <div className="shrink-0 sticky top-0 z-10 bg-background">
             <PrivateHeader />
             <SiteHeader title={getPageTitle()} />
           </div>
-
           <div className="flex-1 overflow-auto">
             <Outlet />
           </div>
         </SidebarInset>
       </SidebarProvider>
 
-      {/* Floating Chat */}
       <ChatWidget />
 
-      {/* Modal for AddWorkSpace */}
-      {/* <CreateWorkspaceModal /> */}
-      {/* <DeleteUserModal /> */}
-      <Modal
-        title={'Create New Workspace'}
-        description={'Create a new workspace'}
-      >
-        <CreateWorkspace />
-      </Modal>
-      <Modal
-        title={'Delete User from Workspace'}
-        description={'Delete a user from workspace'}
-      >
-        <DeleteUser />
-      </Modal>
+      <ModalManager />
     </>
   );
 };

@@ -21,8 +21,10 @@ router.post(
 );
 router.post(
   apiRoutes.thumbnail.update(':fileId'),
-  // [upload.array('files'), validateFileType],
-  upload.array('files'),
+  [
+    upload.array('files'),
+    // validateFileType
+  ],
   asyncHandler(ThumbnailController.updateThumbnailController)
 );
 

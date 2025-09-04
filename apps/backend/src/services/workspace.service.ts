@@ -1,14 +1,144 @@
 import { prisma } from '@prodgenie/libs/prisma';
+import { WorkspaceRole } from '@prodgenie/libs/types';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 
+import { FolderService } from './folder.service';
+
+const folderService = new FolderService();
 const fileStorageService = new FileStorageService();
+
 export class WorkspaceService {
-  static async checkWorkspaceExists(workspaceName: string) {
-    const workspace = await prisma.workspace.findFirst({
-      where: { name: workspaceName },
+  static async createWorkspace(
+    workspaceName: string,
+    planId: string,
+    user: any
+  ) {
+    // Create workspace
+    const workspaceFolder = await folderService.scaffoldFolder(
+      workspaceName,
+      planId
+    );
+
+    // Create workspace in DB
+    const workspaceDb = await prisma.workspace.create({
+      data: {
+        name: workspaceName,
+        planId,
+      },
     });
 
-    return workspace ? true : false;
+    // Create workspace membership
+    await prisma.workspaceMember.create({
+      data: {
+        userId: user.id,
+        workspaceId: workspaceDb.id,
+        role: 'OWNER',
+      },
+    });
+
+    return workspaceDb;
+  }
+
+  static async deleteWorkspace(workspaceId: string) {
+    // delete all workspace members
+    await prisma.workspaceMember.updateMany({
+      where: { workspaceId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+
+    // delete all workspace files
+    const { data: files } = await supabase.storage
+      .from('workspace-files')
+      .list(`${workspaceId}/`);
+    if (files) {
+      const paths = files.map((f) => `${workspaceId}/${f.name}`);
+      await supabase.storage.from('workspace-files').remove(paths);
+    }
+
+    // delete all workspace activity
+    await prisma.workspaceActivity.updateMany({
+      where: { workspaceId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+
+    // delete workspace
+    await prisma.workspace.update({
+      where: {
+        id: workspaceId,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  static async inviteUserToWorkspace(
+    workspaceId: string,
+    email: string,
+    role: WorkspaceRole
+  ) {
+    // 1. Check if user already exists
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    // 2. If not exist, create a placeholder user
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: email.split('@')[0],
+        },
+      });
+
+      // (Optional) also create in Supabase auth for login
+      // Supabase provides "invite user" via magic link
+      // await supabase.auth.admin.inviteUserByEmail(email);
+    }
+
+    // 3. Create workspace membership with status pending
+    const workspaceMember = await prisma.workspaceMember.upsert({
+      where: {
+        userId_workspaceId: {
+          userId: user.id,
+          workspaceId,
+        },
+      },
+      update: {
+        role,
+        isDeleted: false,
+        deletedAt: null,
+        status: 'PENDING',
+      },
+      create: {
+        userId: user.id,
+        workspaceId,
+        role,
+        status: 'PENDING',
+      },
+    });
+
+    // 4. Send invite email (magic link or your own)
+    // Example: using Supabase magic link
+    // await supabase.auth.signInWithOtp({ email });
+
+    return workspaceMember;
+  }
+
+  static async removeUserFromWorkspace(workspaceId: string, userId: string) {
+    await prisma.workspaceMember.update({
+      where: {
+        userId_workspaceId: {
+          workspaceId,
+          userId,
+        },
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
   }
 
   static async getWorkspaceUser(workspaceId: string) {
@@ -16,10 +146,46 @@ export class WorkspaceService {
     const users = await prisma.workspaceMember.findMany({
       where: {
         workspaceId,
+        isDeleted: false,
       },
       include: { user: true },
     });
     return users;
+  }
+
+  static async getWorkspaceActivity(workspaceId: string) {
+    const activity = await prisma.activity.findMany({
+      where: {
+        workspaceId,
+        isDeleted: false,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+    return activity;
+  }
+
+  static async getWorkspaceTransactions(workspaceId: string) {
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        workspaceId,
+      },
+    });
+    return transactions;
+  }
+
+  static async checkWorkspaceExists(workspaceName: string) {
+    const workspace = await prisma.workspace.findFirst({
+      where: { name: workspaceName },
+    });
+
+    return workspace ? true : false;
   }
 
   static async getWorkspaceConfig(workspaceId: string, configName: string) {
@@ -36,23 +202,23 @@ export class WorkspaceService {
     return config;
   }
 
-  static async getWorkspaceHistory(workspaceId: string) {
-    const history = await prisma.history.findMany({
+  static async updateUserRole(
+    workspaceId: string,
+    userId: string,
+    role: WorkspaceRole
+  ) {
+    await prisma.workspaceMember.update({
       where: {
-        workspaceId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-          },
+        userId_workspaceId: {
+          workspaceId,
+          userId,
         },
       },
+      data: { role: role },
     });
-    return history;
   }
 
+  //helper methods
   static async addUserToWorkspace(workspaceId: string, userId: string) {
     await prisma.workspaceMember.create({
       data: {

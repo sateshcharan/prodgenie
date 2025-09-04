@@ -419,12 +419,11 @@ export class JobCardService {
   }
 
   async getJobCardNumber(workspace: {
-    id: string;
-    workspace: { name: string };
+    workspace: { id: string; name: string };
   }) {
     const latest = await prisma.file.findFirst({
-      where: { workspaceId: workspace.id, type: 'jobCard' },
-      orderBy: { createdAt: 'desc' },
+      where: { workspaceId: workspace.workspace.id, type: 'jobCard' },
+      orderBy: { name: 'desc' },
       select: { name: true },
     });
 
@@ -434,6 +433,7 @@ export class JobCardService {
       10
     );
     const nextNumber = (lastNumber + 1).toString().padStart(4, '0');
+
     return { data: `${prefix}${nextNumber}` };
   }
 

@@ -24,12 +24,13 @@ export class ThumbnailController {
     const file = files[0];
     const { fileId } = req.params;
     const user = req.user;
+    const activeWorkspaceId = req.activeWorkspaceId;
     // const orgId = req.user?.orgId;
     // const file = req.files as Express.Multer.File[];
     if (!file) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
-    await thumbnailService.update(file, fileId, user);
+    await thumbnailService.update(file, fileId, user, activeWorkspaceId);
     return res.status(200).json('Thumbnail updated');
   };
 }

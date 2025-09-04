@@ -4,78 +4,68 @@ import { Request, Response } from 'express';
 import { AuthService } from '../services/index.js';
 
 export class AuthController {
-  static async signupOwner(req: Request, res: Response) {
-    const { email, password, confirmPassword, orgId } = req.body;
-    const user = await AuthService.signupOwner({
-      email,
-      password,
-      confirmPassword,
-      orgId,
-      name: email.split('@')[0],
-    });
-    const token = AuthService.generateToken({
-      id: user.id,
-      email: user.email,
-    });
-    res.status(201).json({ user, token });
-  }
-
-  static async signupWithInvite(req: Request, res: Response) {
-    const { email, password, name, inviteCode } = req.body;
-    const user = await AuthService.signupWithInvite({
-      email,
-      password,
+  static async signupEmail(req: Request, res: Response) {
+    const { name, email, password, workspaceId } = req.body;
+    const { user, session } = await AuthService.signupEmail({
       name,
-      inviteCode,
+      email,
+      password,
+      workspaceId,
+      // name: email.split('@')[0],
     });
-    const token = AuthService.generateToken({
-      id: user.id,
-      email: user.email,
-    });
-    res.status(201).json({ user, token });
+    // const token = AuthService.generateToken({
+    //   id: user.id,
+    //   email: user.email,
+    // });
+    res.status(201).json({ user, session });
   }
 
-  static async generateInviteCode(req: Request, res: Response) {
-    const { orgId, expiresInHours } = req.body;
-    const invite = await AuthService.generateInviteCode(orgId, expiresInHours);
-    res.status(201).json({ invite });
-  }
-
-  static async login(req: Request, res: Response) {
-    // passport.authenticate(
-    //   'local',
-    //   { session: false },
-    //   (err: any, user: any, info: any) => {
-    //     if (err || !user) {
-    //       return res.status(401).json({
-    //         success: false,
-    //         message: info?.message || 'Authentication failed',
-    //       });
-    //     }
-    //     const token = AuthService.generateToken(user);
-    //     return res.json({ success: true, token });
-    //   }
-    // )(req, res);
+  static async loginEmail(req: Request, res: Response) {
+    //supabase cookie login
     try {
       const { email, password } = req.body;
-      const token = await AuthService.login(email, password);
-      res.status(200).json({ success: true, token });
-    } catch (err: any) {
-      res.status(401).json({
-        success: false,
-        message: err.message || 'Authentication failed',
+      const session = await AuthService.loginEmail(email, password);
+
+      // Set cookies (HttpOnly so frontend JS cannot access them)
+      res.cookie('sb-access-token', session.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60, // 1 hour
       });
+      res.cookie('sb-refresh-token', session.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      res.status(200).json({ success: true });
+    } catch (err: any) {
+      res.status(401).json({ success: false, message: err.message });
     }
   }
 
-  static async oAuthLogin(req: Request, res: Response) {
+  static async continueWithProvider(req: Request, res: Response) {
     const { provider } = req.params;
-    const data = await AuthService.oAuthLogin(provider);
+    const data = await AuthService.continueWithProvider(provider);
     res.redirect(data.url);
   }
 
+  static async logout(req: Request, res: Response) {
+    res.clearCookie('sb-access-token');
+    res.clearCookie('sb-refresh-token');
+    res.status(200).json({ success: true });
+  }
+
+  static async resetPassword(req: Request, res: Response) {
+    const { email } = req.body;
+    await AuthService.resetPassword(email);
+    res.status(200).json({ success: true });
+  }
+
+  //helper methods
   static async oAuthCallback(req: Request, res: Response) {
     const { url } = await AuthService.oAuthCallback(req, res);
-    res.redirect(url);
   }
 }

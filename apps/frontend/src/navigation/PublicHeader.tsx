@@ -1,8 +1,6 @@
 import { Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { PrimaryNavigationMenu } from './';
-
 import {
   Select,
   SelectContent,
@@ -13,21 +11,23 @@ import {
   Button,
   ModeToggle,
   logo,
+  Separator,
 } from '@prodgenie/libs/ui';
-import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
+import { useModalStore } from '@prodgenie/libs/store';
+
+import { PrimaryNavigationMenu } from './';
 
 const PublicHeader = () => {
   const navigate = useNavigate();
-  // const { openModal } = useAuthModalStore();
+
   const { openModal } = useModalStore();
-  const { setAuthType } = useAuthStore();
+
   const handleLoginClick = () => {
-    // openModal('login');
-    setAuthType('login');
-    openModal('auth');
+    openModal('auth:login');
   };
+
   return (
-    <header className="relative z-10 px-6 py-6">
+    <header className="relative z-10 px-6 py-6 bg-background">
       <nav className="max-w-7xl mx-auto flex items-center justify-between">
         <div className=" flex items-center gap-2">
           <img
@@ -43,7 +43,7 @@ const PublicHeader = () => {
           <ModeToggle />
           <Select defaultValue="english">
             <SelectTrigger className="w-[140px] flex items-center gap-2">
-              <Globe className="w-4 h-4" />
+              <Globe className="w-4 h-4 " />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -62,6 +62,8 @@ const PublicHeader = () => {
           </Button>
         </div>
       </nav>
+
+      <Separator className="my-4" />
     </header>
   );
 };

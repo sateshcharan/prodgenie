@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 
 import { api } from '../utils';
-import handleCheckout from '../components/HandleCheckout';
 
 import { Button } from '@prodgenie/libs/ui';
 import { SectionCard } from '@prodgenie/libs/ui';
-import { useWorkspaceStore } from '@prodgenie/libs/store';
+import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
-const SectionCards = (credits: any) => {
+const SectionCards = () => {
   const { activeWorkspace } = useWorkspaceStore((state) => state);
   const [jobCardCount, setJobCardCount] = useState('0');
+
+  const { openModal } = useModalStore();
 
   useEffect(() => {
     const workspaceJobCard = async () => {
@@ -20,6 +21,10 @@ const SectionCards = (credits: any) => {
 
     workspaceJobCard();
   }, [activeWorkspace?.id]);
+
+  const handleChangePlan = () => {
+    openModal('workspace:pricing');
+  };
 
   return (
     <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-3 gap-4   *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card ">
@@ -43,7 +48,7 @@ const SectionCards = (credits: any) => {
         title="Available Credits"
         value={`${activeWorkspace?.credits} $`}
         button={
-          <Button variant="ghost" onClick={handleCheckout}>
+          <Button variant="ghost" onClick={handleChangePlan}>
             <Plus className="size-4" /> Add More
           </Button>
         }
@@ -56,4 +61,4 @@ const SectionCards = (credits: any) => {
   );
 };
 
-export { SectionCards };
+export default SectionCards;

@@ -33,7 +33,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "**/*.ts, '**/*.tsx"
-  ],
+, "src/components/DialogEditFile.backup"  ],
   "references": [
     {
       "path": "../constant/tsconfig.lib.json"

@@ -5,7 +5,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@prodgenie/libs/ui/tabs';
-import { AccountSettings } from './AccountSettings';
+import AccountSettings from './AccountSettings';
 import BillingSettings from './BillingSettings';
 import NotificationSettings from './NotificationSettings';
 

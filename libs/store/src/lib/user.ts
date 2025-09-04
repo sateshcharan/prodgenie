@@ -1,25 +1,17 @@
 import { create } from 'zustand';
+import {
+  type User,
+  type WorkspaceMember,
+  type Workspace,
+} from '@prisma/client';
 
-import { type User as UserType } from '@prisma/client';
-
-// type User = {
-//   name: string;
-//   type: string;
-//   email: string;
-//   avatar: string;
-//   id: string;
-//   org?: {
-//     id: string;
-//     name: string;
-//     credits: number;
-//   };
-// } | null;
-
-type User = UserType | null;
+type ExtendedUser = User & {
+  memberships: (WorkspaceMember & { workspace: Workspace })[];
+};
 
 interface UserStore {
-  user: User;
-  setUser: (user: User) => void;
+  user: ExtendedUser | null;
+  setUser: (user: ExtendedUser) => void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({

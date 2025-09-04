@@ -16,8 +16,8 @@ import {
   useSidebar,
 } from '@prodgenie/libs/ui/sidebar';
 import {
+  useUserStore,
   useWorkspaceStore,
-  useWorkspaceModalStore,
   useModalStore,
 } from '@prodgenie/libs/store';
 import { appSidebarItems } from '@prodgenie/libs/constant';
@@ -25,15 +25,16 @@ import { Button } from '@prodgenie/libs/ui';
 
 export function WorkspaceSwitcher() {
   const { isMobile } = useSidebar();
+  const { user } = useUserStore((state) => state);
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspaceStore(
     (state) => state
   );
-
   const { openModal } = useModalStore((state) => state);
 
-  if (!activeWorkspace) return null;
+  const userRoleinActiveWorkspace = user?.memberships.find(
+    (m) => m.workspaceId === activeWorkspace.id
+  )?.role;
 
-  // Pick a fallback logo if none is set
   const logoFallback =
     appSidebarItems.workspaceLogos[
       Math.floor(Math.random() * appSidebarItems.workspaceLogos.length)
@@ -41,8 +42,12 @@ export function WorkspaceSwitcher() {
 
   const ActiveLogo = activeWorkspace.logo || logoFallback;
 
-  const handleDeleteWorkspace = () => {
-    console.log('delete workspace');
+  const handleDeleteWorkspace = (workspaceId: string) => {
+    openModal('workspace:delete', { workspaceId });
+  };
+
+  const handleCreateWorkspace = (workspaceName: string) => {
+    openModal('workspace:create');
   };
 
   return (
@@ -61,9 +66,14 @@ export function WorkspaceSwitcher() {
                 <span className="truncate font-medium">
                   {activeWorkspace.name}
                 </span>
-                <span className="truncate text-xs">
-                  {activeWorkspace.plan?.name || 'No Plan'}
-                </span>
+                <div className="flex gap-2">
+                  <span className="truncate text-xs">
+                    {activeWorkspace.plan?.name || 'No Plan'}
+                  </span>
+                  <span className="text-xs">
+                    {userRoleinActiveWorkspace.toLowerCase()}
+                  </span>
+                </div>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -78,7 +88,12 @@ export function WorkspaceSwitcher() {
               Workspaces
             </DropdownMenuLabel>
             {workspaces.map((workspace, index) => {
-              const WorkspaceLogo = workspace.logo || logoFallback;
+              const WorkspaceLogo =
+                workspace.logo ||
+                appSidebarItems.workspaceLogos[
+                  index % appSidebarItems.workspaceLogos.length
+                ];
+
               return (
                 <DropdownMenuItem
                   key={workspace.id}
@@ -89,21 +104,35 @@ export function WorkspaceSwitcher() {
                     <WorkspaceLogo className="size-3.5 shrink-0" />
                   </div>
                   {workspace.name}
-                  <DropdownMenuShortcut>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="size-7"
-                      onClick={() => handleDeleteWorkspace(workspace.id)}
-                    >
-                      <Trash className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuShortcut>
+
+                  {/* Only show delete if it's not the active workspace */}
+                  {workspace.id !== activeWorkspace.id && (
+                    <DropdownMenuShortcut>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="size-7"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteWorkspace(workspace.id);
+                        }}
+                      >
+                        <Trash className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuShortcut>
+                  )}
                 </DropdownMenuItem>
               );
             })}
+
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2" onClick={openModal}>
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCreateWorkspace('');
+              }}
+            >
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <Plus className="size-4" />
               </div>

@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import Auth from '../components/Auth';
 import Modal from '../components/Modal';
-import { Login, Signup } from '../components';
+import { Login, ModalManager, Signup } from '../components';
 import { PublicHeader, PublicFooter } from '../navigation';
 
 import { useAuthStore } from '@prodgenie/libs/store';
@@ -17,7 +17,7 @@ const PublicLayout = () => {
       <Outlet />
       <PublicFooter />
 
-      <Modal
+      {/* <Modal
         title={authType === 'login' ? 'Login' : 'Sign up'}
         description={
           authType === 'login'
@@ -28,7 +28,8 @@ const PublicLayout = () => {
         <Auth imageUrl={authDialogImage}>
           {authType === 'login' ? <Login /> : <Signup />}
         </Auth>
-      </Modal>
+      </Modal> */}
+      <ModalManager />
     </div>
   );
 };

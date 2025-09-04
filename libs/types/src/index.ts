@@ -1,16 +1,41 @@
-// import type { UserType, File, Org } from '@prodgenie/libs/prisma';
+// import type { WorkspaceRole } from '@prodgenie/libs/prisma';
 
 import * as schema from '@prodgenie/libs/schema';
 
 // prisma types
-// export type { UserType, File, Org };
+
+export const WorkspaceRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER',
+} as const;
+
 export const FileType = {
   drawing: 'drawing',
   template: 'template',
   sequence: 'sequence',
   jobCard: 'jobCard',
   config: 'config',
+  table: 'table',
 } as const;
+
+export const ActivityType = {
+  userInvited: 'USER_INVITED',
+  userJoined: 'USER_JOINED',
+  fileUploaded: 'FILE_UPLOADED',
+  jobCreated: 'JOB_CREATED',
+  jobCompleted: 'JOB_COMPLETED',
+  jobFailed: 'JOB_FAILED',
+  planChanged: 'PLAN_CHANGED',
+};
+
+export type WorkspaceRole = (typeof WorkspaceRole)[keyof typeof WorkspaceRole];
+
+export const WorkspaceRoleHierarchy: Record<WorkspaceRole, number> = {
+  [WorkspaceRole.OWNER]: 2,
+  [WorkspaceRole.ADMIN]: 1,
+  [WorkspaceRole.MEMBER]: 0,
+};
 
 export type FileType = (typeof FileType)[keyof typeof FileType];
 

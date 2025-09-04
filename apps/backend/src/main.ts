@@ -1,8 +1,11 @@
+import 'dotenv/config';
 import path from 'path';
 import cors from 'cors';
-import 'dotenv/config';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 // import session from 'express-session';
+
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 import {
   authRoutes,
@@ -18,14 +21,12 @@ import {
   projectWideRoutes,
 } from './routes';
 import {
+  // passport,
+  // authenticatePassportJWT,
   errorHandler,
-  passport,
-  authenticatePassportJWT,
-  authenticateSupabaseJWT,
   asyncHandler,
+  authenticateSupabaseJWT,
 } from './middlewares';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
 import { AuthController } from './controllers';
 
 const app = express();
@@ -38,18 +39,17 @@ const corsOptions = {
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'active-workspace-id'],
-  // credentials: true,
+  credentials: true,
 };
 
-// Webhook & Callback
+// // Webhook & Callback
 app.use('/api/webhook', webhookRoutes);
-// app.get(`/auth/callback`, asyncHandler(AuthController.oAuthCallback));
+app.get(`/auth/callback`, asyncHandler(AuthController.oAuthCallback));
 
 // Middlewares
 app.use(express.json());
 // app.use(passport.initialize());
 app.use(cors(corsOptions));
-// Static Files
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 // app.use(
 //   session({
@@ -59,26 +59,59 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 //     cookie: { secure: false }, // set to true if using HTTPS in production
 //   })
 // );
+app.use(cookieParser());
 
 // Routes
 app.use(apiRoutes.auth.base, authRoutes);
 app.use(apiRoutes.workspace.base, workspaceRoutes);
-app.use(apiRoutes.pdf.base, authenticateSupabaseJWT, pdfRoutes);
-app.use(apiRoutes.files.base, authenticateSupabaseJWT, fileRoutes);
-app.use(apiRoutes.users.base, authenticateSupabaseJWT, userRoutes);
-app.use(apiRoutes.jobCard.base, authenticateSupabaseJWT, jobCardRoutes);
-app.use(apiRoutes.payment.base, authenticateSupabaseJWT, paymentRoutes);
-app.use(apiRoutes.thumbnail.base, authenticateSupabaseJWT, thumbnailRoutes);
-app.use(apiRoutes.sequence.base, authenticateSupabaseJWT, sequenceRoutes);
-app.use(apiRoutes.projectWide.base, authenticateSupabaseJWT, projectWideRoutes);
-// app.use(apiRoutes.pdf.base, authenticatePassportJWT, pdfRoutes);
-// app.use(apiRoutes.files.base, authenticatePassportJWT, fileRoutes);
-// app.use(apiRoutes.users.base, authenticatePassportJWT, userRoutes);
-// app.use(apiRoutes.jobCard.base, authenticatePassportJWT, jobCardRoutes);
-// app.use(apiRoutes.payment.base, authenticatePassportJWT, paymentRoutes);
-// app.use(apiRoutes.thumbnail.base, authenticatePassportJWT, thumbnailRoutes);
-// app.use(apiRoutes.sequence.base, authenticatePassportJWT, sequenceRoutes);
-// app.use(apiRoutes.projectWide.base, authenticatePassportJWT, projectWideRoutes);
+app.use(
+  apiRoutes.users.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  userRoutes
+);
+app.use(
+  apiRoutes.pdf.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  pdfRoutes
+);
+app.use(
+  apiRoutes.files.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  fileRoutes
+);
+app.use(
+  apiRoutes.jobCard.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  jobCardRoutes
+);
+app.use(
+  apiRoutes.payment.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  paymentRoutes
+);
+app.use(
+  apiRoutes.thumbnail.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  thumbnailRoutes
+);
+app.use(
+  apiRoutes.sequence.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  sequenceRoutes
+);
+app.use(
+  apiRoutes.projectWide.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  projectWideRoutes
+);
 
 // Error Handler
 app.use(errorHandler);

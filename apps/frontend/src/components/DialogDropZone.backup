@@ -15,6 +15,7 @@ import {
 import { useAddDialogStore } from '@prodgenie/libs/store';
 import { useWorkspaceStore } from '@prodgenie/libs/store';
 import { FileDropzone } from '@prodgenie/libs/ui/components/FileDropzone';
+import Modal from './Modal';
 
 interface DialogDropZoneProps {
   title: string;

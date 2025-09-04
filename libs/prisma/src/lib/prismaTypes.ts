@@ -1,3 +1,3 @@
-import { WorkspaceRole as UserType, FileType } from '@prisma/client';
+import { WorkspaceRole, FileType } from '@prisma/client';
 
-export { UserType, FileType };
+export { WorkspaceRole, FileType };

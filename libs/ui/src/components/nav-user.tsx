@@ -19,6 +19,7 @@ import {
 } from '../sidebar';
 
 import { appSidebarItems } from '@prodgenie/libs/constant';
+import { useModalStore } from '@prodgenie/libs/store';
 
 export function NavUser({
   user,
@@ -31,6 +32,13 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+
+  const { openModal } = useModalStore();
+
+  const handleChangePlan = () => {
+    openModal('workspace:pricing');
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -80,7 +88,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleChangePlan}>
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-// import { HistoryService } from '@prodgenie/libs/db';
+// import { ActivityService } from '@prodgenie/libs/db';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -37,11 +37,11 @@ export class FileStorageService {
       }
 
       // const userId = user?.id;
-      // const orgId = user?.org?.id;
+      // const workspaceId = user?.workspace?.id;
 
-      // HistoryService.record({
+      // ActivityService.record({
       //   userId,
-      //   orgId,
+      //   workspaceId,
       //   action: `${fileType} uploaded`,
       //   details: fileType,
       // });
@@ -90,11 +90,11 @@ export class FileStorageService {
       }
 
       // const userId = user?.id;
-      // const orgId = user?.org?.id;
+      // const workspaceId = user?.workspace?.id;
 
-      // HistoryService.record({
+      // ActivityService.record({
       //   userId,
-      //   orgId,
+      //   workspaceId,
       //   action: `${fileType} deleted`,
       //   details: fileType,
       // });

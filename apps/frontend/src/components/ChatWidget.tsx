@@ -62,14 +62,14 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {/* Floating Button */}
-      {!isOpen && (
+      {/* {!isOpen && (
         <button
           onClick={toggle}
           className="bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:opacity-90 transition"
         >
           <MessageCircle size={24} />
         </button>
-      )}
+      )} */}
 
       {/* Chat Window */}
       {isOpen && (

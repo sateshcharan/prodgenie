@@ -1,6 +1,5 @@
 import { useLoaderData } from 'react-router-dom';
-import { SequenceBuilder, TemplateBuilder, MaterialBuilder } from './index';
-import { TableBuilder } from './TableBuilder';
+import { SequenceBuilder, TemplateBuilder, TableBuilder } from './index';
 
 const FileBuilder = () => {
   const { fileType } = useLoaderData() as {

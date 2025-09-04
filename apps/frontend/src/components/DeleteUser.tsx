@@ -13,22 +13,31 @@ import {
   CardHeader,
   CardTitle,
 } from '@prodgenie/libs/ui';
+import {
+  useModalStore,
+  useUserStore,
+  useWorkspaceStore,
+} from '@prodgenie/libs/store';
 
 export default function DeleteUser() {
   const [loading, setLoading] = useState(false);
-  const [workspaceName, setWorkspaceName] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  // const [workspaceName, setWorkspaceName] = useState('');
+  // const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  const createWorkspace = async () => {
-    if (!workspaceName.trim() || !selectedPlanId) return;
+  const { closeModal } = useModalStore();
+  const { activeWorkspace } = useWorkspaceStore((state) => state);
+  const { user } = useUserStore((state) => state);
+
+  const deleteWorkspaceUser = async (userId: string) => {
+    if (!userId) return;
 
     try {
       setLoading(true);
       const { data } = await api.post(
-        `${apiRoutes.workspace.base}/${apiRoutes.workspace.createNewWorkspace}`,
+        `${apiRoutes.workspace.base}${apiRoutes.workspace.removeUserFromWorkspace}`,
         {
-          workspaceName,
-          planId: selectedPlanId,
+          activeWorkspaceId: activeWorkspace.id,
+          userId: workspaceUserId,
         }
       );
     } catch (err) {
@@ -44,18 +53,20 @@ export default function DeleteUser() {
         <CardTitle className="text-2xl">Remove user from workspace</CardTitle>
         <CardDescription>
           Are you sure you want to remove this user from the workspace? This
-          action cannot be undone
+          action cannot be undone. The user will no longer have access to this
+          workspace.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex gap-4">
-        <Input
-          placeholder="Workspace name"
-          value={workspaceName}
-          onChange={(e) => setWorkspaceName(e.target.value)}
-        />
-        <PlanDropdown handleSelectedPlan={setSelectedPlanId} />
-        <Button onClick={createWorkspace} disabled={loading}>
-          {loading ? 'Creating...' : 'Create'}
+        <Button
+          onClick={() => deleteWorkspaceUser(user.id)}
+          disabled={loading}
+          variant={'destructive'}
+        >
+          {loading ? 'Deleting...' : 'Delete'}
+        </Button>
+        <Button variant="outline" onClick={closeModal}>
+          Cancel
         </Button>
       </CardContent>
     </Card>

@@ -1,5 +1,6 @@
-import { supabase } from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/prisma';
+import { supabase } from '@prodgenie/libs/supabase';
+
 import { FileType } from '@prisma/client';
 
 export class FolderService {

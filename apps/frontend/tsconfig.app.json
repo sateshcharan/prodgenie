@@ -35,7 +35,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "../ui/src/components/FolderDropZone.tsx"
-, "src/components/CreateWorkspaceModal.backup"  ],
+, "src/components/CreateWorkspaceModal.backup", "src/components/FileDropZone.tsx"  ],
   "references": [
     {
       "path": "../../libs/schema/tsconfig.lib.json"

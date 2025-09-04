@@ -1,8 +1,5 @@
 import { RouteObject } from 'react-router-dom';
 
-import { Dashboard } from '../pages';
-import { PrivateLayout } from '../layouts';
-import PrivateRoute from './PrivateRoute';
 import {
   Files,
   FileDetails,
@@ -16,6 +13,9 @@ import {
   fileBuilderLoader,
   settingsLoader,
 } from '../loaders';
+import { Dashboard } from '../pages';
+import { PrivateLayout } from '../layouts';
+import PrivateRoute from './PrivateRoute';
 
 const PrivateRoutes: RouteObject[] = [
   {
@@ -48,9 +48,9 @@ export const privateRoutes = [
   {
     path: 'dashboard',
     element: (
-      <PrivateRoute>
+      // <PrivateRoute>
         <PrivateLayout />
-      </PrivateRoute>
+      // </PrivateRoute>
     ),
     children: PrivateRoutes,
   },

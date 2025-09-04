@@ -12,42 +12,50 @@ datasource db {
 //
 
 model User {
-  id          String              @id @default(uuid())
-  email       String              @unique
-  name        String?
-  createdAt   DateTime            @default(now())
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
-  memberships WorkspaceMember[]   
-  files       File[]
-  history     History[]
-  jobs        Job[]
-  invitesSent WorkspaceInvite[]   @relation("UserInvites") 
+  memberships  WorkspaceMember[]
+  files        File[]
+  jobs         Job[]
+  transactions Transaction[]
+  activities   Activity[]
 }
 
 model Plan {
-  id                    String     @id @default(uuid())
-  name                  String
-  maxMembers            Int        
-  maxWorkspacesPerUser  Int        
-  createdAt             DateTime   @default(now())
+  id             String    @id @default(uuid())
+  name           String
+  maxMembers     Int
+  maxStorage     Int       @default(340)
+  monthlyCredits Int       @default(0)
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
-  workspaces            Workspace[]
+  workspaces Workspace[]
 }
 
 model Workspace {
-  id         String            @id @default(uuid())
-  name       String
-  credits    Float             @default(0)
-  createdAt  DateTime          @default(now())
+  id        String    @id @default(uuid())
+  name      String
+  credits   Float     @default(0)
+  thumbnail String?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
-  planId     String?
-  plan       Plan?              @relation(fields: [planId], references: [id])
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id])
 
-  members    WorkspaceMember[]
-  files      File[]
-  history    History[]
-  jobs       Job[]
-  invites    WorkspaceInvite[]
+  members      WorkspaceMember[]
+  files        File[]
+  jobs         Job[]
+  transactions Transaction[]
+  activities   Activity[]
 }
 
 //
@@ -60,34 +68,26 @@ enum WorkspaceRole {
   MEMBER
 }
 
-model WorkspaceMember {
-  id           String         @id @default(uuid())
-  userId       String
-  workspaceId  String
-  role         WorkspaceRole  @default(MEMBER)
-  joinedAt     DateTime       @default(now())
-
-  user         User           @relation(fields: [userId], references: [id])
-  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
-
-  @@unique([userId, workspaceId])
+enum WorkspaceMemberStatus {
+  PENDING
+  ACTIVE
+  REMOVED
 }
 
-//
-// Invites
-//
+model WorkspaceMember {
+  id          String                @id @default(uuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole         @default(MEMBER)
+  status      WorkspaceMemberStatus @default(PENDING)
+  joinedAt    DateTime              @default(now())
+  deletedAt   DateTime?
+  isDeleted   Boolean               @default(false)
 
-model WorkspaceInvite {
-  id           String         @id @default(uuid())
-  workspaceId  String
-  email        String
-  role         WorkspaceRole  @default(MEMBER)
-  invitedById  String
-  expiresAt    DateTime?
-  acceptedAt   DateTime?
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
 
-  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
-  invitedBy    User           @relation("UserInvites", fields: [invitedById], references: [id])
+  @@unique([userId, workspaceId])
 }
 
 //
@@ -104,7 +104,7 @@ enum FileType {
 }
 
 model File {
-  id          String      @id @default(uuid())
+  id          String    @id @default(uuid())
   workspaceId String
   uploadedBy  String
   name        String
@@ -112,11 +112,13 @@ model File {
   type        FileType
   data        Json?
   thumbnail   String?
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
 
-  workspace   Workspace   @relation(fields: [workspaceId], references: [id])
-  user        User        @relation(fields: [uploadedBy], references: [id])
-  jobs        Job[]
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [uploadedBy], references: [id])
+  jobs      Job[]
 }
 
 enum JobStatus {
@@ -127,33 +129,64 @@ enum JobStatus {
 }
 
 model Job {
-  id            String      @id @default(uuid())
+  id            String    @id @default(uuid())
   workspaceId   String
   fileId        String
   createdById   String
   jobCardNumber Int
   config        Json
-  status        JobStatus   @default(pending)
+  status        JobStatus @default(pending)
   creditsUsed   Float
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime  @default(now())
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
 
-  workspace     Workspace   @relation(fields: [workspaceId], references: [id])
-  file          File        @relation(fields: [fileId], references: [id])
-  createdBy     User        @relation(fields: [createdById], references: [id])
-  history       History[]
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  file         File          @relation(fields: [fileId], references: [id])
+  createdBy    User          @relation(fields: [createdById], references: [id])
+  transactions Transaction[]
+  activities   Activity[]
 }
 
-model History {
-  id           String      @id @default(uuid())
+//
+// Transactions & Activity
+//
+
+model Transaction {
+  id           String   @id @default(uuid())
   workspaceId  String
   userId       String
   jobId        String?
-  action       String
-  status       JobStatus   @default(pending)
-  details      String?
-  createdAt    DateTime    @default(now())
+  amount       Float // +ve = credit added, -ve = credit spent
+  reason       String // e.g. "job_run", "manual_topup", "subscription"
+  balanceAfter Float // snapshot of workspace balance after txn
+  createdAt    DateTime @default(now())
 
-  workspace    Workspace   @relation(fields: [workspaceId], references: [id])
-  user         User        @relation(fields: [userId], references: [id])
-  job          Job?        @relation(fields: [jobId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  job       Job?      @relation(fields: [jobId], references: [id])
+}
+
+enum ActivityType {
+  USER_INVITED
+  USER_JOINED
+  FILE_UPLOADED
+  JOB_CREATED
+  JOB_COMPLETED
+  JOB_FAILED
+  PLAN_CHANGED
+}
+
+model Activity {
+  id          String       @id @default(uuid())
+  workspaceId String
+  userId      String
+  jobId       String?
+  type        ActivityType
+  details     Json? // flexible metadata
+  createdAt   DateTime     @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  job       Job?      @relation(fields: [jobId], references: [id])
 }

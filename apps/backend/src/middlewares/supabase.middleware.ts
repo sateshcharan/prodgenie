@@ -3,15 +3,26 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@prodgenie/libs/prisma';
 import { supabase } from '@prodgenie/libs/supabase';
 
+import jwt from 'jsonwebtoken';
+
 const authenticateSupabaseJWT = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const token = req.headers.authorization?.split('Bearer ')[1];
-    if (!token) return res.status(401).send('No token provided');
+  // supabase auth token
+  // const token = req.headers.authorization?.split('Bearer ')[1];
+  // if (!token) return res.status(401).send('No token provided');
 
+  // supabase auth cookie
+  const token = req.cookies['sb-access-token'];
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+  try {
+    const payload = jwt.verify(token, process.env.SUPABASE_JWT_SECRET!);
+    req.user = payload;
+
+    // user and workspace data
     const activeWorkspaceId = req.headers['active-workspace-id'] as string;
     req.activeWorkspaceId = activeWorkspaceId;
 
