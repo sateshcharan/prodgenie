@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { api } from '../utils';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { api } from '../utils';
 
 export const parsePdfFromUrl = async (signedUrl: string, fileId: string) => {
   // const cacheKey = `tables-${fileId}`;

@@ -20,6 +20,14 @@ import {
   CardContent,
   toast,
   Separator,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Checkbox,
+  ScrollArea,
+  Toast,
 } from '@prodgenie/libs/ui';
 import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
@@ -43,6 +51,54 @@ interface JobCardProps {
   fileId: string;
   signedUrl: string;
   setJobCardUrl: (url: string) => void;
+}
+
+function RenderField({ fieldConfig, rhfField, options = [] }: any) {
+  switch (fieldConfig.type) {
+    case 'select':
+      return (
+        <Select value={rhfField.value} onValueChange={rhfField.onChange}>
+          <SelectTrigger>
+            <SelectValue placeholder={fieldConfig.placeholder || 'Select'} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((opt: any, i: number) => (
+              <SelectItem key={i} value={opt}>
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+
+    case 'checkbox':
+      return (
+        <Checkbox
+          checked={!!rhfField.value}
+          onCheckedChange={rhfField.onChange}
+        />
+      );
+
+    case 'number':
+      return (
+        <Input
+          type="number"
+          placeholder={fieldConfig.placeholder}
+          value={rhfField.value ?? ''}
+          onChange={(e) => rhfField.onChange(Number(e.target.value))}
+        />
+      );
+
+    default:
+      return (
+        <Input
+          type="text"
+          placeholder={fieldConfig.placeholder}
+          value={rhfField.value ?? ''}
+          onChange={(e) => rhfField.onChange(e.target.value)}
+        />
+      );
+  }
 }
 
 const JobCard = ({
@@ -89,8 +145,11 @@ const JobCard = ({
   }, []);
 
   useEffect(() => {
+    if (!bom.length) return;
+
     const sequences = bom.map((b) => b.description);
-    const getTemplateFieldsFromSequence = async (sequences: any[]) => {
+
+    const getTemplateFieldsFromSequence = async () => {
       try {
         const responses = await Promise.all(
           sequences.map(async (sequence) => {
@@ -101,21 +160,21 @@ const JobCard = ({
           })
         );
 
-        setJobCardData(...responses);
+        // Store expects an array, not spread args
+        setJobCardData(responses);
       } catch (err) {
         console.error('Error fetching job card data:', err);
       }
     };
-    if (Array.isArray(sequences) && sequences.length > 0) {
-      getTemplateFieldsFromSequence(sequences);
-    }
-  }, [bom]);
+
+    getTemplateFieldsFromSequence();
+  }, [bom, setJobCardData]);
 
   // ⏳ Dynamic schema and fields
   // const dynamicFields = jobCardData[0]?.fields;
   const dynamicFields = jobCardData?.[0]?.fields || { fields: [] };
 
-  const dynamicSectionName = jobCardData[0]?.name;
+  // const dynamicSectionName = jobCardData[0]?.name;
 
   // const dynamicSchema = (function (z) {
   //   return eval(jobCardData[0]?.schema);
@@ -171,16 +230,6 @@ const JobCard = ({
     },
   });
 
-  // ✅ Ensure defaults reset once jobCardData is ready
-  // useEffect(() => {
-  //   if (dynamicFields?.fields) {
-  //     form.reset({
-  //       ...staticDefaults,
-  //       ...dynamicDefaults,
-  //     });
-  //     setIsLoading(false); // ✅ schema + defaults ready
-  //   }
-  // }, [dynamicFields]);
   useEffect(() => {
     if (!dynamicFields?.fields) return;
 
@@ -193,9 +242,23 @@ const JobCard = ({
     const currentValues = form.getValues();
     if (JSON.stringify(currentValues) !== JSON.stringify(merged)) {
       form.reset(merged);
+
       setIsLoading(false);
     }
   }, [dynamicDefaults, staticDefaults, dynamicFields]);
+
+  const normalizedJobCardData = useMemo(() => {
+    if (!jobCardData) return [];
+
+    return jobCardData.map((item: any) => ({
+      name: item.name,
+      sections: (item.sections || []).map((section: any) => ({
+        name: section.name,
+        fields: section.fields,
+        schema: section.schema,
+      })),
+    }));
+  }, [jobCardData]);
 
   const onSubmit = async (jobCardForm: jobCardFormValues) => {
     try {
@@ -203,24 +266,6 @@ const JobCard = ({
       setScheduleDate(new Date(jobCardForm.scheduleDate));
       setPoNumber(jobCardForm.poNumber);
       setProductionQty(jobCardForm.productionQty);
-
-      function flattenObject(
-        obj: Record<string, any>,
-        parentKey = '',
-        result: Record<string, any> = {}
-      ): Record<string, any> {
-        for (const key in obj) {
-          const value = obj[key];
-          const fullKey = parentKey ? `${parentKey}.${key}` : key;
-
-          if (value && typeof value === 'object' && !Array.isArray(value)) {
-            flattenObject(value, fullKey, result);
-          } else {
-            result[fullKey] = value;
-          }
-        }
-        return result;
-      }
 
       const jobCardData = {
         bom: bom.filter((item) => selectedItems.includes(item.slNo)),
@@ -258,97 +303,114 @@ const JobCard = ({
               </TabsList>
 
               <TabsContent value="select">
-                <div className="p-4 flex flex-col gap-4">
-                  <BomTable
-                    bom={bom}
-                    fileId={fileId}
-                    setActiveItem={() => setActiveTab('form')}
-                  />
-                  <Separator />
-                  <TitleBlock titleBlock={titleBlock} fileId={fileId} />
-                  {printingDetails && (
-                    <>
-                      <Separator />
-                      <PrintingDetail printingDetails={printingDetails} />
-                    </>
-                  )}
-                </div>
+                <ScrollArea className="h-[calc(100vh-200px)] ">
+                  <div className="p-4 flex flex-col gap-4">
+                    <BomTable
+                      bom={bom}
+                      fileId={fileId}
+                      setActiveItem={() => setActiveTab('form')}
+                    />
+                    <Separator />
+                    <TitleBlock titleBlock={titleBlock} fileId={fileId} />
+                    {printingDetails && (
+                      <>
+                        <Separator />
+                        <PrintingDetail printingDetails={printingDetails} />
+                      </>
+                    )}
+                  </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent value="form">
-                <div className="p-4">
-                  {jobCardFields.map((item) => (
-                    <FormField
-                      control={form.control}
-                      key={item.name}
-                      name={item.name as keyof jobCardFormValues}
-                      render={({ field }) => (
-                        <FormItem className="pt-4">
-                          <FormLabel>{item.label}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type={item.type}
-                              placeholder={item.placeholder}
-                              value={field.value ?? ''}
-                              onChange={(e) =>
-                                field.onChange(
-                                  item.type === 'number'
-                                    ? Number(e.target.value)
-                                    : e.target.value
-                                )
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-
-                  <FormProvider {...form}>
-                    {jobCardData.map((fields, idx) => (
-                      <div
-                        className="space-y-4 border p-4 rounded-md mt-4"
-                        key={idx}
-                      >
-                        <FormLabel>{fields.name}</FormLabel>
-                        {fields?.fields?.map((f) => (
-                          <FormField
-                            control={form.control}
-                            key={f.name}
-                            name={f.name as any}
-                            render={({ field }) => (
-                              <FormItem className="pt-4">
-                                <div className="flex">
-                                  <FormLabel>{f.label}</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type={f.type}
-                                      placeholder={f.placeholder}
-                                      value={field.value ?? ''}
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          f.type === 'number'
-                                            ? Number(e.target.value)
-                                            : e.target.value
-                                        )
-                                      }
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        ))}
-                      </div>
+                <ScrollArea className="h-[calc(100vh-200px)]">
+                  <div className="p-4">
+                    {jobCardFields.map((item) => (
+                      <FormField
+                        control={form.control}
+                        key={item.name}
+                        name={item.name as keyof jobCardFormValues}
+                        render={({ field }) => (
+                          <FormItem className="pt-4">
+                            <FormLabel>{item.label}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type={item.type}
+                                placeholder={item.placeholder}
+                                value={field.value ?? ''}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    item.type === 'number'
+                                      ? Number(e.target.value)
+                                      : e.target.value
+                                  )
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     ))}
-                  </FormProvider>
 
-                  <Button type="submit" className="w-full mt-4">
-                    Generate Job Cards
-                  </Button>
-                </div>
+                    <FormProvider {...form}>
+                      {jobCardData.map((sections, idx) => (
+                        <div
+                          className="space-y-4 border p-4 rounded-md mt-4"
+                          key={idx}
+                        >
+                          {sections.map((fields, i) => (
+                            <div key={i} className="space-y-2">
+                              {fields.name && (
+                                <FormLabel className="text-lg font-semibold capitalize">
+                                  Section: {fields.name}
+                                </FormLabel>
+                              )}
+
+                              {fields?.sections?.map((section) => (
+                                <div
+                                  key={section.name}
+                                  className="space-y-2 border-l-2 pl-4 ml-2"
+                                >
+                                  <FormLabel className="text-lg font-semibold capitalize">
+                                    {section.name}
+                                  </FormLabel>
+
+                                  {section.fields.map((field) => (
+                                    <FormField
+                                      control={form.control}
+                                      key={field.name}
+                                      name={field.name as any}
+                                      render={({ field: rhfField }) => (
+                                        <FormItem className="pt-2">
+                                          <FormLabel>{field.label}</FormLabel>
+                                          <FormControl>
+                                            <RenderField
+                                              fieldConfig={field}
+                                              rhfField={field}
+                                              options={field.options || []}
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  ))}
+                                </div>
+                              ))}
+
+                              <Separator />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </FormProvider>
+
+                    <Button type="submit" className="w-full mt-4">
+                      Generate Job Cards
+                    </Button>
+                  </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           </form>

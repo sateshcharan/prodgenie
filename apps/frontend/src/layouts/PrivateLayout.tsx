@@ -4,16 +4,6 @@ import {
 } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 
-import { api } from '../utils';
-import { PrivateHeader } from '../navigation';
-// import DeleteUser from '../components/DeleteUser';
-import {
-  AppSidebar,
-  //  CreateWorkspace,
-  ModalManager,
-} from '../components';
-import ChatWidget from '../components/ChatWidget';
-
 import {
   useUserStore,
   useWorkspaceStore,
@@ -21,6 +11,16 @@ import {
 } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
+
+// import DeleteUser from '../components/DeleteUser';
+import {
+  AppSidebar,
+  //  CreateWorkspace,
+  ModalManager,
+} from '../components';
+import { api } from '../utils';
+import { PrivateHeader } from '../navigation';
+import ChatWidget from '../components/ChatWidget';
 
 const PrivateLayout = () => {
   const setUser = useUserStore((state) => state.setUser);

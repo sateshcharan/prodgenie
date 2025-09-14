@@ -29,7 +29,9 @@ export default function InviteUser() {
   const [loading, setLoading] = useState(false);
 
   const { closeModal } = useModalStore();
-  const { activeWorkspace } = useWorkspaceStore((state) => state);
+  const { activeWorkspace, fetchWorkspaceUsers } = useWorkspaceStore(
+    (state) => state
+  );
 
   const workspaceId = activeWorkspace?.id;
 
@@ -46,6 +48,9 @@ export default function InviteUser() {
           role,
         }
       );
+
+      await fetchWorkspaceUsers(activeWorkspace?.id); // fetch updated workspace users
+
       closeModal();
       toast.success('User invited successfully!');
     } catch (err) {

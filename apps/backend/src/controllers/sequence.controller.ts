@@ -6,9 +6,9 @@ const sequenceService = new SequenceService();
 
 export class SequenceController {
   static syncAllSequence = async (req: Request, res: Response) => {
-    const orgId = req.user?.orgId;
+    const workspaceId = req.activeWorkspaceId;
     const user = req.user;
-    const files = await sequenceService.syncAll(orgId, user);
+    const files = await sequenceService.syncAll(workspaceId, user);
     return res.status(200).json(files);
   };
 

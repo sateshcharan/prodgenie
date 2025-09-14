@@ -125,7 +125,7 @@ export class FileController {
 
   static getFileDataController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
-    
+
     const file = await fileService.getFileData(fileId);
     return res.status(200).json(file);
   };

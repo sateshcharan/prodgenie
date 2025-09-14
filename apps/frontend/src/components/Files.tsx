@@ -110,7 +110,10 @@ const Files = () => {
 
   const handleSequenceSync = async () => {
     toast.info('🌟 Syncing sequence...');
-    await api.post(`${apiRoutes.sequence.base}${apiRoutes.sequence.sync}`);
+    const res = await api.post(
+      `${apiRoutes.sequence.base}${apiRoutes.sequence.sync}`
+    );
+    console.log(res);
   };
 
   return (

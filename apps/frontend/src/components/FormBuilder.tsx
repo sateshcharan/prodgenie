@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Trash, Plus, X } from 'lucide-react';
+import { Trash, Plus, X, Check } from 'lucide-react';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,12 @@ import {
   SelectContent,
   Label,
   SelectValue,
+  ScrollArea,
+  Separator,
 } from '@prodgenie/libs/ui';
+import { api } from '../utils';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import axios from 'axios';
 
 export const fieldSchema = z.object({
   name: z.string().min(1, 'Field name is required'),
@@ -22,6 +27,14 @@ export const fieldSchema = z.object({
   defaultValue: z.union([z.string(), z.number()]).optional(),
   type: z.enum(['text', 'number', 'select']),
   options: z.array(z.string()).optional(),
+  dataSource: z
+    .object({
+      table: z.string(),
+      column: z.string(),
+      // labelKey: z.string(),
+      // apiUrl: z.string().url().optional(),
+    })
+    .optional(),
 });
 
 export const sectionSchema = z.object({
@@ -37,6 +50,7 @@ export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;
 
 const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
   const [schema, setSchema] = useState<any>(null);
+  const [availableTables, setAvailableTables] = useState<string[]>([]);
 
   useImperativeHandle(ref, () => ({
     saveTemplate: handleSaveTemplate,
@@ -53,6 +67,19 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     // setValue('formSections', mappedSections);
     replace(mappedSections);
   }, [jobCardData]);
+
+  useEffect(() => {
+    const getTables = async () => {
+      try {
+        const res = await api.get(`${apiRoutes.files.base}/table/list`);
+        const tables = res.data?.data || [];
+        setAvailableTables(tables);
+      } catch (err) {
+        console.error('Error fetching tables:', err);
+      }
+    };
+    getTables();
+  }, []);
 
   // 💡 Hook up builderForm to formSections
   const builderForm = useForm<FormBuilderSchema>({
@@ -309,56 +336,119 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
               (field, fieldIndex) => (
                 <div
                   key={fieldIndex}
-                  className="grid grid-cols-12 items-center gap-4  p-2 rounded-md"
+                  // className="grid grid-cols-12 items-center gap-4  p-2 rounded-md"
+                  className="flex flex-col gap-4"
                 >
-                  <button
-                    onClick={() => removeField(sectionIndex, fieldIndex)}
-                    className="text-red-500 hover:text-red-700 p-1"
-                    title="Delete section"
-                  >
-                    <Trash size={16} />
-                  </button>
-                  <Input
-                    className="col-span-3"
-                    {...register(
-                      `formSections.${sectionIndex}.fields.${fieldIndex}.name`
-                    )}
-                    placeholder="Name"
-                  />
-                  <Input
-                    className="col-span-3"
-                    {...register(
-                      `formSections.${sectionIndex}.fields.${fieldIndex}.label`
-                    )}
-                    placeholder="Label"
-                  />
-                  <Input
-                    className="col-span-3"
-                    {...register(
-                      `formSections.${sectionIndex}.fields.${fieldIndex}.placeholder`
-                    )}
-                    placeholder="Placeholder"
-                  />
-                  <div className="col-span-2 border">
-                    <Select
-                      value={field.type}
-                      onValueChange={(val) =>
-                        setValue(
-                          `formSections.${sectionIndex}.fields.${fieldIndex}.type`,
-                          val as any
-                        )
-                      }
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      className="col-span-3"
+                      {...register(
+                        `formSections.${sectionIndex}.fields.${fieldIndex}.name`
+                      )}
+                      placeholder="Name"
+                    />
+                    <Button
+                      onClick={() => removeField(sectionIndex, fieldIndex)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title="Delete section"
+                      variant="ghost"
+                      size="icon"
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="select data type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="number">Number</SelectItem>
-                        <SelectItem value="select">Select</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <Trash size={16} />
+                    </Button>
+                    <Button
+                      // onClick={() => removeField(sectionIndex, fieldIndex)}
+                      className=" text-bold text-green-500 hover:text-green-700 p-1"
+                      title="Save section"
+                      variant="ghost"
+                      size="icon"
+                    >
+                      <Check size={16} />
+                    </Button>
                   </div>
+                  <div className="flex gap-2 items-center">
+                    <h3>Label: </h3>
+                    <Input
+                      className="col-span-3"
+                      {...register(
+                        `formSections.${sectionIndex}.fields.${fieldIndex}.label`
+                      )}
+                      placeholder="Label"
+                    />
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <h3>Placeholder: </h3>
+                    <Input
+                      className="col-span-3"
+                      {...register(
+                        `formSections.${sectionIndex}.fields.${fieldIndex}.placeholder`
+                      )}
+                      placeholder="Placeholder"
+                    />
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <h3>Field Type: </h3>
+                    <div className="col-span-2 border">
+                      <Select
+                        value={field.type}
+                        onValueChange={(val) =>
+                          setValue(
+                            `formSections.${sectionIndex}.fields.${fieldIndex}.type`,
+                            val as any
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="select data type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
+                          <SelectItem value="select">Select</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {field.type === 'select' && (
+                      <div className="col-span-12 grid grid-cols-12 gap-2">
+                        <div className="col-span-6">
+                          <Select
+                            value={field.dataSource?.table || ''}
+                            onValueChange={(val) =>
+                              setValue(
+                                `formSections.${sectionIndex}.fields.${fieldIndex}.dataSource.table`,
+                                val
+                              )
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select table" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableTables.map((table) => (
+                                <SelectItem key={table.id} value={table.name}>
+                                  {table.name.split('.')[0]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* column dropdown */}
+                        <ColumnSelect
+                          availableTables={availableTables}
+                          tableName={field.dataSource?.table}
+                          value={field.dataSource?.column || ''}
+                          onChange={(val) =>
+                            setValue(
+                              `formSections.${sectionIndex}.fields.${fieldIndex}.dataSource.column`,
+                              val
+                            )
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <Separator />
                 </div>
               )
             )}
@@ -371,6 +461,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
         sections={watchedSections}
         form={form}
         handleSaveTemplate={handleSaveTemplate}
+        availableTables={availableTables}
       />
     </div>
   );
@@ -380,10 +471,12 @@ const DynamicForm = ({
   sections,
   form,
   handleSaveTemplate,
+  availableTables,
 }: {
   sections: any[];
   form: any;
   handleSaveTemplate: any;
+  availableTables: any;
 }) => {
   const { register, handleSubmit, control } = form;
 
@@ -418,7 +511,7 @@ const DynamicForm = ({
                     placeholder={field.placeholder}
                   />
                 )}
-                {field.type === 'select' && (
+                {/* {field.type === 'select' && (
                   <Controller
                     control={form.control}
                     name={`${field.name}`}
@@ -432,6 +525,20 @@ const DynamicForm = ({
                       </Select>
                     )}
                   />
+                )} */}
+
+                {field.type === 'select' && (
+                  <Controller
+                    control={form.control}
+                    name={`${field.name}`}
+                    render={({ field: controllerField }) => (
+                      <DynamicSelect
+                        field={field}
+                        controllerField={controllerField}
+                        availableTables={availableTables}
+                      />
+                    )}
+                  />
                 )}
               </div>
             ))}
@@ -439,6 +546,181 @@ const DynamicForm = ({
         </div>
       ))}
     </form>
+  );
+};
+
+// const DynamicSelect = ({
+//   field,
+//   controllerField,
+// }: {
+//   field: any;
+//   controllerField: any;
+// }) => {
+//   const [options, setOptions] = useState<string[]>([]);
+
+//   useEffect(() => {
+//     const fetchOptions = async () => {
+//       try {
+//         if (field.dataSource?.table) {
+//           const res = await api.get(`${apiRoutes.files.base}/table/list`);
+
+//           // Ensure response shape
+//           const rows = res.data?.data || [];
+
+//           console.log(rows);
+
+//           setOptions(
+//             rows.map(
+//               (row: any) =>
+//                 row[field.dataSource.labelKey] ?? row[field.dataSource.valueKey]
+//             )
+//           );
+//         } else {
+//           setOptions(field.options || []);
+//         }
+//       } catch (err) {
+//         console.error('Error fetching select options:', err);
+//       }
+//     };
+
+//     fetchOptions();
+//   }, []);
+
+//   return (
+//     <Select
+//       value={controllerField.value}
+//       onValueChange={controllerField.onChange}
+//     >
+//       <SelectTrigger className="w-full">
+//         <SelectValue placeholder="Select option" />
+//       </SelectTrigger>
+//       <SelectContent>
+//         {options.map((opt, idx) => (
+//           <SelectItem key={idx} value={opt}>
+//             {opt}
+//           </SelectItem>
+//         ))}
+//       </SelectContent>
+//     </Select>
+//   );
+// };
+
+const DynamicSelect = ({
+  field,
+  controllerField,
+  availableTables,
+}: {
+  field: any;
+  controllerField: any;
+  availableTables: any[];
+}) => {
+  const [options, setOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        if (field.dataSource?.table && field.dataSource?.column) {
+          // find table url from availableTables
+          const tableUrl = availableTables.find(
+            (t) => t.name === field.dataSource.table
+          )?.path;
+
+          if (!tableUrl) return;
+
+          const res = await axios.get(tableUrl);
+
+          // if API returns an array directly
+          const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
+
+          setOptions(
+            rows.map(
+              (row: any) =>
+                row[field.dataSource.column] ??
+                row[field.dataSource.column.toLowerCase()]
+            )
+          );
+        } else {
+          setOptions(field.options || []);
+        }
+      } catch (err) {
+        console.error('Error fetching select options:', err);
+        setOptions([]);
+      }
+    };
+
+    fetchOptions();
+  }, [field.dataSource?.table, field.dataSource?.column, availableTables]);
+
+  return (
+    <Select
+      value={controllerField.value}
+      onValueChange={controllerField.onChange}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select option" />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt, idx) => (
+          <SelectItem key={opt} value={opt}>
+            {opt}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const ColumnSelect = ({
+  availableTables,
+  tableName,
+  value,
+  onChange,
+}: {
+  availableTables: any[];
+  tableName?: string;
+  value: string;
+  onChange: (val: string) => void;
+}) => {
+  const [columns, setColumns] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchColumns = async () => {
+      if (!tableName) {
+        setColumns([]);
+        return;
+      }
+
+      const tableUrl = availableTables.find((t) => t.name === tableName)?.path;
+      try {
+        const res = await axios.get(tableUrl); // 🔑 fetch directly from availableTables.url
+        const columnLabels = res.data.columns.map((col: any) => col.label);
+        if (columnLabels.length > 0) {
+          setColumns(columnLabels); // first row → keys
+        } else {
+          setColumns([]);
+        }
+      } catch (err) {
+        console.error('Error fetching columns:', err);
+        setColumns([]);
+      }
+    };
+
+    fetchColumns();
+  }, [tableName]);
+
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="w-full col-span-4">
+        <SelectValue placeholder="Select column" />
+      </SelectTrigger>
+      <SelectContent>
+        {columns.map((col) => (
+          <SelectItem key={col} value={col}>
+            {col}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 

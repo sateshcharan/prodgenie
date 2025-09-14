@@ -1,7 +1,5 @@
-import { forwardRef, useEffect, useState, useRef, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-
-import { api } from '../utils';
+import { forwardRef, useEffect, useState, useRef, useMemo } from 'react';
 
 import {
   Popover,
@@ -22,6 +20,7 @@ import {
 } from '@prodgenie/libs/constant';
 import { useUserStore } from '@prodgenie/libs/store';
 
+import { api } from '../utils';
 import { useSuggestionTokens } from '../hooks/useSuggestionTokens';
 
 interface SuggestionInputProps {

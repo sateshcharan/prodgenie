@@ -234,9 +234,8 @@ const WorkspaceUsers = () => {
   const [loading, setLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
 
-  const { workspaceUsers, activeWorkspace } = useWorkspaceStore(
-    (state) => state
-  );
+  const { workspaceUsers, activeWorkspace, fetchWorkspaceUsers } =
+    useWorkspaceStore((state) => state);
   const { user } = useUserStore((state) => state);
   const { openModal } = useModalStore((state) => state);
 
@@ -246,6 +245,7 @@ const WorkspaceUsers = () => {
 
   const handleChangeUserRole = (workspaceUserId: string) => {
     openModal('workspace:editUserRole', { workspaceUserId });
+    // fetchWorkspaceUsers(activeWorkspace?.id );
   };
 
   const handleInviteUserToWorkspace = () => {
@@ -261,7 +261,8 @@ const WorkspaceUsers = () => {
       <div className="space-y-2 flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Your Team</h2>
         <h2>
-          <strong>Workspace ID:</strong> {activeWorkspace?.id}
+          {/* <strong>Workspace ID:</strong> {activeWorkspace?.id} */}
+          <strong>Workspace Name:</strong> {activeWorkspace?.name}
         </h2>
       </div>
 

@@ -186,6 +186,9 @@ model Activity {
   details     Json? // flexible metadata
   createdAt   DateTime     @default(now())
 
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime
+
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
   job       Job?      @relation(fields: [jobId], references: [id])

@@ -28,7 +28,9 @@ export default function RemoveUserFromWorkspace({
   // const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const { closeModal } = useModalStore();
-  const { activeWorkspace } = useWorkspaceStore((state) => state);
+  const { activeWorkspace, fetchWorkspaceUsers } = useWorkspaceStore(
+    (state) => state
+  );
   const { user } = useUserStore((state) => state);
 
   const deleteWorkspaceUser = async (userId: string) => {
@@ -43,12 +45,13 @@ export default function RemoveUserFromWorkspace({
           userId: workspaceUserId,
         }
       );
-      
+
+      await fetchWorkspaceUsers(activeWorkspace?.id); // fetch updated workspace users
+      closeModal();
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      closeModal();
     }
   };
 

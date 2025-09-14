@@ -1,8 +1,6 @@
 import { Globe, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { api } from '../utils';
-
 import {
   Select,
   SelectContent,
@@ -16,6 +14,8 @@ import { ModeToggle } from '@prodgenie/libs/ui';
 import logo from '@prodgenie/libs/ui/assets/logo.png';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
+
+import { api } from '../utils';
 
 const Header = () => {
   const navigate = useNavigate();

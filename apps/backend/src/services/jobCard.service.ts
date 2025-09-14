@@ -7,9 +7,9 @@ import { randomUUID } from 'crypto';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
 import { StringService } from '@prodgenie/libs/frontend-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
+import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -95,6 +95,7 @@ export class JobCardService {
       );
 
       for (const section of sequence.sections) {
+        console.log(section);
         const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${workspaceName}/${section.path}`
         );

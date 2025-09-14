@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { api } from '../utils';
+
 import {
   apiRoutes,
   jobCardFields,
   preDefinedKeywords,
 } from '@prodgenie/libs/constant';
 import { useUserStore } from '@prodgenie/libs/store';
+
+import { api } from '../utils';
 
 let _cachedSuggestions: string[] | null = null;
 
@@ -48,7 +50,9 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
       try {
         const {
           data: { data: bomFile },
-        } = await api.get(`${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`);
+        } = await api.get(
+          `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
+        );
         const response = await fetch(bomFile.path);
         const json = await response.json();
 
@@ -81,8 +85,14 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
           const {
             data: { data: dynamicFieldsData },
           } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
+
+          // const dynamicFields =
+          //   dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
+
           const dynamicFields =
-            dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
+            dynamicFieldsData?.jobCardForm?.sections?.flatMap(
+              (section: any) => section.fields || []
+            ) ?? [];
 
           const dynamicSuggestions = dynamicFields.map(
             (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`

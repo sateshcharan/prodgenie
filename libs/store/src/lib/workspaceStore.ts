@@ -1,6 +1,7 @@
+import axios from 'axios';
 import { create } from 'zustand';
 
-// import { apiRoutes } from '@prodgenie/libs/constant';
+import { apiRoutes } from '@prodgenie/libs/constant';
 // import { api } from '@prodgenie/libs/frontend-services';
 
 type Plan = {
@@ -34,29 +35,34 @@ interface WorkspaceStore {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   workspaceUsers: User[];
+
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspace: (workspace: Workspace | null) => void;
   setWorkspaceUsers: (users: User[]) => void;
-  // fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
+
+  fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
   workspaces: [],
   activeWorkspace: null,
   workspaceUsers: [],
+
   setWorkspaces: (workspaces) => set({ workspaces }),
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setWorkspaceUsers: (workspaceUsers) => set({ workspaceUsers }),
-  // fetchWorkspaceUsers: async (workspaceId) => {
-  //   try {
-  //     const { data } = await api.get(
-  //       `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
-  //       { params: { workspaceId } }
-  //     );
-  //     setWorkspaceUsers({ workspaceUsers: data.users });
-  //   } catch (err) {
-  //     console.error(err);
-  //     setWorkspaceUsers({ workspaceUsers: [] });
-  //   }
-  // },
+
+  fetchWorkspaceUsers: async (workspaceId) => {
+    try {
+      const { data } = await axios.get(
+        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
+        { params: { workspaceId } }
+      );
+
+      set({ workspaceUsers: data.data });
+    } catch (err) {
+      console.error(err);
+      set({ workspaceUsers: [] });
+    }
+  },
 }));

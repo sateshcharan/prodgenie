@@ -1,5 +1,6 @@
-import { FileType } from '@prodgenie/libs/constant';
 import { redirect } from 'react-router-dom';
+
+import { FileType } from '@prodgenie/libs/constant';
 
 export const fileBuilderLoader = async ({ params, request }: any) => {
   const { fileType } = params;

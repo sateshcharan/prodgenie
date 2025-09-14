@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-import { Button, Input } from '@prodgenie/libs/ui';
 import {
   Table,
   TableHeader,
@@ -9,8 +9,8 @@ import {
   TableBody,
   TableCell,
 } from '@prodgenie/libs/ui/table';
-import { useSearchParams } from 'react-router-dom';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { Button, Input, toast } from '@prodgenie/libs/ui';
 
 import { api } from '../utils';
 
@@ -135,6 +135,47 @@ export default function TableBuilder<T extends Record<string, any>>({
     );
   };
 
+  const handleSave = async () => {
+    try {
+      // Convert payload into JSON blob
+      const jsonString = JSON.stringify(
+        {
+          name: fileName,
+          columns: tableColumns,
+          rows,
+        },
+        null,
+        2
+      );
+
+      const jsonBlob = new Blob([jsonString], {
+        type: 'application/json',
+      });
+
+      // Use FormData to send as file
+      const formData = new FormData();
+
+      formData.append('files', jsonBlob, 'temp.json');
+
+      if (id) {
+        // Update case
+        // await api.put(`${apiRoutes.files.base}/update/${id}`, formData, {
+        //   headers: { "Content-Type": "multipart/form-data" },
+        // });
+      } else {
+        // Create case
+        await api.post(`${apiRoutes.files.base}/table/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      toast.success('Table saved successfully!');
+    } catch (err) {
+      console.error('Error saving table:', err);
+      toast.error('Failed to save table');
+    }
+  };
+
   return (
     <div className="w-full mt-[200px] flex justify-center items-center">
       <div className="max-w-4xl mx-auto p-4 bg-white border rounded shadow space-y-4">
@@ -229,7 +270,8 @@ export default function TableBuilder<T extends Record<string, any>>({
             + Add Column
           </Button>
           <Button
-            onClick={() => onSave?.(fileName, rows, tableColumns)}
+            // onClick={() => onSave?.(fileName, rows, tableColumns)}
+            onClick={handleSave}
             disabled={!fileName}
           >
             Save

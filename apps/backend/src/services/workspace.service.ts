@@ -1,6 +1,6 @@
 import { prisma } from '@prodgenie/libs/prisma';
 import { WorkspaceRole } from '@prodgenie/libs/types';
-import { FileStorageService } from '@prodgenie/libs/supabase';
+import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
 
 import { FolderService } from './folder.service';
 
@@ -92,9 +92,21 @@ export class WorkspaceService {
         },
       });
 
-      // (Optional) also create in Supabase auth for login
-      // Supabase provides "invite user" via magic link
-      // await supabase.auth.admin.inviteUserByEmail(email);
+      // Also create in Supabase Auth (optional but recommended)
+      try {
+        const { data: invited, error } =
+          await supabase.auth.admin.inviteUserByEmail(email, {
+            redirectTo: `${process.env.BACKEND_URL}/auth/callback`,
+          });
+
+        if (error) {
+          console.error('Supabase invite error:', error.message);
+        } else {
+          console.log('Supabase invite sent:', invited);
+        }
+      } catch (err) {
+        console.error('Supabase invite exception:', err);
+      }
     }
 
     // 3. Create workspace membership with status pending
@@ -119,9 +131,12 @@ export class WorkspaceService {
       },
     });
 
-    // 4. Send invite email (magic link or your own)
-    // Example: using Supabase magic link
-    // await supabase.auth.signInWithOtp({ email });
+    // 4. Optionally also send your own branded invite email
+    // await EmailService.sendInvite(email, {
+    //   workspaceId,
+    //   role,
+    //   link: `${process.env.FRONTEND_URL}/invite/accept?workspaceId=${workspaceId}`,
+    // });
 
     return workspaceMember;
   }

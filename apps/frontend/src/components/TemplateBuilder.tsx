@@ -461,15 +461,11 @@
 
 // export default TemplateBuilder;
 
+import clsx from 'clsx';
 import { Save } from 'lucide-react';
 import { isEqual } from 'lodash-es';
-import { useState, useRef, useEffect, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import clsx from 'clsx';
-
-import { api } from '../utils';
-import FormBuilder from './FormBuilder';
-import SuggestionInput from './SuggestionInput';
+import { useState, useRef, useEffect, memo } from 'react';
 
 import {
   apiRoutes,
@@ -477,6 +473,10 @@ import {
   preDefinedOperators,
 } from '@prodgenie/libs/constant';
 import { Button, FileDropzone, Input, toast } from '@prodgenie/libs/ui';
+
+import { api } from '../utils';
+import FormBuilder from './FormBuilder';
+import SuggestionInput from './SuggestionInput';
 
 // 🔹 Reusable field row
 const TemplateFieldRow = ({ label, value, readOnly = false, onChange }) => (
@@ -724,7 +724,7 @@ const TemplateBuilder = () => {
 
       {/* Right: Preview & File Upload */}
       {/* <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[calc(100vh-200px)]"> */}
-      <div className="bg-white border rounded shadow p-4 overflow-auto h-screen">
+      <div className="bg-white border rounded shadow p-4 overflow-auto ">
         <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-white pb-2 border-b">
           {id === null ? (
             <Input

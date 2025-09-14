@@ -7,28 +7,30 @@ import { FileHelperService } from '@prodgenie/libs/server-services';
 
 import { FileService } from './file.service';
 import e from 'express';
+import { isDeepStrictEqual } from 'util';
 
 const storageFileService = new FileStorageService();
 const fileHelperService = new FileHelperService();
 const fileService = new FileService();
 
 export class SequenceService {
-  async syncAll(orgId: string, user: any) {
+  async syncAll(workspaceId: string, user: any) {
     // 1. Get all template file details
     const templateDetails = await prisma.file.findMany({
-      where: { orgId, type: 'template' },
-      select: { name: true, path: true },
+      where: { workspaceId, type: 'template' },
+      select: { name: true, path: true, data: true },
     });
 
     // Preprocess template paths to match stripped format
     const normalizedTemplates = templateDetails.map((template) => ({
       name: template.name.split('.')[0],
       path: template.path.split('/').slice(1).join('/'),
+      data: template.data,
     }));
 
     // 2. Get all sequence files
     const sequenceFiles = await prisma.file.findMany({
-      where: { orgId, type: 'sequence' },
+      where: { workspaceId, type: 'sequence' },
       select: { id: true, name: true, path: true },
     });
 
@@ -49,12 +51,25 @@ export class SequenceService {
 
           if (!matchingTemplate) return section;
 
-          const isPathMismatch = section.path !== matchingTemplate.path;
+          const needsUpdate =
+            section.path !== matchingTemplate.path ||
+            !isDeepStrictEqual(section.jobCardForm, matchingTemplate.data);
 
-          if (isPathMismatch) {
+          if (needsUpdate) {
             hasChanges = true;
-            return { ...section, path: matchingTemplate.path };
+            return {
+              ...section,
+              path: matchingTemplate.path,
+              jobCardForm: matchingTemplate.data.jobCardForm,
+            };
           }
+
+          // const isPathMismatch = section.path !== matchingTemplate.path;
+
+          // if (isPathMismatch) {
+          //   hasChanges = true;
+          //   return { ...section, path: matchingTemplate.path };
+          // }
 
           return section;
         });
@@ -105,7 +120,8 @@ export class SequenceService {
     const jobCardData = await Promise.all(
       json.sections.map(async (section: any) => {
         try {
-          return section.jobCardForm;
+          // return section.jobCardForm;
+          return { name: section.name, sections: section.jobCardForm.sections };
         } catch (err) {
           console.error(
             'Failed to get jobcard data for section:',
@@ -117,31 +133,33 @@ export class SequenceService {
       })
     );
 
-    // Flatten the nested array and filter out falsy values (undefined, null, empty object, etc.)
-    const allData = jobCardData
-      .flat()
-      .filter(
-        (item) =>
-          item &&
-          Object.keys(item).length > 0 &&
-          Array.isArray(item.sections) &&
-          item.sections.length > 0
-      );
+    // // Flatten the nested array and filter out falsy values (undefined, null, empty object, etc.)
+    // const allData = jobCardData
+    //   .flat()
+    //   .filter(
+    //     (item) =>
+    //       item &&
+    //       Object.keys(item).length > 0 &&
+    //       Array.isArray(item.sections) &&
+    //       item.sections.length > 0
+    //   );
 
-    // Combine all sections
-    const allSections = allData.flatMap((item) => item.sections);
+    // // Combine all sections
+    // const allSections = allData.flatMap((item) => item.sections);
 
-    // Remove duplicates based on section name
-    const uniqueSectionsMap = new Map<string, any>();
+    // // Remove duplicates based on section name
+    // const uniqueSectionsMap = new Map<string, any>();
 
-    allSections.forEach((section) => {
-      if (!uniqueSectionsMap.has(section.name)) {
-        uniqueSectionsMap.set(section.name, section);
-      }
-    });
+    // allSections.forEach((section) => {
+    //   if (!uniqueSectionsMap.has(section.name)) {
+    //     uniqueSectionsMap.set(section.name, section);
+    //   }
+    // });
 
-    const uniqueSections = Array.from(uniqueSectionsMap.values());
+    // const uniqueSections = Array.from(uniqueSectionsMap.values());
 
-    return uniqueSections;
+    // return uniqueSections;
+
+    return jobCardData.filter((item) => item.sections.length > 0);
   }
 }

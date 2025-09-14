@@ -32,7 +32,8 @@ export default function EditUserRole({
 }) {
   const { closeModal } = useModalStore();
   const { user } = useUserStore((state) => state);
-  const { activeWorkspace } = useWorkspaceStore((state) => state);
+  const { activeWorkspace, workspaceUsers, fetchWorkspaceUsers } =
+    useWorkspaceStore((state) => state);
 
   const currentRole = user?.memberships.find(
     (m) => m.workspace.id === activeWorkspace?.id
@@ -40,6 +41,10 @@ export default function EditUserRole({
 
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<WorkspaceRole>(currentRole!);
+
+  const workspaceUserName = workspaceUsers.find(
+    (w) => w?.user?.id === workspaceUserId
+  )?.user?.name;
 
   const updateUser = async () => {
     if (!role) return;
@@ -50,7 +55,9 @@ export default function EditUserRole({
         `${apiRoutes.workspace.base}${apiRoutes.workspace.updateUserRoleInWorkspace}`,
         { role, userId: workspaceUserId, workspaceId: activeWorkspace?.id }
       );
-      // optionally refetch workspace members here
+
+      await fetchWorkspaceUsers(activeWorkspace?.id); // fetch updated workspace users
+
       closeModal();
     } catch (err) {
       console.error(err);
@@ -65,7 +72,7 @@ export default function EditUserRole({
         <div className="flex gap-2">
           <CardTitle className="text-2xl ">Edit User</CardTitle>
           <CardTitle className="text-2xl text-muted-foreground">
-            {workspaceUserId}
+            {workspaceUserName}
           </CardTitle>
         </div>
         <CardDescription>

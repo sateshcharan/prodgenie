@@ -1,10 +1,9 @@
-import MaterialForm from '../components/MaterialForm';
-import HeaderForm from '../components/HeaderForm';
-import Render from '../components/Render';
-
-import { PublicLayout } from '../layouts';
 import { Home, Pricing } from '../pages';
-import AuthPage from '../pages/AuthPage';
+import Render from '../components/Render';
+import { PublicLayout } from '../layouts';
+import HeaderForm from '../components/HeaderForm';
+import MaterialForm from '../components/MaterialForm';
+
 export const publicRoutes = [
   {
     path: '/',
@@ -16,9 +15,5 @@ export const publicRoutes = [
       { path: 'header', element: <HeaderForm /> },
       { path: 'render', element: <Render /> },
     ],
-  },
-  {
-    path: '/auth',
-    element: <AuthPage />,
   },
 ];

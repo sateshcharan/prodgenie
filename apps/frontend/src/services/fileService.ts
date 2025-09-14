@@ -1,6 +1,6 @@
-import { api } from '../utils';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { api } from '../utils';
 
 export const fetchFilesByType = async (fileType: string) => {
   const { data } = await api.get(`${apiRoutes.files.base}/${fileType}/list`);
