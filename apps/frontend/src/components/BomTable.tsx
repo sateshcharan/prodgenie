@@ -67,6 +67,7 @@ const BomTable = ({
   return (
     <div className="overflow-x-auto">
       <div className="flex items-center justify-start gap-2 mb-2">
+        <Pencil size={18} />
         <h2 className="text-lg font-semibold">BOM</h2>
         <button
           onClick={() => {
@@ -74,9 +75,7 @@ const BomTable = ({
             setIsEditing(!isEditing);
           }}
           className="text-muted-foreground hover:text-primary"
-        >
-          <Pencil size={18} />
-        </button>
+        ></button>
       </div>
 
       <div className="overflow-x-auto">

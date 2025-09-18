@@ -164,11 +164,7 @@ export class ThumbnailService {
       }
     }
 
-    if (
-      fileType === 'config' ||
-      fileType === 'sequence' ||
-      fileType === 'table'
-    ) {
+    if (fileType === 'config' || fileType === 'sequence') {
       try {
         const browser = await puppeteer.launch({
           headless: true,
@@ -187,55 +183,55 @@ export class ThumbnailService {
 
         // Build a basic HTML summary from JSON
         const htmlContent = `
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              background-color: #f9f9f9;
-            }
-            h1 {
-              font-size: 18px;
-              margin-bottom: 10px;
-            }
-            .section {
-              background: #fff;
-              border: 1px solid #ddd;
-              border-radius: 8px;
-              padding: 10px;
-              margin-bottom: 10px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .section h2 {
-              font-size: 14px;
-              margin: 0 0 5px;
-            }
-            .field {
-              font-size: 12px;
-              color: #555;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Template Preview</h1>
-          ${(jsonData?.sections || [])
-            .map(
-              (section: any) => `
-            <div class="section">
-              <h2>📦 ${section.name}</h2>
-              <div class="field">Fields: ${
-                section?.jobCardForm?.sections?.flatMap(
-                  (s: any) => s.fields || []
-                ).length || 0
-              }</div>
-            </div>
-          `
-            )
-            .join('')}
-        </body>
-      </html>
-    `;
+        <html>
+          <head>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                background-color: #f9f9f9;
+              }
+              h1 {
+                font-size: 18px;
+                margin-bottom: 10px;
+              }
+              .section {
+                background: #fff;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              .section h2 {
+                font-size: 14px;
+                margin: 0 0 5px;
+              }
+              .field {
+                font-size: 12px;
+                color: #555;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Template Preview</h1>
+            ${(jsonData?.sections || [])
+              .map(
+                (section: any) => `
+              <div class="section">
+                <h2>📦 ${section.name}</h2>
+                <div class="field">Fields: ${
+                  section?.jobCardForm?.sections?.flatMap(
+                    (s: any) => s.fields || []
+                  ).length || 0
+                }</div>
+              </div>
+            `
+              )
+              .join('')}
+          </body>
+        </html>
+      `;
 
         await page.setContent(htmlContent, {
           waitUntil: 'domcontentloaded',
@@ -255,6 +251,101 @@ export class ThumbnailService {
       }
     }
 
-    throw new Error(`Unsupported fileType: ${fileType}`);
+    //   throw new Error(`Unsupported fileType: ${fileType}`);
+
+    if (fileType === 'table') {
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--single-process',
+          '--no-zygote',
+        ],
+      });
+
+      try {
+        const page = await browser.newPage();
+        const jsonData = JSON.parse(file.buffer.toString());
+
+        const columns = jsonData?.columns || [];
+        const rows = jsonData?.rows || [];
+
+        const htmlContent = `
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 16px;
+              background: #f9f9f9;
+            }
+            h1 {
+              font-size: 16px;
+              margin-bottom: 10px;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              background: #fff;
+              border-radius: 6px;
+              overflow: hidden;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 6px 10px;
+              font-size: 12px;
+              text-align: left;
+            }
+            th {
+              background: #f3f3f3;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <table>
+            <thead>
+              <tr>
+                ${columns.map((col: any) => `<th>${col.label}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${rows
+                .slice(0, 5) // only first 5 rows for thumbnail
+                .map(
+                  (row: any) => `
+                    <tr>
+                      ${columns
+                        .map((col: any) => `<td>${row[col.key] ?? ''}</td>`)
+                        .join('')}
+                    </tr>
+                  `
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+        await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+
+        const screenshotBuffer = await page.screenshot({
+          fullPage: false,
+          type: 'jpeg',
+          quality: 80,
+        });
+
+        await browser.close();
+        return screenshotBuffer as Buffer;
+      } catch (error: any) {
+        console.error('❌ Failed to generate table thumbnail:', error);
+        throw new Error(`Thumbnail generation error: ${error.message}`);
+      }
+    }
   }
 }

@@ -43,14 +43,13 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-2 mb-2">
+        <Pencil size={18} />
         <h2 className="text-lg font-semibold">Title Block Details</h2>
         <button
           onClick={() => setIsEditing(!isEditing)}
           className="text-muted-foreground hover:text-primary"
-        >
-          <Pencil size={18} />
-        </button>
+        ></button>
       </div>
 
       <div className="space-y-1 text-sm text-gray-700">

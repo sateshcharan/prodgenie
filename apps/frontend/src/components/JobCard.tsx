@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useForm, useWatch } from 'react-hook-form';
 
 import {
   Tabs,
@@ -13,21 +13,13 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  Input,
   Form,
   Button,
   Card,
   CardContent,
   toast,
   Separator,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Checkbox,
   ScrollArea,
-  Toast,
 } from '@prodgenie/libs/ui';
 import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
@@ -37,6 +29,7 @@ import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
 import { api } from '../utils';
 import BomTable from './BomTable';
 import TitleBlock from './TitleBlock';
+import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import { generateJobCard } from '../services/jobCardService';
 
@@ -51,54 +44,6 @@ interface JobCardProps {
   fileId: string;
   signedUrl: string;
   setJobCardUrl: (url: string) => void;
-}
-
-function RenderField({ fieldConfig, rhfField, options = [] }: any) {
-  switch (fieldConfig.type) {
-    case 'select':
-      return (
-        <Select value={rhfField.value} onValueChange={rhfField.onChange}>
-          <SelectTrigger>
-            <SelectValue placeholder={fieldConfig.placeholder || 'Select'} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((opt: any, i: number) => (
-              <SelectItem key={i} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
-
-    case 'checkbox':
-      return (
-        <Checkbox
-          checked={!!rhfField.value}
-          onCheckedChange={rhfField.onChange}
-        />
-      );
-
-    case 'number':
-      return (
-        <Input
-          type="number"
-          placeholder={fieldConfig.placeholder}
-          value={rhfField.value ?? ''}
-          onChange={(e) => rhfField.onChange(Number(e.target.value))}
-        />
-      );
-
-    default:
-      return (
-        <Input
-          type="text"
-          placeholder={fieldConfig.placeholder}
-          value={rhfField.value ?? ''}
-          onChange={(e) => rhfField.onChange(e.target.value)}
-        />
-      );
-  }
 }
 
 const JobCard = ({
@@ -121,14 +66,41 @@ const JobCard = ({
   const printingDetails = tables.data?.printingDetails;
 
   useEffect(() => {
-    if (bom.length) {
-      setBom(bom);
-      setTitleBlock(titleBlock);
-      setSelectedItems(bom.map((item) => item.slNo));
-    } else {
+    if (!bom.length) {
       setSelectedItems([]);
+      return;
     }
-  }, [fileId, bom]);
+
+    setBom(bom);
+    setTitleBlock(titleBlock);
+    setSelectedItems(bom.map((item) => item.slNo));
+
+    const getTemplateFieldsFromSequence = async () => {
+      try {
+        const sequences = bom.map((b) => b.description);
+        const responses = await Promise.all(
+          sequences.map(async (sequence) => {
+            const res = await api.get(
+              `${apiRoutes.sequence.base}/getJobCardDataFromSequence/${sequence}`
+            );
+            return res.data;
+          })
+        );
+        setJobCardData(responses);
+      } catch (err) {
+        console.error('Error fetching job card data:', err);
+      }
+    };
+
+    getTemplateFieldsFromSequence();
+  }, [
+    bom,
+    titleBlock,
+    setBom,
+    setTitleBlock,
+    setSelectedItems,
+    setJobCardData,
+  ]);
 
   useEffect(() => {
     const fetchJobCardNo = async () => {
@@ -141,47 +113,25 @@ const JobCard = ({
         toast.error('Failed to fetch job card number.');
       }
     };
+
     fetchJobCardNo();
   }, []);
 
-  useEffect(() => {
-    if (!bom.length) return;
-
-    const sequences = bom.map((b) => b.description);
-
-    const getTemplateFieldsFromSequence = async () => {
-      try {
-        const responses = await Promise.all(
-          sequences.map(async (sequence) => {
-            const res = await api.get(
-              `${apiRoutes.sequence.base}/getJobCardDataFromSequence/${sequence}`
-            );
-            return res.data;
-          })
-        );
-
-        // Store expects an array, not spread args
-        setJobCardData(responses);
-      } catch (err) {
-        console.error('Error fetching job card data:', err);
-      }
-    };
-
-    getTemplateFieldsFromSequence();
-  }, [bom, setJobCardData]);
-
   // ⏳ Dynamic schema and fields
-  // const dynamicFields = jobCardData[0]?.fields;
-  const dynamicFields = jobCardData?.[0]?.fields || { fields: [] };
-
-  // const dynamicSectionName = jobCardData[0]?.name;
+  const dynamicFields = jobCardData[0]?.map((section) =>
+    section.sections.map((section) => section.fields)
+  );
 
   // const dynamicSchema = (function (z) {
   //   return eval(jobCardData[0]?.schema);
   // })(z); // dangerous execuction
   const dynamicSchema = useMemo(() => {
     try {
-      const rawSchema = jobCardData?.[0]?.schema;
+      // const rawSchema = jobCardData?.[0]?.schema;
+      const rawSchema = jobCardData[0]?.map((section) =>
+        section.sections.map((section) => section.schema)
+      );
+
       if (!rawSchema) return undefined;
 
       const buildSchema = new Function('z', `return (${rawSchema});`);
@@ -195,10 +145,6 @@ const JobCard = ({
     }
   }, [jobCardData]);
 
-  // const mergedSchema = useMemo(() => {
-  //   if (!dynamicSchema) return jobCardSchema;
-  //   return jobCardSchema.merge(dynamicSchema);
-  // }, [dynamicSchema]);
   const mergedSchema = useMemo(() => {
     if (!dynamicSchema || typeof dynamicSchema !== 'object')
       return jobCardSchema;
@@ -245,34 +191,35 @@ const JobCard = ({
 
       setIsLoading(false);
     }
-  }, [dynamicDefaults, staticDefaults, dynamicFields]);
+  }, [dynamicDefaults, staticDefaults]);
 
-  const normalizedJobCardData = useMemo(() => {
-    if (!jobCardData) return [];
-
-    return jobCardData.map((item: any) => ({
-      name: item.name,
-      sections: (item.sections || []).map((section: any) => ({
-        name: section.name,
-        fields: section.fields,
-        schema: section.schema,
-      })),
-    }));
-  }, [jobCardData]);
-
-  const onSubmit = async (jobCardForm: jobCardFormValues) => {
+  const onSubmit = async () => {
     try {
-      setJobCardNumber(jobCardForm.jobCardNumber);
-      setScheduleDate(new Date(jobCardForm.scheduleDate));
-      setPoNumber(jobCardForm.poNumber);
-      setProductionQty(jobCardForm.productionQty);
+      const values = form.getValues();
 
+      const globalFields: Record<string, any> = {};
+      const sections: Record<string, any> = {};
+
+      Object.entries(values).forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          sections[key] = value; // dynamic section
+        } else {
+          globalFields[key] = value; // static/global
+        }
+      });
+
+      const structuredForm = {
+        global: globalFields,
+        sections,
+      };
+
+      // 👇 send to backend
       const jobCardData = {
         bom: bom.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,
         printingDetails,
         file: { id: fileId },
-        jobCardForm: jobCardForm,
+        jobCardForm: structuredForm,
         signedUrl,
       };
 
@@ -287,8 +234,13 @@ const JobCard = ({
     }
   };
 
+  const watchedValues = useWatch({ control: form.control });
+  useEffect(() => {
+    console.log(watchedValues);
+  }, [watchedValues]);
+
   return (
-    <Card className="border-none">
+    <Card className="border-none ">
       <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -302,6 +254,7 @@ const JobCard = ({
                 <TabsTrigger value="form">Job Card Details</TabsTrigger>
               </TabsList>
 
+              {/* bom and printing details */}
               <TabsContent value="select">
                 <ScrollArea className="h-[calc(100vh-200px)] ">
                   <div className="p-4 flex flex-col gap-4">
@@ -322,29 +275,23 @@ const JobCard = ({
                 </ScrollArea>
               </TabsContent>
 
+              {/* job card details */}
               <TabsContent value="form">
                 <ScrollArea className="h-[calc(100vh-200px)]">
                   <div className="p-4">
+                    {/* static job card fields */}
                     {jobCardFields.map((item) => (
                       <FormField
                         control={form.control}
                         key={item.name}
                         name={item.name as keyof jobCardFormValues}
                         render={({ field }) => (
-                          <FormItem className="pt-4">
+                          <FormItem className="flex items-center gap-2">
                             <FormLabel>{item.label}</FormLabel>
                             <FormControl>
-                              <Input
-                                type={item.type}
-                                placeholder={item.placeholder}
-                                value={field.value ?? ''}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    item.type === 'number'
-                                      ? Number(e.target.value)
-                                      : e.target.value
-                                  )
-                                }
+                              <RenderField
+                                fieldConfig={item}
+                                rhfField={field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -353,6 +300,7 @@ const JobCard = ({
                       />
                     ))}
 
+                    {/* dynamic job card fields */}
                     <FormProvider {...form}>
                       {jobCardData.map((sections, idx) => (
                         <div
@@ -380,15 +328,17 @@ const JobCard = ({
                                     <FormField
                                       control={form.control}
                                       key={field.name}
-                                      name={field.name as any}
+                                      name={
+                                        `${fields.name}.${section.name}.${field.name}` as any
+                                      }
                                       render={({ field: rhfField }) => (
-                                        <FormItem className="pt-2">
+                                        // (rhfField.name = `${fields.name}.${section.name}.${field.name}`),
+                                        <FormItem className="flex items-center gap-2">
                                           <FormLabel>{field.label}</FormLabel>
                                           <FormControl>
                                             <RenderField
                                               fieldConfig={field}
-                                              rhfField={field}
-                                              options={field.options || []}
+                                              rhfField={rhfField}
                                             />
                                           </FormControl>
                                           <FormMessage />
@@ -398,8 +348,6 @@ const JobCard = ({
                                   ))}
                                 </div>
                               ))}
-
-                              <Separator />
                             </div>
                           ))}
                         </div>

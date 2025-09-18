@@ -34,7 +34,6 @@ export * from './components/auth-form';
 export * from './components/toast';
 export * from './components/FileDropzone';
 export * from './components/DialogDropZone';
-// export * from './components/DialogEditFile.backup';
 export * from './components/theme-provider';
 export * from './components/mode-toggle';
 export * from './components/nav-configurations';

@@ -1,6 +1,4 @@
-import { CardContent, Input } from '@prodgenie/libs/ui';
-
-import { Card } from '@prodgenie/libs/ui';
+import { Card, CardContent, Input } from '@prodgenie/libs/ui';
 
 export const SearchBanner = ({
   searchTerm,

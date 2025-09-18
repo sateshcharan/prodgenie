@@ -38,7 +38,7 @@ export class JobCardService {
   }: jobCardRequest) {
     if (!bom.length) return console.warn('bom is empty');
 
-    console.log(`Generating job card : ${jobCardForm.jobCardNumber} `);
+    console.log(`Generating job card : ${jobCardForm.global.jobCardNumber} `);
 
     const templates: string[] = [];
     const workspaceId = activeWorkspace?.workspace?.id;
@@ -50,16 +50,12 @@ export class JobCardService {
       throw new Error('Not enough credits upgrade your plan');
     }
 
-    const materialConfig = await this.fetchOrgConfig(
-      workspaceId,
-      'material.json',
-      'table'
-    );
-    const standardConfig = await this.fetchOrgConfig(
-      workspaceId,
-      'standard.json',
-      'table'
-    );
+    const tables = await this.fetchAllOrgTables(workspaceId);
+
+    // Access configs dynamically
+    const materialConfig = tables['material'] || {};
+    const standardConfig = tables['standard'] || {};
+
     const bomConfig = await this.fetchOrgConfig(
       workspaceId,
       'bom.json',
@@ -67,7 +63,7 @@ export class JobCardService {
     );
 
     let manualContext = {
-      jobCardForm,
+      ...jobCardForm.global,
       user,
       titleBlock,
       printingDetails,
@@ -95,7 +91,6 @@ export class JobCardService {
       );
 
       for (const section of sequence.sections) {
-        console.log(section);
         const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${workspaceName}/${section.path}`
         );
@@ -140,8 +135,14 @@ export class JobCardService {
           sequenceData,
           bomConfig,
           ...context,
+          ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global),
+          ...(jobCardForm.sections[section.name] &&
+            this.stringService.prefixKeys(
+              'jobCardForm',
+              jobCardForm.sections[section.name]
+            )),
+          // ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
           ...this.stringService.prefixKeys('bomItem', bomItem),
-          ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
           ...this.stringService.prefixKeys('user', user),
         }).reduce((acc, [key, value]) => {
           acc[key] = !isNaN(value as any) ? Number(value) : value;
@@ -152,6 +153,8 @@ export class JobCardService {
           evalContext,
           computedFieldDefs
         );
+
+        console.log(evalContext, computedFieldDefs);
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
@@ -167,7 +170,7 @@ export class JobCardService {
     const finalDoc = await this.templateService.combineTemplates(templates);
     const outputPath = await this.pdfService.generatePDF(
       finalDoc,
-      jobCardForm.jobCardNumber
+      jobCardForm.global.jobCardNumber
     );
     console.log(`Job card saved to ${outputPath}`);
 
@@ -201,6 +204,26 @@ export class JobCardService {
     return await this.fileHelperService.fetchJsonFromSignedUrl(
       `${configFile?.path}`
     );
+  }
+
+  private async fetchAllOrgTables(workspaceId: string) {
+    const tableFiles = await prisma.file.findMany({
+      where: { workspaceId, type: { in: ['table'] as FileType[] } },
+      select: { name: true, type: true, path: true },
+    });
+
+    const tables: Record<string, any> = {};
+
+    for (const file of tableFiles) {
+      try {
+        tables[file.name.replace('.json', '')] =
+          await this.fileHelperService.fetchJsonFromSignedUrl(file.path);
+      } catch (err) {
+        console.warn(`⚠️ Failed to load config: ${file.name}`, err);
+      }
+    }
+
+    return tables;
   }
 
   private async identifyProduct(item: BomItem) {
