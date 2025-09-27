@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import type { Page } from 'puppeteer';
 import puppeteerExtra from 'puppeteer-extra';
 import type { PuppeteerExtra } from 'puppeteer-extra';
 // import type { Page, ElementHandle } from 'puppeteer';
-import type { Page } from 'puppeteer';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-
 import { extractBOMPrompt } from '@prodgenie/libs/constant';
 
 const puppeteer = puppeteerExtra as unknown as PuppeteerExtra;
@@ -31,7 +30,7 @@ export class PuppeteerService {
   public async extractFromChatGPT(filePath: string): Promise<string> {
     const browser = await this.launchBrowser();
 
-    console.log(filePath);
+    // console.log(filePath);
 
     try {
       const page = await browser.newPage();
@@ -95,16 +94,17 @@ export class PuppeteerService {
     return puppeteer.launch({
       // needed for docker environment
       // executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+
       headless: false,
-      userDataDir: this.userDataDir,
+      // userDataDir: this.userDataDir,
       defaultViewport: { width: 1920, height: 1080 },
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
-        '--single-process',
-        '--no-zygote',
+        // '--single-process',
+        // '--no-zygote',
       ],
     });
   }

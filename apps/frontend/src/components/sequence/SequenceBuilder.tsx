@@ -20,7 +20,7 @@ import { isEqual } from 'lodash-es';
 
 import FormulaBuilder from './FormulaBuilder';
 import { api, ExcelHTMLViewer } from '../../utils';
-import { fetchFilesByType, getThumbnail } from '../../services/fileService';
+import { fetchFilesByType, getThumbnail } from '../../utils/fileService';
 
 import { Button, Input, toast } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
@@ -130,7 +130,7 @@ const SequenceBuilder = () => {
     const fetchFile = async () => {
       try {
         const rawFile = await api.get(`${apiRoutes.files.base}/getById/${id}`);
-        const formulas = rawFile.data.data.data;
+        const formulas = rawFile.data.data.data.formulas;
         const jsonFile = await fetch(rawFile.data.data.path).then((res) =>
           res.json()
         );

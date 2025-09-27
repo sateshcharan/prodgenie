@@ -19,8 +19,9 @@ import {
 
 type FormulaConfig = {
   key: string | null;
-  common: { key: string; value: string }[];
-  depField: { key: string; value: string }[];
+  formulas: { key: string; value: string }[];
+  // common: { key: string; value: string }[];
+  // depField: { key: string; value: string }[];
 };
 
 type FormulaBuilderProps = {
@@ -33,8 +34,9 @@ const FormulaBuilder = forwardRef(
   ({ fileData, sequenceFormulas, onFormulaSave }: FormulaBuilderProps, ref) => {
     const defaultProduct: FormulaConfig = {
       key: 'Consolidated Formulas',
-      common: [],
-      depField: [],
+      formulas: {},
+      // common: [],
+      // depField: [],
     };
 
     const {
@@ -90,42 +92,50 @@ const FormulaBuilder = forwardRef(
           const transformed = fileData.flatMap((file: any) =>
             Object.entries(file.data).map(([key, value]: [string, any]) => ({
               key,
-              common: value.common || {},
-              depField: value.computed || {},
+              formulas: value.formulas || {},
+              // common: value.common || {},
+              // depField: value.computed || {},
             }))
           );
 
           const merged = transformed.reduce(
             (acc: any, item: any) => {
-              Object.assign(acc.common, item.common);
-              Object.assign(acc.depField, item.depField);
+              Object.assign(acc.formulas, item.formulas);
+              // Object.assign(acc.common, item.common);
+              // Object.assign(acc.depField, item.depField);
               return acc;
             },
             {
               key: 'consolidated formulas',
-              common: {},
-              depField: {},
+              formulas: {},
+              // common: {},
+              // depField: {},
             }
           );
 
           const hydrated = {
             ...merged,
-            common: { ...merged.common, ...sequenceFormulas.common },
-            depField: { ...merged.depField, ...sequenceFormulas.depField },
+            formulas: { ...merged.formulas, ...sequenceFormulas },
+            // common: { ...merged.common, ...sequenceFormulas.common },
+            // depField: { ...merged.depField, ...sequenceFormulas.depField },
           };
 
           reset({
             products: [
               {
                 key: hydrated.key,
-                common: Object.entries(hydrated.common).map(([k, v]) => ({
+                formulas: Object.entries(hydrated.formulas).map(([k, v]) => ({
                   key: k,
                   value: v,
                 })),
-                depField: Object.entries(hydrated.depField).map(([k, v]) => ({
-                  key: k,
-                  value: v,
-                })),
+                // common: Object.entries(hydrated.common).map(([k, v]) => ({
+                //   key: k,
+                //   value: v,
+                // })),
+                // depField: Object.entries(hydrated.depField).map(([k, v]) => ({
+                //   key: k,
+                //   value: v,
+                // })),
               },
             ],
           });
@@ -155,8 +165,9 @@ const FormulaBuilder = forwardRef(
 
       const output = {
         key: product.key,
-        common: toObject(product.common),
-        depField: toObject(product.depField),
+        formulas: toObject(product.formulas),
+        // common: toObject(product.common),
+        // depField: toObject(product.depField),
       };
 
       onFormulaSave(output);
@@ -164,7 +175,9 @@ const FormulaBuilder = forwardRef(
     };
 
     // Dynamically extract all depField keys from all products
-    const commonFieldKeys = Object.keys(products[0].common);
+    // const commonFieldKeys = Object.keys(products[0].common);
+
+    const formulaFieldKeys = Object.keys(products[0].formulas);
 
     return (
       <div className="bg-white border rounded shadow p-2  h-[400px] flex flex-col">
@@ -195,7 +208,7 @@ const FormulaBuilder = forwardRef(
                 </Button> */}
                   </div>
 
-                  <div className="overflow-auto">
+                  {/* <div className="overflow-auto">
                     <h4 className="font-medium">Common Fields</h4>
                     <FormulaFields
                       control={control}
@@ -213,6 +226,17 @@ const FormulaBuilder = forwardRef(
                       index={index}
                       fieldName="depField"
                       extraSuggestions={commonFieldKeys}
+                      jobCardFormSuggestions={jobCardFormSuggestions}
+                    />
+                  </div> */}
+
+                  <div className="overflow-auto">
+                    <h4 className="font-medium">Formula Fields</h4>
+                    <FormulaFields
+                      control={control}
+                      index={index}
+                      fieldName="formulas"
+                      extraSuggestions={formulaFieldKeys}
                       jobCardFormSuggestions={jobCardFormSuggestions}
                     />
                   </div>

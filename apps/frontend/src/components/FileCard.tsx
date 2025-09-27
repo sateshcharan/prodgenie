@@ -3,7 +3,7 @@ import { X, Download, Pencil, Briefcase, Calculator } from 'lucide-react';
 
 import PdfThumbnail from './PdfThumbnail';
 import { ExcelHTMLViewer } from '../utils';
-import { getThumbnail } from '../services/fileService';
+import { getThumbnail } from '../utils/fileService';
 import { EditableTitle } from './EditableTitle';
 
 import {

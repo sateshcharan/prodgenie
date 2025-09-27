@@ -1,3 +1,2 @@
-2025/09/18-10:01:08.295 582db7 Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/GCM Store/MANIFEST-000001
-2025/09/18-10:01:08.295 582db7 Recovering log #3
-2025/09/18-10:01:08.295 582db7 Reusing old log /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/GCM Store/000003.log 
+2025/09/19-13:10:52.702 617812 Creating DB /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/GCM Store since it was missing.
+2025/09/19-13:10:52.712 617812 Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/GCM Store/MANIFEST-000001

@@ -2,6 +2,7 @@ import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { ThumbnailService } from './thumbnail.service';
 import { FileType } from '@prisma/client';
+import { json } from 'stream/consumers';
 
 const storageFileService = new FileStorageService();
 const thumbnailService = new ThumbnailService();
@@ -127,6 +128,13 @@ export class FileService {
     });
     if (!data) return { data: null, error: 'No file found' };
     return data;
+  }
+
+  async setFileData(fileId: string, data: any) {
+    return prisma.file.update({
+      where: { id: fileId },
+      data: { data },
+    });
   }
 
   async getThumbnail(fileId: string, workspaceId: string) {

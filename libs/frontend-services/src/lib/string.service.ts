@@ -11,15 +11,70 @@ export class StringService {
     return text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
   }
 
+  // prefixKeys = (
+  //   keyToReplace: string,
+  //   objectToPrefixIn: Record<string, any>
+  // ): Record<string, any> => {
+  //   return Object.entries(objectToPrefixIn).reduce((acc, [key, value]) => {
+  //     acc[`${keyToReplace}_${key}`] = value;
+  //     return acc;
+  //   }, {} as Record<string, any>);
+  // };
+
   prefixKeys = (
     keyToReplace: string,
     objectToPrefixIn: Record<string, any>
   ): Record<string, any> => {
-    return Object.entries(objectToPrefixIn).reduce((acc, [key, value]) => {
-      acc[`${keyToReplace}_${key}`] = value;
-      return acc;
-    }, {} as Record<string, any>);
+    const result: Record<string, any> = {};
+
+    const helper = (obj: Record<string, any>, prefix: string) => {
+      for (const [key, value] of Object.entries(obj)) {
+        const newKey = `${prefix}_${key}`;
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          helper(value, newKey); // recurse into nested object
+        } else {
+          result[newKey] = value;
+        }
+      }
+    };
+
+    helper(objectToPrefixIn, keyToReplace);
+    return result;
   };
+
+  flattenObjectWith_ = (
+    obj: Record<string, any>,
+    parentKey = '',
+    separator = '_'
+  ): Record<string, any> => {
+    const result: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+      const newKey = parentKey ? `${parentKey}${separator}${key}` : key;
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        Object.assign(
+          result,
+          this.flattenObjectWith_(value, newKey, separator)
+        );
+      } else {
+        result[newKey] = value;
+      }
+    }
+    return result;
+  };
+
+  evaluateSimpleConcat(
+    expression: string,
+    source: Record<string, any>
+  ): string {
+    return expression
+      .split('+')
+      .map((part) => part.trim())
+      .map(
+        (path) => path.split('.').reduce((acc, key) => acc?.[key], source) ?? ''
+      )
+      .join(' ');
+  }
 
   similarityScore(a: string, b: string): number {
     const normalize = (str: string) => str.trim().toLowerCase();

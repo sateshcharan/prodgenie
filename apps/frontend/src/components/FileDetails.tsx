@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useLocation, useLoaderData } from 'react-router-dom';
 
 import JobCard from './JobCard';
-import { ExcelHTMLViewer } from '../utils';
-import { parsePdfFromUrl } from '../services/pdfService';
+import { api, ExcelHTMLViewer } from '../utils';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 const FileDetails = () => {
   const { fileId, fileType } = useLoaderData() as {
@@ -15,6 +15,8 @@ const FileDetails = () => {
   const [tables, setTables] = useState(null);
   const fileName = signedUrl.split('?')[0].split('/').pop().split('.')[0];
   const [jobCardUrl, setJobCardUrl] = useState('');
+
+  
 
   useEffect(() => {
     if (!signedUrl) {
@@ -29,6 +31,20 @@ const FileDetails = () => {
         });
     }
   }, [signedUrl, fileId]);
+
+  const parsePdfFromUrl = async (signedUrl: string, fileId: string) => {
+  // const cacheKey = `tables-${fileId}`;
+  // const cached = localStorage.getItem(cacheKey);
+  // if (cached) return JSON.parse(cached);
+
+  const response = await api.post(
+    `${apiRoutes.pdf.base}${apiRoutes.pdf.parse}`,
+    { signedUrl, fileId }
+  );
+
+  // localStorage.setItem(cacheKey, JSON.stringify(response.data));
+  return response.data;
+};
 
   return fileType === 'drawing' ? (
     <div className="flex flex-col lg:flex-row w-full flex-1 overflow-hidden">

@@ -38,67 +38,49 @@ export class JobCardService {
   }: jobCardRequest) {
     if (!bom.length) return console.warn('bom is empty');
 
-    console.log(`Generating job card : ${jobCardForm.global.jobCardNumber} `);
-
     const templates: string[] = [];
+    const workspaceName = activeWorkspace?.workspace?.name;
     const workspaceId = activeWorkspace?.workspace?.id;
     const workspaceCredits = activeWorkspace?.workspace?.credits;
-    const workspaceName = activeWorkspace?.workspace?.name;
-
-    // check org credits
     if (workspaceCredits < 10) {
-      throw new Error('Not enough credits upgrade your plan');
+      throw new Error('Not enough credits'); // check org credits
     }
 
-    const tables = await this.fetchAllOrgTables(workspaceId);
+    console.log(`Generating job card : ${jobCardForm.global.jobCardNumber} `);
 
-    // Access configs dynamically
-    const materialConfig = tables['material'] || {};
-    const standardConfig = tables['standard'] || {};
-
-    const bomConfig = await this.fetchOrgConfig(
+    const tables = await this.fetchAllWorkspaceTables(workspaceId);
+    const tableConfigs = await this.buildTableConfigs(tables);
+    const bomConfig = await this.fetchWorkspaceConfig(
       workspaceId,
       'bom.json',
       'config'
     );
-
-    let manualContext = {
-      ...jobCardForm.global,
-      user,
-      titleBlock,
-      printingDetails,
-      keyword: { currentDate: new Date().toISOString().split('T')[0] },
-    };
-
     const drawingFile = await this.fileHelperService.downloadToTemp(
       signedUrl,
       'drawing.pdf'
     );
 
     for (const bomItem of bom) {
-      const product = await this.identifyProduct(bomItem);
-      manualContext = { ...manualContext, bomItem };
-
-      if (!product?.sequencePath) {
+      const productSequence = await this.identifyProduct(bomItem);
+      if (!productSequence?.sequencePath) {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
-
-      const sequenceData = product?.sequenceData;
-
+      const { sequenceData } = productSequence;
+      const sequenceFormulas = sequenceData?.formulas;
       const sequence = await this.fileHelperService.fetchJsonFromSignedUrl(
-        product.sequencePath
+        productSequence.sequencePath
       );
 
-      for (const section of sequence.sections) {
+      for (const templateSection of sequence.sections) {
         const sectionUrl = await this.fileStorageService.getSignedUrl(
-          `${workspaceName}/${section.path}`
+          `${workspaceName}/${templateSection.path}`
         );
 
         const templateData = await prisma.file.findFirst({
           where: {
             type: 'template',
-            name: `${section.name}.htm`,
+            name: `${templateSection.name}.htm`,
           },
           select: {
             data: true,
@@ -106,61 +88,50 @@ export class JobCardService {
         });
 
         if (!templateData) {
-          console.warn(`⚠️ Missing template for: ${section.name}`);
+          console.warn(`⚠️ Missing template for: ${templateSection.name}`);
+          //skip further processing move to next section
           continue;
         }
+        const { templateFields: templateFormulas } = templateData?.data;
 
-        const template = await this.fileHelperService.downloadToTemp(
-          sectionUrl,
-          section.name
-        );
-
-        const { manual: manualFields, computed: computedFieldDefs } =
-          templateData?.data?.templateFields || {};
-
-        const context = this.buildContext(
-          Object.fromEntries(
-            Object.entries(manualFields).map(([key, value]: any) => [
-              key,
-              value.replace(/_/g, '.'),
-            ])
-          ),
-          manualContext
-        );
-
-        const evalContext = Object.entries({
-          sectionName: section.name,
-          materialConfig,
-          standardConfig,
-          sequenceData,
+        const templateContext = Object.entries({
           bomConfig,
-          ...context,
+          sequenceFormulas,
+          printingDetails,
+          sectionName: templateSection.name,
+          tables: tableConfigs,
+          ...(jobCardForm.sections[templateSection.name] &&
+            this.stringService.flattenObjectWith_({
+              jobCardForm: jobCardForm.sections[templateSection.name],
+            })),
           ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global),
-          ...(jobCardForm.sections[section.name] &&
-            this.stringService.prefixKeys(
-              'jobCardForm',
-              jobCardForm.sections[section.name]
-            )),
-          // ...this.stringService.prefixKeys('jobCardForm', jobCardForm),
           ...this.stringService.prefixKeys('bomItem', bomItem),
           ...this.stringService.prefixKeys('user', user),
+          ...this.stringService.prefixKeys('titleBlock', titleBlock),
+          ...this.stringService.prefixKeys('keyword', {
+            currentDate: new Date().toISOString().split('T')[0],
+          }),
         }).reduce((acc, [key, value]) => {
           acc[key] = !isNaN(value as any) ? Number(value) : value;
           return acc;
         }, {} as Record<string, any>);
 
-        const computedFields = this.evaluateFormulas(
-          evalContext,
-          computedFieldDefs
+        console.log(templateContext);
+
+        const evaluatedtemplateFormulas = this.evaluateFormulasUnified(
+          templateFormulas,
+          templateContext
         );
 
-        console.log(evalContext, computedFieldDefs);
+        const template = await this.fileHelperService.downloadToTemp(
+          sectionUrl,
+          templateSection.name
+        );
 
         const populatedTemplate = await this.templateService.injectValues(
           template,
-          { ...context, ...computedFields }
+          { ...templateContext, ...evaluatedtemplateFormulas }
         );
-
         templates.push(populatedTemplate);
       }
       templates.push(`<div style="page-break-after: always;"></div>`);
@@ -191,7 +162,7 @@ export class JobCardService {
     return jobCardUrl;
   }
 
-  private async fetchOrgConfig(
+  private async fetchWorkspaceConfig(
     workspaceId: string,
     name: string,
     type: string
@@ -206,7 +177,7 @@ export class JobCardService {
     );
   }
 
-  private async fetchAllOrgTables(workspaceId: string) {
+  private async fetchAllWorkspaceTables(workspaceId: string) {
     const tableFiles = await prisma.file.findMany({
       where: { workspaceId, type: { in: ['table'] as FileType[] } },
       select: { name: true, type: true, path: true },
@@ -224,6 +195,33 @@ export class JobCardService {
     }
 
     return tables;
+  }
+
+  private async buildTableConfigs(tables: Record<string, any>) {
+    const configs: Record<string, any> = {};
+
+    for (const [tableName, tableData] of Object.entries(tables)) {
+      // Normalize table name
+      const normalized = tableName.toLowerCase().replace(/\s+/g, '');
+      configs[normalized] = {};
+
+      // If tableData is an array of rows with columns
+      if (Array.isArray(tableData)) {
+        for (const row of tableData) {
+          // Use first column (or explicitly "key" column) as key
+          const keyColumn = Object.keys(row)[0];
+          const key = row[keyColumn]
+            ?.toString()
+            .toLowerCase()
+            .replace(/\s+/g, '');
+          configs[normalized][key] = row;
+        }
+      } else {
+        // Fallback if it's just an object config (like your material.json)
+        configs[normalized] = tableData;
+      }
+    }
+    return configs;
   }
 
   private async identifyProduct(item: BomItem) {
@@ -277,113 +275,9 @@ export class JobCardService {
       return null;
     } catch (error) {
       console.error(
-        `❌ Failed to identify product for "${item.description}":`,
+        `❌ Failed to identify productSequence for "${item.description}":`,
         error
       );
-      return null;
-    }
-  }
-
-  private evaluateFormulas(
-    context: Record<string, any>,
-    computedFields: Record<string, string>
-  ) {
-    return Object.fromEntries(
-      Object.entries(computedFields).map(([key, formula]) => {
-        try {
-          if (formula === 'keyword_depField') {
-            return [key, this.evaluateDepFields(context, key)];
-          }
-          return [key, parser.evaluate(formula, context)];
-        } catch (err) {
-          console.warn(`⚠️ Error evaluating ${key}: ${formula}`, err);
-          return [key, null];
-        }
-      })
-    );
-  }
-
-  private evaluateDepFields(
-    context: Record<string, any>,
-    depField: string
-  ): number | string {
-    const { sequenceData, materialConfig, bomItem_material } = context;
-
-    const normalizeKey = (str: string) => str.toLowerCase().replace(/\s/g, '');
-
-    const materialThickness = materialConfig[normalizeKey(bomItem_material)];
-
-    const { common = {}, depField: depFields = {} } = sequenceData;
-    const depFieldExpr = depFields[depField];
-
-    if (!depFieldExpr)
-      throw new Error(`depField expression for "${depField}" not found`);
-
-    const evaluated: Record<string, any> = { ...context, materialThickness };
-
-    // Match all ${...} references in the depField expression
-    const referencedKeys = Array.from(
-      depFieldExpr.matchAll(/\$\{(\w+)\}/g),
-      (match: any) => match[1]
-    );
-
-    // Recursively resolve each referenced key
-    for (const key of referencedKeys) {
-      if (evaluated[key] === undefined) {
-        evaluated[key] = this.resolveField(key, common, context, evaluated);
-      }
-    }
-
-    // Replace ${...} placeholders with resolved values
-    const result = depFieldExpr.replace(/\$\{(\w+)\}/g, (_, key: string) => {
-      const val = evaluated[key];
-      if (val === undefined) {
-        throw new Error(`Missing value for ${key}`);
-      }
-      return val.toString();
-    });
-
-    return result;
-
-    // for (const key of Object.keys(common)) {
-    //   if (evaluated[key] === undefined) {
-    //     const safeExpr = common[key].replace(/\?/g, ' ? ').replace(/:/g, ' : ');
-    //     evaluated[key] = evaluate(safeExpr, evaluated);
-    //   }
-    // }
-
-    // Handle string interpolation for depField (e.g. "${flatLen} x ${flatWid}")
-    // return depFieldExpr.replace(/\$\{(\w+)\}/g, (_: any, varName: any) => {
-    //   const val = evaluated[varName];
-    //   if (val === undefined)
-    //     throw new Error(
-    //       `Variable "${varName}" not found in depField interpolation`
-    //     );
-    //   return val.toString();
-    // });
-  }
-
-  private resolveField(
-    key: string,
-    formulas: Record<string, string>,
-    context: Record<string, any>,
-    cache: Record<string, any>
-  ): any {
-    if (cache[key] !== undefined) return cache[key];
-    const expr = formulas[key];
-    if (!expr) throw new Error(`Formula for "${key}" not found`);
-
-    // Replace ${...} recursively
-    const resolvedExpr = expr.replace(/\$\{(\w+)\}/g, (_, varName) => {
-      return this.resolveField(varName, formulas, context, cache);
-    });
-
-    try {
-      const result = evaluate(resolvedExpr, { ...context, ...cache });
-      cache[key] = result;
-      return result;
-    } catch (err) {
-      console.warn(`Failed to evaluate ${key}:`, resolvedExpr, err);
       return null;
     }
   }
@@ -461,41 +355,263 @@ export class JobCardService {
     return { data: `${prefix}${nextNumber}` };
   }
 
-  async notifyFrontend(fileId: string): Promise<void> {
-    console.log(`✅ Job card generation completed for File ID: ${fileId}`);
-  }
+  // private evaluateFormulasUnified(
+  //   formulas: Record<string, string>,
+  //   context: Record<string, any>
+  // ) {
+  //   const cache: Record<string, any> = {};
+  //   const parser = new Parser();
 
-  getValueFromPath(obj: any, path: string): any {
-    return path.split('.').reduce((acc, key) => acc?.[key], obj);
-  }
+  //   // 🔹 Add custom functions
+  //   parser.functions.ifelse = (cond: any, a: any, b: any) => (cond ? a : b);
 
-  buildContext(map: Record<string, string>, source: Record<string, any>) {
-    const output: Record<string, any> = {};
-    for (const [key, expression] of Object.entries(map)) {
-      const arrayMatch = expression.match(/^(.*)\[\](?:\.(.*))?$/);
-      if (arrayMatch) {
-        const [_, arrPath, subPath] = arrayMatch;
-        const arr = get(source, arrPath);
-        output[key] = Array.isArray(arr)
-          ? subPath
-            ? arr.map((item) => this.evaluateSimpleConcat(subPath, item))
-            : arr
-          : [];
-      } else {
-        output[key] = this.evaluateSimpleConcat(expression, source);
+  //   const allFormulas: Record<string, string> = {
+  //     ...formulas,
+  //     ...context.sequenceFormulas,
+  //   };
+
+  //   const evaluateExpression = (expr: string): any => {
+  //     if (!expr) return '';
+
+  //     // 🔹 Handle array expansion like "printingDetails[]"
+  //     const arrayMatch = expr.match(/^(.*)\[\]$/);
+  //     if (arrayMatch) {
+  //       const arrKey = arrayMatch[1].trim();
+  //       const arrValue = context[arrKey];
+  //       if (!Array.isArray(arrValue)) {
+  //         console.warn(`⚠️ Expected array for ${arrKey} but got`, arrValue);
+  //         return [];
+  //       }
+  //       return arrValue;
+  //     }
+
+  //     // 🔹 Handle ${...} string interpolations
+  //     if (/\$\{[^}]+\}/.test(expr)) {
+  //       return expr.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+  //         const val = resolve(varName) ?? context[varName] ?? '';
+  //         return val?.toString?.() ?? '';
+  //       });
+  //     }
+
+  //     // 🔹 Always concatenate with "x" or "," (even if more than 2 parts)
+  //     const separators = [' x ', ' , '];
+  //     for (const sep of separators) {
+  //       if (expr.includes(sep)) {
+  //         const parts = expr.split(sep).map((p) => p.trim());
+  //         const evaluated = parts.map((p) => resolve(p) ?? context[p] ?? '');
+  //         return evaluated.join(sep);
+  //       }
+  //     }
+
+  //     // // 🔹 Handle "+" (string concat or numeric add)
+  //     // if (expr.includes('+')) {
+  //     //   const parts = expr.split('+').map((p) => p.trim());
+  //     //   const resolved = parts.map((p) => {
+  //     //     if (/^\d+(\.\d+)?$/.test(p)) return Number(p);
+  //     //     return resolve(p) ?? context[p] ?? '';
+  //     //   });
+  //     //   const isString = resolved.some((v) => typeof v === 'string');
+  //     //   return isString
+  //     //     ? resolved.join(' ')
+  //     //     : resolved.reduce((a, b) => a + b, 0);
+  //     // }
+
+  //     // 🔹 Otherwise, evaluate as math
+  //     try {
+  //       return parser.evaluate(expr, { ...context, ...cache });
+  //     } catch {
+  //       return context[expr] ?? expr;
+  //     }
+  //   };
+
+  //   // todo: fix execution order of variables to variable dependencies
+  //   const resolve = (key: string): any => {
+  //     if (cache[key] !== undefined) return cache[key];
+      
+  //     const expr = allFormulas[key];
+  //     if (!expr) {
+  //       const val = context[key];
+  //       cache[key] = typeof val === 'number' ? val : val ?? '';
+  //       return cache[key];
+  //     }
+  //     const value = evaluateExpression(expr);
+  //     cache[key] = value;
+  //     return value;
+  //   };
+
+  //   // 🔹 Evaluate all formulas
+  //   for (const key of Object.keys(allFormulas)) {
+  //     resolve(key);
+  //   }
+
+  //   return cache;
+  // }
+
+  private evaluateFormulasUnified(
+  formulas: Record<string, string>,
+  context: Record<string, any>
+) {
+  const cache: Record<string, any> = {};
+  const visiting = new Set<string>();
+  const parser = new Parser();
+
+  // custom function used in some sequences
+  parser.functions.ifelse = (cond: any, a: any, b: any) => (cond ? a : b);
+
+  const allFormulas: Record<string, string> = {
+    ...formulas,
+    ...(context?.sequenceFormulas || {}),
+  };
+
+  const escapeRegExp = (s: string) =>
+    s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const formatForReplacement = (val: any): string => {
+    if (val === null || val === undefined) return '""';
+    if (typeof val === 'string') return JSON.stringify(val); // keep quotes
+    if (typeof val === 'object') return JSON.stringify(val);
+    // number / boolean
+    return String(val);
+  };
+
+  const evaluateMathOrResolve = (expr: string): any => {
+    // Try to evaluate with resolved variable map first
+    try {
+      const ids = Array.from(
+        new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
+      );
+
+      const vars: Record<string, any> = {};
+      for (const id of ids) {
+        // skip parser function names
+        if (parser.functions && Object.prototype.hasOwnProperty.call(parser.functions, id)) continue;
+        if (allFormulas[id] !== undefined || context?.hasOwnProperty(id) || cache.hasOwnProperty(id)) {
+          vars[id] = resolve(id);
+        }
+      }
+
+      const scope = { ...context, ...cache, ...vars };
+      return parser.evaluate(expr, scope);
+    } catch (e) {
+      // fallback: replace identifiers with literal values and re-evaluate
+      const ids = Array.from(
+        new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
+      );
+      let replaced = expr;
+      for (const id of ids) {
+        if (parser.functions && Object.prototype.hasOwnProperty.call(parser.functions, id)) continue;
+        let val: any;
+        if (cache.hasOwnProperty(id)) val = cache[id];
+        else if (allFormulas[id] !== undefined) {
+          try {
+            val = resolve(id);
+          } catch {
+            val = undefined;
+          }
+        } else if (context?.hasOwnProperty(id)) val = context[id];
+
+        if (val === undefined) continue;
+        const literal = formatForReplacement(val);
+        replaced = replaced.replace(new RegExp(`\\b${escapeRegExp(id)}\\b`, 'g'), literal);
+      }
+
+      try {
+        return parser.evaluate(replaced, { ...context, ...cache });
+      } catch {
+        // Last fallback: return replaced string (useful for "a x b" style that wasn't parsed)
+        return replaced;
       }
     }
-    return output;
+  };
+
+  const evaluateExpression = (expr: string): any => {
+    if (expr === undefined || expr === null) return '';
+
+    expr = String(expr).trim();
+    if (expr === '') return '';
+
+    // 1) array expansion like "printingDetails[]"
+    const arrayMatch = expr.match(/^(.*)\[\]$/);
+    if (arrayMatch) {
+      const arrKey = arrayMatch[1].trim();
+      // prefer cache, then context, then try resolving as formula
+      const arrVal = cache[arrKey] ?? context?.[arrKey];
+      if (Array.isArray(arrVal)) return arrVal;
+      if (allFormulas[arrKey] !== undefined) {
+        const resolved = resolve(arrKey);
+        if (Array.isArray(resolved)) return resolved;
+      }
+      console.warn(`⚠️ Expected array for ${arrKey} but got`, arrVal);
+      return [];
+    }
+
+    // 2) ${...} interpolation (allow expressions inside)
+    if (/\$\{[^}]+\}/.test(expr)) {
+      return expr.replace(/\$\{([^}]+)\}/g, (_, inner) => {
+        try {
+          const val = evaluateMathOrResolve(inner);
+          if (val === null || val === undefined) return '';
+          if (typeof val === 'object') return JSON.stringify(val);
+          return String(val);
+        } catch {
+          return '';
+        }
+      });
+    }
+
+    // 3) explicit joins with " x " or " , "
+    const separators = [' x ', ' , '];
+    for (const sep of separators) {
+      if (expr.includes(sep)) {
+        const parts = expr.split(sep).map((p) => p.trim());
+        const evaluated = parts.map((p) => {
+          // if part is a formula/key, resolve it; otherwise try context
+          const v = allFormulas[p] !== undefined ? resolve(p) : cache[p] ?? context?.[p];
+          return v === undefined || v === null ? '' : String(v);
+        });
+        return evaluated.join(sep);
+      }
+    }
+
+    // 4) otherwise try math/expr-eval, with recursive resolution
+    return evaluateMathOrResolve(expr);
+  };
+
+  const resolve = (key: string): any => {
+    if (cache.hasOwnProperty(key)) return cache[key];
+
+    if (visiting.has(key)) {
+      throw new Error(`Circular formula dependency detected for key: ${key}`);
+    }
+    visiting.add(key);
+
+    const expr = allFormulas[key];
+    let value: any;
+    if (expr === undefined) {
+      // fallback to context value (preserve numbers)
+      const val = context?.[key];
+      value = typeof val === 'number' ? val : val ?? '';
+    } else {
+      value = evaluateExpression(expr);
+    }
+
+    visiting.delete(key);
+    cache[key] = value;
+    return value;
+  };
+
+  // Evaluate/populate all formula keys (so cache contains everything)
+  for (const key of Object.keys(allFormulas)) {
+    try {
+      resolve(key);
+    } catch (err: any) {
+      // keep going but mark error in cache so templates can see it
+      console.error(err);
+      cache[key] = `#ERROR: ${err?.message ?? String(err)}`;
+    }
   }
 
-  private evaluateSimpleConcat(
-    expression: string,
-    source: Record<string, any>
-  ): string {
-    return expression
-      .split('+')
-      .map((part) => part.trim())
-      .map((path) => this.getValueFromPath(source, path) ?? '')
-      .join(' ');
-  }
+  return cache;
+}
+
 }

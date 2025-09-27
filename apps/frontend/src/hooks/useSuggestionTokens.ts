@@ -87,15 +87,21 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
           } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
 
           // const dynamicFields =
-          //   dynamicFieldsData?.jobCardForm?.sections?.[0]?.fields ?? [];
+          //   dynamicFieldsData?.jobCardForm?.sections?.flatMap(
+          //     (section: any) => section.fields || []
+          //   ) ?? [];
 
-          const dynamicFields =
-            dynamicFieldsData?.jobCardForm?.sections?.flatMap(
-              (section: any) => section.fields || []
-            ) ?? [];
+          // const dynamicSuggestions = dynamicFields.map(
+          //   (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
+          // );
 
-          const dynamicSuggestions = dynamicFields.map(
-            (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
+          const sections = dynamicFieldsData?.jobCardForm?.sections ?? [];
+
+          const dynamicSuggestions = sections.flatMap((section: any) =>
+            (section.fields || []).map(
+              (f: any) =>
+                `jobCardForm_${section.name}_${f.name?.split('.').join('_')}`
+            )
           );
 
           allSuggestions = [...allSuggestions, ...dynamicSuggestions];

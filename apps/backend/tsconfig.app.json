@@ -10,7 +10,7 @@
     // "resolveJsonModule": true, // for json imports
     // "esModuleInterop": true // for json imports
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/services/jobCard.service.tsx"],
   "exclude": [
     "out-tsc",
     "dist",

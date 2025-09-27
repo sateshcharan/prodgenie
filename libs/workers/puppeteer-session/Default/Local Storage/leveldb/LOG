@@ -1,5 +1,3 @@
-2025/09/18-10:01:02.890 582db9 Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Local Storage/leveldb/MANIFEST-000001
-2025/09/18-10:01:02.906 582db9 Recovering log #54
-2025/09/18-10:01:02.906 582db9 Level-0 table #56: started
-2025/09/18-10:01:02.910 582db9 Level-0 table #56: 24084 bytes OK
-2025/09/18-10:01:02.915 582db9 Delete type=0 #54
+2025/09/19-13:10:47.857 61785f Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Local Storage/leveldb/MANIFEST-000001
+2025/09/19-13:10:47.860 61785f Recovering log #4
+2025/09/19-13:10:47.861 61785f Reusing old log /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Local Storage/leveldb/000004.log 

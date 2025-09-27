@@ -44,6 +44,7 @@ export const apiRoutes = {
     getById: (fileId: string) => `/getById/${fileId}`,
     getByName: (fileName: string) => `/getByName/${fileName}`,
     getFileData: (fileId: string) => `/getFileData/${fileId}`,
+    setFileData: (fileId: string) => `/setFileData/${fileId}`,
     rename: (fileType: string) => `/${fileType}`,
     update: (fileId: string) => `/${fileId}/update`,
     replace: (fileType: string, fileId: string) =>

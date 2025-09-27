@@ -1,3 +1,2 @@
-2025/08/08-12:14:13.323 911f Reusing MANIFEST /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/Extension Scripts/MANIFEST-000001
-2025/08/08-12:14:13.323 911f Recovering log #3
-2025/08/08-12:14:13.324 911f Reusing old log /home/satesh/projects/prodgenie/libs/workers/puppeteer-session/Default/Extension Scripts/000003.log 
+2025/09/19-13:07:38.642 6159fd Creating DB /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Extension Scripts since it was missing.
+2025/09/19-13:07:38.644 6159fd Reusing MANIFEST /Users/sateshcharan/Projects/prodgenie/libs/workers/puppeteer-session/Default/Extension Scripts/MANIFEST-000001

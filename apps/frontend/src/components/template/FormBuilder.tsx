@@ -117,7 +117,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
 
     setSchema(merged);
 
-    console.log(watchedSections);
+    // console.log(watchedSections);
   }, [watchedSections]);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
 
     replace(updatedSections);
 
-    console.log(watchedSections);
+    // console.log(watchedSections);
   }, [
     watchedSections.length,
     watchedSections.map((s) => s.fields.length).join(','),
@@ -299,11 +299,22 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     try {
       const res = await axios.get(tableUrl);
 
+      // const cols =
+      //   res.data?.columns?.map((c: any) => c.name || c.label) ||
+      //   (Array.isArray(res.data.rows) && res.data.rows.length > 0
+      //     ? Object.keys(res.data.rows[0])
+      //     : []);
+
       const cols =
-        res.data?.columns?.map((c: any) => c.name || c.label) ||
+        res.data?.columns?.map((c: any) => ({
+          key: c.key || c.name,
+          label: c.label || c.name,
+        })) ||
         (Array.isArray(res.data.rows) && res.data.rows.length > 0
-          ? Object.keys(res.data.rows[0])
+          ? Object.keys(res.data.rows[0]).map((key) => ({ key, label: key }))
           : []);
+
+      console.log(cols); // check this
 
       setTableColumns((prev) => ({
         ...prev,
@@ -526,13 +537,18 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                                 <SelectValue placeholder="Select column" />
                               </SelectTrigger>
                               <SelectContent>
-                                {(console.log(tableColumns),
-                                tableColumns[`${sectionIndex}-${fieldIndex}`] ||
-                                  []).map((col) => (
-                                  <SelectItem key={col.key} value={col.key}>
-                                    {col.label}
-                                  </SelectItem>
-                                ))}
+                                {
+                                  // console.log(tableColumns),
+                                  (
+                                    tableColumns[
+                                      `${sectionIndex}-${fieldIndex}`
+                                    ] || []
+                                  ).map((col, index) => (
+                                    <SelectItem key={index} value={col.key}>
+                                      {col.label}
+                                    </SelectItem>
+                                  ))
+                                }
                               </SelectContent>
                             </Select>
                           </div>

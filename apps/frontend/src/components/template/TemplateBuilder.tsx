@@ -463,7 +463,7 @@
 
 import clsx from 'clsx';
 import { Save } from 'lucide-react';
-import { isEqual } from 'lodash-es';
+import { isEqual, template } from 'lodash-es';
 import { useSearchParams } from 'react-router-dom';
 import { useState, useRef, useEffect, memo } from 'react';
 
@@ -472,7 +472,13 @@ import {
   preDefinedKeywords,
   preDefinedOperators,
 } from '@prodgenie/libs/constant';
-import { Button, FileDropzone, Input, ScrollArea, toast } from '@prodgenie/libs/ui';
+import {
+  Button,
+  FileDropzone,
+  Input,
+  ScrollArea,
+  toast,
+} from '@prodgenie/libs/ui';
 
 import { api } from '../../utils';
 import FormBuilder from './FormBuilder';
@@ -540,9 +546,13 @@ const TemplateBuilder = () => {
           res.text()
         );
         const jobCardFormData = templateFile?.data?.jobCardForm;
-        const { manual = {}, computed = {} } =
-          templateFile?.data?.templateFields ?? {};
-        const combined = { ...manual, ...computed };
+
+        // const { manual = {}, computed = {} } =
+        //   templateFile?.data?.templateFields ?? {};
+        // const combined = { ...manual, ...computed };
+
+        const combined = templateFile?.data?.templateFields ?? {}; // templateFields
+
         const { fields, blocks } = extractPlaceholders(templateFileContent);
 
         setTemplateName(templateName);
@@ -651,19 +661,20 @@ const TemplateBuilder = () => {
       }
     }
 
-    const manual: Record<string, string> = {};
-    const computed: Record<string, string> = {};
+    // const manual: Record<string, string> = {};
+    // const computed: Record<string, string> = {};
 
-    Object.entries(templateFieldValues).forEach(([key, val]) => {
-      const isComputed =
-        typeof val === 'string' &&
-        (preDefinedKeywords.some((op) => val.includes(op)) ||
-          preDefinedOperators.some((op) => val.includes(op)));
-      isComputed ? (computed[key] = val) : (manual[key] = val);
-    });
+    // Object.entries(templateFieldValues).forEach(([key, val]) => {
+    //   const isComputed =
+    //     typeof val === 'string' &&
+    //     (preDefinedKeywords.some((op) => val.includes(op)) ||
+    //       preDefinedOperators.some((op) => val.includes(op)));
+    //   isComputed ? (computed[key] = val) : (manual[key] = val);
+    // });
 
     const templateJson = {
-      templateFields: { manual, computed },
+      templateFields: templateFieldValues,
+      // templateFields: { manual, computed },
       ...UpdatedJobCardData,
     };
 

@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react';
 import { FolderSync, Plus, Upload } from 'lucide-react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
-import {
-  fetchFilesByType,
-  deleteFile,
-  downloadFile,
-} from '../services/fileService';
+import { fetchFilesByType } from '../utils/fileService';
 import { api } from '../utils';
 import { SearchBanner, FileCard } from '../components';
 
@@ -45,6 +41,19 @@ const Files = () => {
     fetchFiles();
   }, [fileType, activeWorkspace]);
 
+  const downloadFile = async (path: string, name: string) => {
+    const response = await fetch(path);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const handleCardClick = (card_id: string, signedUrl: string) => {
     let path = `/dashboard/${fileType}/${card_id}`;
     let options: { state?: { signedUrl: string } } = {};
@@ -69,7 +78,7 @@ const Files = () => {
 
   const handleCardDelete = async (card_id: string) => {
     try {
-      await deleteFile(fileType, card_id);
+      await api.delete(`${apiRoutes.files.base}/${fileType}/${card_id}`);
       setCardData((prev) => prev.filter((card) => card.id !== card_id));
     } catch (err) {
       console.error(`Error deleting file ${card_id}:`, err);

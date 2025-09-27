@@ -158,18 +158,31 @@ export default function TableBuilder<T extends Record<string, any>>({
       formData.append('files', jsonBlob, `${fileName}.json`);
 
       if (id) {
-        console.log('Updating table...');
         // Update case
-        // await api.put(`${apiRoutes.files.base}/update/${id}`, formData, {
-        //   headers: { "Content-Type": "multipart/form-data" },
-        // });
+        await api.post(
+          `${apiRoutes.files.base}/table/${id}/replace`,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+        await api.post(
+          `${apiRoutes.files.base}/setFileData/${id}`,
+          jsonString,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
       } else {
         // Create case
+        // todo: capture id for updating data
         await api.post(`${apiRoutes.files.base}/table/upload`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        await api.post(`${apiRoutes.files.base}/setFileData/${id}`, jsonString);
       }
-
       toast.success('Table saved successfully!');
     } catch (err) {
       console.error('Error saving table:', err);

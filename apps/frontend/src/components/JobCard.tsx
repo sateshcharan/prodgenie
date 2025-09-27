@@ -31,7 +31,6 @@ import BomTable from './BomTable';
 import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
-import { generateJobCard } from '../services/jobCardService';
 
 interface JobCardProps {
   tables: {
@@ -64,6 +63,39 @@ const JobCard = ({
   const bom = tables.data?.bom || [];
   const titleBlock = tables.data?.titleBlock;
   const printingDetails = tables.data?.printingDetails;
+
+  const generateJobCard = async ({
+    file,
+    bom,
+    titleBlock,
+    jobCardForm,
+    signedUrl,
+    printingDetails,
+  }: {
+    bom: BomItem[];
+    file: { id: string };
+    titleBlock: any;
+    jobCardForm: {
+      jobCardNumber: string;
+      scheduleDate: string;
+      poNumber: string;
+      productionQty: number;
+    };
+    signedUrl: string;
+    printingDetails: {
+      detail: string;
+      color: string;
+    }[];
+  }) => {
+    return api.post('/api/jobCard/generate', {
+      bom,
+      file,
+      jobCardForm,
+      titleBlock,
+      signedUrl,
+      printingDetails,
+    });
+  };
 
   useEffect(() => {
     if (!bom.length) {
@@ -122,34 +154,171 @@ const JobCard = ({
     section.sections.map((section) => section.fields)
   );
 
-  // const dynamicSchema = (function (z) {
-  //   return eval(jobCardData[0]?.schema);
-  // })(z); // dangerous execuction
+  // const dynamicSchema = useMemo(() => {
+  //   try {
+  //     if (!jobCardData?.length) return undefined;
+
+  //     // Build section schemas
+  //     const sectionsSchemas = jobCardData
+  //       .flatMap((sections) =>
+  //         sections.flatMap((section) =>
+  //           section.sections.map((subSection) => {
+  //             // Each subsection might define its own schema
+  //             if (!subSection?.schema) return null;
+
+  //             // Instead of eval, parse schema safely
+  //             // e.g. schema stored like: { name: "Color", type: "string", required: true }
+  //             const shape: Record<string, any> = {};
+  //             subSection.fields.forEach((field) => {
+  //               if (field.type === 'string') {
+  //                 shape[field.name] = field.required
+  //                   ? z.string().min(1)
+  //                   : z.string().optional();
+  //               }
+  //               if (field.type === 'number') {
+  //                 shape[field.name] = field.required
+  //                   ? z.number()
+  //                   : z.number().optional();
+  //               }
+  //               // add other field types here...
+  //             });
+
+  //             return { name: subSection.name, schema: z.object(shape) };
+  //           })
+  //         )
+  //       )
+  //       .filter(Boolean);
+
+  //     console.log(sectionsSchemas, jobCardData);
+
+  //     if (!sectionsSchemas.length) return undefined;
+
+  //     // Merge into a single schema keyed by section name
+  //     const dynamicObj: Record<string, any> = {};
+  //     sectionsSchemas.forEach((s) => {
+  //       dynamicObj[s!.name] = s!.schema;
+  //     });
+
+  //     return z.object(dynamicObj);
+  //   } catch (e) {
+  //     console.error('Failed to build schema:', e);
+  //     return undefined;
+  //   }
+  // }, [jobCardData]);
+
+  // const mergedSchema = useMemo(() => {
+  //   if (!dynamicSchema) return jobCardSchema;
+  //   return jobCardSchema.merge(dynamicSchema);
+  // }, [dynamicSchema]);
+
+  // const dynamicDefaults = useMemo(() => {
+  //   if (!dynamicFields?.fields) return {};
+  //   return dynamicFields.fields.reduce((acc, field) => {
+  //     const [parent, child] = field.name.split('.');
+  //     acc[parent] = acc[parent] || {};
+  //     acc[parent][child] = field.defaultValue;
+  //     return acc;
+  //   }, {} as any);
+  // }, [dynamicFields]);
+
+  // build dynamicSchema (preserve top-level group -> subsection -> fields)
   const dynamicSchema = useMemo(() => {
     try {
-      // const rawSchema = jobCardData?.[0]?.schema;
-      const rawSchema = jobCardData[0]?.map((section) =>
-        section.sections.map((section) => section.schema)
-      );
+      if (!jobCardData?.length) return undefined;
 
-      if (!rawSchema) return undefined;
+      const topShape: Record<string, any> = {};
 
-      const buildSchema = new Function('z', `return (${rawSchema});`);
-      const parsed = buildSchema(z);
+      // jobCardData is e.g. [[ { name: 'thinBlade', sections: [...] }, { name: 'creasingSlotting', ... } ]]
+      jobCardData.forEach((groupArray) => {
+        groupArray.forEach((group) => {
+          const groupName = group.name;
+          const subShapes: Record<string, any> = {};
 
-      // const parsed = eval(rawSchema);
-      return parsed && typeof parsed === 'object' ? parsed : undefined;
+          (group.sections || []).forEach((subSection: any) => {
+            const fieldShape: Record<string, any> = {};
+
+            (subSection.fields || []).forEach((f: any) => {
+              const t = f.type;
+
+              if (t === 'number') {
+                // Accept string numbers from form inputs and validate as numbers
+                fieldShape[f.name] = z.preprocess((val) => {
+                  if (val === '' || val === null || typeof val === 'undefined')
+                    return undefined;
+                  return Number(val);
+                }, z.number().min(1));
+              } else if (t === 'string') {
+                fieldShape[f.name] = z.string().min(1);
+              } else if (t === 'select') {
+                // assume select values are strings; change to z.any() if not
+                fieldShape[f.name] = z.string().min(1);
+              } else if (t === 'boolean') {
+                fieldShape[f.name] = z.boolean();
+              } else {
+                // fallback
+                fieldShape[f.name] = z.any();
+              }
+            });
+
+            subShapes[subSection.name] = z.object(fieldShape);
+          });
+
+          // make sure group has at least an object (a group can contain multiple subsections)
+          topShape[groupName] = z.object(subShapes);
+        });
+      });
+
+      return z.object(topShape);
     } catch (e) {
-      console.error('Failed to eval schema', e);
+      console.error('Failed to build dynamicSchema:', e);
       return undefined;
     }
   }, [jobCardData]);
 
+  // Merge with static schema
   const mergedSchema = useMemo(() => {
-    if (!dynamicSchema || typeof dynamicSchema !== 'object')
-      return jobCardSchema;
-    return jobCardSchema.merge(dynamicSchema);
-  }, [dynamicSchema]);
+    if (!dynamicSchema) return jobCardSchema;
+    const merged = jobCardSchema.merge(dynamicSchema);
+    // console.log(
+    //   'Merged schema (keys):',
+    //   Object.keys((merged as any)?._def?.shape ?? {})
+    // );
+    return merged;
+  }, [dynamicSchema, jobCardSchema]);
+
+  // Build dynamic defaults matching nested shape used in your form names
+  const dynamicDefaults = useMemo(() => {
+    const defaults: Record<string, any> = {};
+
+    if (!jobCardData?.length) return defaults;
+
+    jobCardData.forEach((groupArray) => {
+      groupArray.forEach((group) => {
+        const groupName = group.name;
+        defaults[groupName] = defaults[groupName] || {};
+
+        (group.sections || []).forEach((subSection: any) => {
+          defaults[groupName][subSection.name] =
+            defaults[groupName][subSection.name] || {};
+
+          (subSection.fields || []).forEach((f: any) => {
+            // convert number defaultValue to a number if it's provided as string
+            if (f.type === 'number') {
+              defaults[groupName][subSection.name][f.name] =
+                f.defaultValue !== undefined && f.defaultValue !== null
+                  ? Number(f.defaultValue)
+                  : undefined;
+            } else {
+              defaults[groupName][subSection.name][f.name] =
+                f.defaultValue !== undefined ? f.defaultValue : '';
+            }
+          });
+        });
+      });
+    });
+
+    return defaults;
+  }, [jobCardData]);
 
   const staticDefaults = useMemo(() => {
     return jobCardFields.reduce((acc, field) => {
@@ -157,16 +326,6 @@ const JobCard = ({
       return acc;
     }, {} as jobCardFormValues);
   }, []);
-
-  const dynamicDefaults = useMemo(() => {
-    if (!dynamicFields?.fields) return {};
-    return dynamicFields.fields.reduce((acc, field) => {
-      const [parent, child] = field.name.split('.');
-      acc[parent] = acc[parent] || {};
-      acc[parent][child] = field.defaultValue;
-      return acc;
-    }, {} as any);
-  }, [dynamicFields]);
 
   const form = useForm<jobCardFormValues>({
     resolver: zodResolver(mergedSchema),
@@ -234,10 +393,10 @@ const JobCard = ({
     }
   };
 
-  const watchedValues = useWatch({ control: form.control });
-  useEffect(() => {
-    console.log(watchedValues);
-  }, [watchedValues]);
+  // const watchedValues = useWatch({ control: form.control });
+  // useEffect(() => {
+  //   console.log(watchedValues);
+  // }, [watchedValues]);
 
   return (
     <Card className="border-none ">

@@ -130,6 +130,14 @@ export class FileController {
     return res.status(200).json(file);
   };
 
+  static setFileDataController = async (req: Request, res: Response) => {
+    const { fileId } = req.params;
+    const data = req.body;
+
+    const file = await fileService.setFileData(fileId, data);
+    return res.status(200).json(file);
+  };
+
   static getThumbnailController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
     const activeWorkspaceId = req.activeWorkspaceId!;

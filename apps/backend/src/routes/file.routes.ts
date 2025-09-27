@@ -27,6 +27,12 @@ router.get(
   asyncHandler(FileController.getFileDataController)
 );
 
+router.post(
+  apiRoutes.files.setFileData(':fileId'),
+  // validateFileType,
+  asyncHandler(FileController.setFileDataController)
+)
+
 router.get(
   apiRoutes.files.getByName(':fileName'),
   // validateFileType,
