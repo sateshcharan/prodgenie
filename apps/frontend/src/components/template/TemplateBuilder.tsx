@@ -724,13 +724,6 @@ const TemplateBuilder = () => {
     >
       {/* Left: Template Builder Form */}
       {hasTemplateFields && hasTemplateFile && (
-        // <div className="w-full max-w-full lg:max-w-[400px]">
-        //   <FormBuilder
-        //     ref={formBuilderRef}
-        //     jobCardData={jobCardData}
-        //     onFormSubmit={handleTemplateSave}
-        //   />
-        // </div>
         <div className="w-full max-w-full lg:max-w-[400px]  rounded shadow bg-white flex flex-col min-h-0">
           <ScrollArea className="flex-1 p-4">
             <FormBuilder

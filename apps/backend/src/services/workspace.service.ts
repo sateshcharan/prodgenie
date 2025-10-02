@@ -212,9 +212,42 @@ export class WorkspaceService {
       },
     });
     if (!config) return null;
-    const signedUrl = await fileStorageService.getSignedUrl(config?.path);
-    config.path = signedUrl;
+
+    // const signedUrl = await fileStorageService.getSignedUrl(config?.path);
+    // config.path = signedUrl;
+
     return config;
+  }
+
+  static async setWorkspaceConfig(
+    workspaceId: string,
+    configName: string,
+    content: any // JSON object or string
+  ) {
+    const config = await prisma.file.findFirst({
+      where: {
+        workspaceId,
+        type: 'config',
+        name: configName,
+      },
+    });
+
+    if (!config) {
+      throw new Error(
+        `Config "${configName}" not found for workspace ${workspaceId}`
+      );
+    }
+
+    const updatedConfig = await prisma.file.update({
+      where: { id: config.id },
+      data: {
+        data: content,
+      },
+    });
+
+    return {
+      updatedConfig,
+    };
   }
 
   static async updateUserRole(

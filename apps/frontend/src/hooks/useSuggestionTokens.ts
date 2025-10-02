@@ -9,6 +9,7 @@ import {
 import { useUserStore } from '@prodgenie/libs/store';
 
 import { api } from '../utils';
+import { getFileData } from '../utils/fileService';
 
 let _cachedSuggestions: string[] | null = null;
 
@@ -48,13 +49,19 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
 
       const bomSuggestions: string[] = [];
       try {
-        const {
-          data: { data: bomFile },
-        } = await api.get(
-          `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
-        );
-        const response = await fetch(bomFile.path);
-        const json = await response.json();
+        // const {
+        //   data: { data: bomFile },
+        // } = await api.get(
+        //   `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
+        // );
+        // const response = await fetch(bomFile.path);
+        // const json = await response.json();
+
+        // const {
+        //   data: { data: json },
+        // } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
+
+        const json = await getFileData(fileId);
 
         for (const section in json) {
           const expected = json[section]?.header?.expected;

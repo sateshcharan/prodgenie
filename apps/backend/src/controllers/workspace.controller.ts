@@ -20,7 +20,6 @@ export class WorkspaceController {
   static deleteWorkspace = async (req: Request, res: Response) => {
     const { workspaceId } = req.body;
     const user = req.user;
-    
 
     //else remove all workspace members, delete all folders and files, delete workspacce history , delete workspace
   };
@@ -89,10 +88,10 @@ export class WorkspaceController {
   };
 
   static getWorkspaceConfig = async (req: Request, res: Response) => {
-    const { workspaceId } = req.query;
+    const activeWorkspaceId = req.activeWorkspaceId!;
 
     const config = await WorkspaceService.getWorkspaceConfig(
-      workspaceId as string,
+      activeWorkspaceId as string,
       req.params.configName
     );
     if (!config) {
@@ -102,5 +101,25 @@ export class WorkspaceController {
     }
 
     return res.status(200).json({ success: true, data: config });
+  };
+
+  static setWorkspaceConfig = async (req: Request, res: Response) => {
+    const activeWorkspaceId = req.activeWorkspaceId!;
+    const configName = req.params.configName;
+
+    try {
+      const config = await WorkspaceService.setWorkspaceConfig(
+        activeWorkspaceId,
+        configName,
+        req.body
+      );
+
+      return res.status(200).json({ success: true, data: config });
+    } catch (err) {
+      console.error('Failed to update config', err);
+      return res
+        .status(500)
+        .json({ success: false, message: 'Failed to update config' });
+    }
   };
 }

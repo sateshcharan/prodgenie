@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { Pencil, Check } from 'lucide-react';
 
-import { Button } from '@prodgenie/libs/ui';
 import { useBomStore } from '@prodgenie/libs/store';
+import { Button, ScrollBar, ScrollArea } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
+
 import { api } from '../utils';
-import axios from 'axios';
 
 interface BomItem {
   slNo: string;
@@ -48,37 +49,42 @@ const BomTable = ({
   };
 
   const handleConfirm = () => {
-    console.log({ bom: editableBom });
+    // console.log({ bom: editableBom });
     setIsEditing(false);
   };
 
   useEffect(() => {
-    const fetchBOM = async (fileId: string) => {
-      const response = await api.get(
-        `${apiRoutes.files.base}/getByName/bom.json`
+    const fetchBOM = async () => {
+      const {
+        data: {
+          data: { data: bomJson },
+        },
+      } = await api.get(
+        `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
       );
-      const bom = response.data.data.signedUrl;
-      const bomJson = await axios.get(bom);
-      setBomHeaders(bomJson.data.bomItem.header.expected);
+      setBomHeaders(bomJson.bomItem.header.expected);
     };
-    fetchBOM(fileId);
+    fetchBOM();
   }, [fileId]);
 
   return (
     <div className="overflow-x-auto">
       <div className="flex items-center justify-start gap-2 mb-2">
-        <Pencil size={18} />
-        <h2 className="text-lg font-semibold">BOM</h2>
-        <button
+        <Button
+          size={'icon'}
+          variant={'ghost'}
           onClick={() => {
             setEditableBom(bom); // reset to original on every new edit
             setIsEditing(!isEditing);
           }}
-          className="text-muted-foreground hover:text-primary"
-        ></button>
+        >
+          {isEditing ? <Check size={18} /> : <Pencil size={18} />}
+        </Button>
+        <h2 className="text-lg font-semibold">BOM</h2>
       </div>
 
-      <div className="overflow-x-auto">
+      <ScrollArea>
+        <ScrollBar orientation="horizontal" />
         <table className="w-full text-sm text-left border-collapse">
           <thead>
             <tr className="bg-gray-100 text-black">
@@ -122,7 +128,7 @@ const BomTable = ({
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
 
       <p className="mt-4 text-left mb-2">
         Selected Items: {selectedItems.length}/{bom.length}

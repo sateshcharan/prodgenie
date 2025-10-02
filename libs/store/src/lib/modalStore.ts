@@ -15,6 +15,7 @@ type ModalType =
   | 'workspace:pricing'
   | 'workspace:leaveWorkspace'
   | 'workspace:replacePassword'
+  | 'workspace:deletePreset'
   | null;
 
 interface ModalStore {

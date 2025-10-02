@@ -15,6 +15,7 @@ import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
 import { TemplateService } from './template.service.js';
 import { ThumbnailService } from './thumbnail.service.js';
+import { WorkspaceService } from './workspace.service.js';
 
 const parser = new Parser();
 
@@ -50,10 +51,9 @@ export class JobCardService {
 
     const tables = await this.fetchAllWorkspaceTables(workspaceId);
     const tableConfigs = await this.buildTableConfigs(tables);
-    const bomConfig = await this.fetchWorkspaceConfig(
+    const bomConfig = await WorkspaceService.getWorkspaceConfig(
       workspaceId,
-      'bom.json',
-      'config'
+      'bom.json'
     );
     const drawingFile = await this.fileHelperService.downloadToTemp(
       signedUrl,
@@ -427,7 +427,7 @@ export class JobCardService {
   //   // todo: fix execution order of variables to variable dependencies
   //   const resolve = (key: string): any => {
   //     if (cache[key] !== undefined) return cache[key];
-      
+
   //     const expr = allFormulas[key];
   //     if (!expr) {
   //       const val = context[key];
@@ -448,170 +448,187 @@ export class JobCardService {
   // }
 
   private evaluateFormulasUnified(
-  formulas: Record<string, string>,
-  context: Record<string, any>
-) {
-  const cache: Record<string, any> = {};
-  const visiting = new Set<string>();
-  const parser = new Parser();
+    formulas: Record<string, string>,
+    context: Record<string, any>
+  ) {
+    const cache: Record<string, any> = {};
+    const visiting = new Set<string>();
+    const parser = new Parser();
 
-  // custom function used in some sequences
-  parser.functions.ifelse = (cond: any, a: any, b: any) => (cond ? a : b);
+    // custom function used in some sequences
+    parser.functions.ifelse = (cond: any, a: any, b: any) => (cond ? a : b);
 
-  const allFormulas: Record<string, string> = {
-    ...formulas,
-    ...(context?.sequenceFormulas || {}),
-  };
+    const allFormulas: Record<string, string> = {
+      ...formulas,
+      ...(context?.sequenceFormulas || {}),
+    };
 
-  const escapeRegExp = (s: string) =>
-    s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapeRegExp = (s: string) =>
+      s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  const formatForReplacement = (val: any): string => {
-    if (val === null || val === undefined) return '""';
-    if (typeof val === 'string') return JSON.stringify(val); // keep quotes
-    if (typeof val === 'object') return JSON.stringify(val);
-    // number / boolean
-    return String(val);
-  };
+    const formatForReplacement = (val: any): string => {
+      if (val === null || val === undefined) return '""';
+      if (typeof val === 'string') return JSON.stringify(val); // keep quotes
+      if (typeof val === 'object') return JSON.stringify(val);
+      // number / boolean
+      return String(val);
+    };
 
-  const evaluateMathOrResolve = (expr: string): any => {
-    // Try to evaluate with resolved variable map first
-    try {
-      const ids = Array.from(
-        new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
-      );
-
-      const vars: Record<string, any> = {};
-      for (const id of ids) {
-        // skip parser function names
-        if (parser.functions && Object.prototype.hasOwnProperty.call(parser.functions, id)) continue;
-        if (allFormulas[id] !== undefined || context?.hasOwnProperty(id) || cache.hasOwnProperty(id)) {
-          vars[id] = resolve(id);
-        }
-      }
-
-      const scope = { ...context, ...cache, ...vars };
-      return parser.evaluate(expr, scope);
-    } catch (e) {
-      // fallback: replace identifiers with literal values and re-evaluate
-      const ids = Array.from(
-        new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
-      );
-      let replaced = expr;
-      for (const id of ids) {
-        if (parser.functions && Object.prototype.hasOwnProperty.call(parser.functions, id)) continue;
-        let val: any;
-        if (cache.hasOwnProperty(id)) val = cache[id];
-        else if (allFormulas[id] !== undefined) {
-          try {
-            val = resolve(id);
-          } catch {
-            val = undefined;
-          }
-        } else if (context?.hasOwnProperty(id)) val = context[id];
-
-        if (val === undefined) continue;
-        const literal = formatForReplacement(val);
-        replaced = replaced.replace(new RegExp(`\\b${escapeRegExp(id)}\\b`, 'g'), literal);
-      }
-
+    const evaluateMathOrResolve = (expr: string): any => {
+      // Try to evaluate with resolved variable map first
       try {
-        return parser.evaluate(replaced, { ...context, ...cache });
-      } catch {
-        // Last fallback: return replaced string (useful for "a x b" style that wasn't parsed)
-        return replaced;
-      }
-    }
-  };
+        const ids = Array.from(
+          new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
+        );
 
-  const evaluateExpression = (expr: string): any => {
-    if (expr === undefined || expr === null) return '';
-
-    expr = String(expr).trim();
-    if (expr === '') return '';
-
-    // 1) array expansion like "printingDetails[]"
-    const arrayMatch = expr.match(/^(.*)\[\]$/);
-    if (arrayMatch) {
-      const arrKey = arrayMatch[1].trim();
-      // prefer cache, then context, then try resolving as formula
-      const arrVal = cache[arrKey] ?? context?.[arrKey];
-      if (Array.isArray(arrVal)) return arrVal;
-      if (allFormulas[arrKey] !== undefined) {
-        const resolved = resolve(arrKey);
-        if (Array.isArray(resolved)) return resolved;
-      }
-      console.warn(`⚠️ Expected array for ${arrKey} but got`, arrVal);
-      return [];
-    }
-
-    // 2) ${...} interpolation (allow expressions inside)
-    if (/\$\{[^}]+\}/.test(expr)) {
-      return expr.replace(/\$\{([^}]+)\}/g, (_, inner) => {
-        try {
-          const val = evaluateMathOrResolve(inner);
-          if (val === null || val === undefined) return '';
-          if (typeof val === 'object') return JSON.stringify(val);
-          return String(val);
-        } catch {
-          return '';
+        const vars: Record<string, any> = {};
+        for (const id of ids) {
+          // skip parser function names
+          if (
+            parser.functions &&
+            Object.prototype.hasOwnProperty.call(parser.functions, id)
+          )
+            continue;
+          if (
+            allFormulas[id] !== undefined ||
+            context?.hasOwnProperty(id) ||
+            cache.hasOwnProperty(id)
+          ) {
+            vars[id] = resolve(id);
+          }
         }
-      });
-    }
 
-    // 3) explicit joins with " x " or " , "
-    const separators = [' x ', ' , '];
-    for (const sep of separators) {
-      if (expr.includes(sep)) {
-        const parts = expr.split(sep).map((p) => p.trim());
-        const evaluated = parts.map((p) => {
-          // if part is a formula/key, resolve it; otherwise try context
-          const v = allFormulas[p] !== undefined ? resolve(p) : cache[p] ?? context?.[p];
-          return v === undefined || v === null ? '' : String(v);
+        const scope = { ...context, ...cache, ...vars };
+        return parser.evaluate(expr, scope);
+      } catch (e) {
+        // fallback: replace identifiers with literal values and re-evaluate
+        const ids = Array.from(
+          new Set((expr.match(/[A-Za-z_]\w*/g) || []).filter(Boolean))
+        );
+        let replaced = expr;
+        for (const id of ids) {
+          if (
+            parser.functions &&
+            Object.prototype.hasOwnProperty.call(parser.functions, id)
+          )
+            continue;
+          let val: any;
+          if (cache.hasOwnProperty(id)) val = cache[id];
+          else if (allFormulas[id] !== undefined) {
+            try {
+              val = resolve(id);
+            } catch {
+              val = undefined;
+            }
+          } else if (context?.hasOwnProperty(id)) val = context[id];
+
+          if (val === undefined) continue;
+          const literal = formatForReplacement(val);
+          replaced = replaced.replace(
+            new RegExp(`\\b${escapeRegExp(id)}\\b`, 'g'),
+            literal
+          );
+        }
+
+        try {
+          return parser.evaluate(replaced, { ...context, ...cache });
+        } catch {
+          // Last fallback: return replaced string (useful for "a x b" style that wasn't parsed)
+          return replaced;
+        }
+      }
+    };
+
+    const evaluateExpression = (expr: string): any => {
+      if (expr === undefined || expr === null) return '';
+
+      expr = String(expr).trim();
+      if (expr === '') return '';
+
+      // 1) array expansion like "printingDetails[]"
+      const arrayMatch = expr.match(/^(.*)\[\]$/);
+      if (arrayMatch) {
+        const arrKey = arrayMatch[1].trim();
+        // prefer cache, then context, then try resolving as formula
+        const arrVal = cache[arrKey] ?? context?.[arrKey];
+        if (Array.isArray(arrVal)) return arrVal;
+        if (allFormulas[arrKey] !== undefined) {
+          const resolved = resolve(arrKey);
+          if (Array.isArray(resolved)) return resolved;
+        }
+        console.warn(`⚠️ Expected array for ${arrKey} but got`, arrVal);
+        return [];
+      }
+
+      // 2) ${...} interpolation (allow expressions inside)
+      if (/\$\{[^}]+\}/.test(expr)) {
+        return expr.replace(/\$\{([^}]+)\}/g, (_, inner) => {
+          try {
+            const val = evaluateMathOrResolve(inner);
+            if (val === null || val === undefined) return '';
+            if (typeof val === 'object') return JSON.stringify(val);
+            return String(val);
+          } catch {
+            return '';
+          }
         });
-        return evaluated.join(sep);
+      }
+
+      // 3) explicit joins with " x " or " , "
+      const separators = [' x ', ' , '];
+      for (const sep of separators) {
+        if (expr.includes(sep)) {
+          const parts = expr.split(sep).map((p) => p.trim());
+          const evaluated = parts.map((p) => {
+            // if part is a formula/key, resolve it; otherwise try context
+            const v =
+              allFormulas[p] !== undefined
+                ? resolve(p)
+                : cache[p] ?? context?.[p];
+            return v === undefined || v === null ? '' : String(v);
+          });
+          return evaluated.join(sep);
+        }
+      }
+
+      // 4) otherwise try math/expr-eval, with recursive resolution
+      return evaluateMathOrResolve(expr);
+    };
+
+    const resolve = (key: string): any => {
+      if (cache.hasOwnProperty(key)) return cache[key];
+
+      if (visiting.has(key)) {
+        throw new Error(`Circular formula dependency detected for key: ${key}`);
+      }
+      visiting.add(key);
+
+      const expr = allFormulas[key];
+      let value: any;
+      if (expr === undefined) {
+        // fallback to context value (preserve numbers)
+        const val = context?.[key];
+        value = typeof val === 'number' ? val : val ?? '';
+      } else {
+        value = evaluateExpression(expr);
+      }
+
+      visiting.delete(key);
+      cache[key] = value;
+      return value;
+    };
+
+    // Evaluate/populate all formula keys (so cache contains everything)
+    for (const key of Object.keys(allFormulas)) {
+      try {
+        resolve(key);
+      } catch (err: any) {
+        // keep going but mark error in cache so templates can see it
+        console.error(err);
+        cache[key] = `#ERROR: ${err?.message ?? String(err)}`;
       }
     }
 
-    // 4) otherwise try math/expr-eval, with recursive resolution
-    return evaluateMathOrResolve(expr);
-  };
-
-  const resolve = (key: string): any => {
-    if (cache.hasOwnProperty(key)) return cache[key];
-
-    if (visiting.has(key)) {
-      throw new Error(`Circular formula dependency detected for key: ${key}`);
-    }
-    visiting.add(key);
-
-    const expr = allFormulas[key];
-    let value: any;
-    if (expr === undefined) {
-      // fallback to context value (preserve numbers)
-      const val = context?.[key];
-      value = typeof val === 'number' ? val : val ?? '';
-    } else {
-      value = evaluateExpression(expr);
-    }
-
-    visiting.delete(key);
-    cache[key] = value;
-    return value;
-  };
-
-  // Evaluate/populate all formula keys (so cache contains everything)
-  for (const key of Object.keys(allFormulas)) {
-    try {
-      resolve(key);
-    } catch (err: any) {
-      // keep going but mark error in cache so templates can see it
-      console.error(err);
-      cache[key] = `#ERROR: ${err?.message ?? String(err)}`;
-    }
+    return cache;
   }
-
-  return cache;
-}
-
 }

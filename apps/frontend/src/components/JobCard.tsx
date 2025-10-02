@@ -20,6 +20,7 @@ import {
   toast,
   Separator,
   ScrollArea,
+  ScrollBar,
 } from '@prodgenie/libs/ui';
 import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
@@ -31,6 +32,7 @@ import BomTable from './BomTable';
 import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
+import PresetSelector from './PresetSelector';
 
 interface JobCardProps {
   tables: {
@@ -406,7 +408,7 @@ const JobCard = ({
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
-              className="w-full space-y-4"
+              className=" space-y-4"
             >
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="select">Bom Details</TabsTrigger>
@@ -414,50 +416,70 @@ const JobCard = ({
               </TabsList>
 
               {/* bom and printing details */}
-              <TabsContent value="select">
-                <ScrollArea className="h-[calc(100vh-200px)] ">
-                  <div className="p-4 flex flex-col gap-4">
-                    <BomTable
-                      bom={bom}
-                      fileId={fileId}
-                      setActiveItem={() => setActiveTab('form')}
-                    />
-                    <Separator />
-                    <TitleBlock titleBlock={titleBlock} fileId={fileId} />
-                    {printingDetails && (
-                      <>
-                        <Separator />
-                        <PrintingDetail printingDetails={printingDetails} />
-                      </>
-                    )}
-                  </div>
-                </ScrollArea>
+              <TabsContent
+                value="select"
+                className="h-[calc(100vh-200px)] p-4 "
+              >
+                <div className="flex flex-col gap-4">
+                  <BomTable
+                    bom={bom}
+                    fileId={fileId}
+                    setActiveItem={() => setActiveTab('form')}
+                  />
+                  <Separator />
+                  <TitleBlock titleBlock={titleBlock} fileId={fileId} />
+                  {printingDetails && (
+                    <>
+                      <Separator />
+                      <PrintingDetail printingDetails={printingDetails} />
+                    </>
+                  )}
+                </div>
               </TabsContent>
 
               {/* job card details */}
               <TabsContent value="form">
                 <ScrollArea className="h-[calc(100vh-200px)]">
+                  <ScrollBar orientation="horizontal" />
                   <div className="p-4">
+                    <h3 className="text-md font-semibold mb-2">
+                      Preset Options
+                    </h3>
+                    <PresetSelector
+                      getValues={form.getValues}
+                      setValues={(vals) => form.reset(vals)}
+                      activeDrawingId={fileId}
+                    />
+
+                    <Separator className="my-4" />
+
                     {/* static job card fields */}
-                    {jobCardFields.map((item) => (
-                      <FormField
-                        control={form.control}
-                        key={item.name}
-                        name={item.name as keyof jobCardFormValues}
-                        render={({ field }) => (
-                          <FormItem className="flex items-center gap-2">
-                            <FormLabel>{item.label}</FormLabel>
-                            <FormControl>
-                              <RenderField
-                                fieldConfig={item}
-                                rhfField={field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ))}
+                    <h3 className="text-md font-semibold mb-2">
+                      JobCard Fields
+                    </h3>
+                    <div className="space-y-4">
+                      {jobCardFields.map((item) => (
+                        <FormField
+                          control={form.control}
+                          key={item.name}
+                          name={item.name as keyof jobCardFormValues}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2">
+                                <FormLabel>{item.label}</FormLabel>
+                                <FormControl>
+                                  <RenderField
+                                    fieldConfig={item}
+                                    rhfField={field}
+                                  />
+                                </FormControl>
+                              </div>
+                              <FormMessage className="w-full text-right" />
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
 
                     {/* dynamic job card fields */}
                     <FormProvider {...form}>
@@ -492,15 +514,17 @@ const JobCard = ({
                                       }
                                       render={({ field: rhfField }) => (
                                         // (rhfField.name = `${fields.name}.${section.name}.${field.name}`),
-                                        <FormItem className="flex items-center gap-2">
-                                          <FormLabel>{field.label}</FormLabel>
-                                          <FormControl>
-                                            <RenderField
-                                              fieldConfig={field}
-                                              rhfField={rhfField}
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
+                                        <FormItem>
+                                          <div className="flex items-center gap-2">
+                                            <FormLabel>{field.label}</FormLabel>
+                                            <FormControl>
+                                              <RenderField
+                                                fieldConfig={field}
+                                                rhfField={rhfField}
+                                              />
+                                            </FormControl>
+                                          </div>
+                                          <FormMessage className="w-full text-right" />
                                         </FormItem>
                                       )}
                                     />

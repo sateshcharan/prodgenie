@@ -18,6 +18,7 @@ import {
 
 import { authDialogImage } from '@prodgenie/libs/ui';
 import { useModalStore } from '@prodgenie/libs/store';
+import DeletePreset from './DeletePreset';
 
 const ModalManager = () => {
   const { modalType, modalProps, isOpen, closeModal } = useModalStore();
@@ -156,6 +157,17 @@ const ModalManager = () => {
             submitUrl={modalProps?.submitUrl}
             onUploadSuccess={modalProps?.onUploadSuccess}
             multiple={false}
+          />
+        </Modal>
+      );
+
+    case 'workspace:deletePreset':
+      return (
+        <Modal title={modalProps?.title} description={modalProps?.description}>
+          <DeletePreset
+            presetId={modalProps?.presetId}
+            presets={modalProps?.presets}
+            onDeleteSuccess={modalProps?.onDeleteSuccess}
           />
         </Modal>
       );

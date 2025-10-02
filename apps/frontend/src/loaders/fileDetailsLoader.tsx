@@ -1,5 +1,9 @@
+import { getFileData } from '../utils/fileService';
+
 export const fileDetailsLoader = async ({ params, request }: any) => {
   const { fileId, fileType } = params;
 
-  return { fileId, fileType };
+  const fileData = await getFileData(fileId);
+
+  return { fileId, fileType, fileData };
 };

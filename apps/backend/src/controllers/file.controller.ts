@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 import { FileService, ThumbnailService } from '../services/index.js';
 import { fileProcessingQueue } from '@prodgenie/libs/queues';
+import { prisma } from '@prodgenie/libs/prisma';
 
 const fileService = new FileService();
 const thumbnailService = new ThumbnailService();
@@ -100,11 +101,34 @@ export class FileController {
   };
 
   static listFilesController = async (req: Request, res: Response) => {
-    const { fileType } = req.params;
-    const activeWorkspaceId = req.activeWorkspaceId!;
+    try {
+      const { fileType } = req.params;
+      const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const files = await fileService.listFiles(fileType, activeWorkspaceId);
-    return res.status(200).json(files);
+      if (fileType === 'config') {
+        const configFiles = await prisma.file.findMany({
+          where: { type: 'config', workspaceId: activeWorkspaceId },
+        });
+
+        // fetch file data for all config files in parallel
+        const fileData = await Promise.all(
+          configFiles.map((file) => fileService.getFileData(file.id))
+        );
+
+        const filesWithData = configFiles.map((file, index) => ({
+          ...file,
+          data: fileData[index].data,
+        }));
+
+        return res.status(200).json({ data: filesWithData });
+      }
+
+      const files = await fileService.listFiles(fileType, activeWorkspaceId);
+      return res.status(200).json(files);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to list files' });
+    }
   };
 
   static getFileByIdController = async (req: Request, res: Response) => {

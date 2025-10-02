@@ -34,6 +34,8 @@ export const apiRoutes = {
     updateUserRoleInWorkspace: '/updateUserRoleInWorkspace',
     getWorkspaceConfig: (configName: string) =>
       `/getWorkspaceConfig/${configName}`,
+    setWorkspaceConfig: (configName: string) =>
+      `/setWorkspaceConfig/${configName}`,
   },
 
   files: {

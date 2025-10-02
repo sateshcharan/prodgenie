@@ -190,6 +190,35 @@ export default function TableBuilder<T extends Record<string, any>>({
     }
   };
 
+  // === Column drag state ===
+  const [draggedColIndex, setDraggedColIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => {
+    setDraggedColIndex(index);
+  };
+
+  const handleDrop = (index: number) => {
+    if (draggedColIndex === null || draggedColIndex === index) return;
+
+    // Reorder columns
+    const updatedColumns = [...tableColumns];
+    const [movedColumn] = updatedColumns.splice(draggedColIndex, 1);
+    updatedColumns.splice(index, 0, movedColumn);
+
+    // Reorder row values to match new column order
+    const updatedRows = rows.map((row) => {
+      const newRow: Partial<T> = {};
+      updatedColumns.forEach((col) => {
+        newRow[col.key] = row[col.key];
+      });
+      return newRow as T;
+    });
+
+    setTableColumns(updatedColumns);
+    setRows(updatedRows);
+    setDraggedColIndex(null);
+  };
+
   return (
     <div className="w-full mt-[200px] flex justify-center items-center">
       <div className="max-w-4xl mx-auto p-4 bg-white border rounded shadow space-y-4">
@@ -211,9 +240,36 @@ export default function TableBuilder<T extends Record<string, any>>({
             <TableHeader>
               <TableRow>
                 {tableColumns.map((col, colIndex) => (
+                  // <TableHead
+                  //   key={String(col.key)}
+                  //   className="whitespace-nowrap"
+                  // >
+                  //   <div className="flex items-center gap-1">
+                  //     <Input
+                  //       type="text"
+                  //       value={col.label}
+                  //       onChange={(e) =>
+                  //         updateColumnLabel(colIndex, e.target.value)
+                  //       }
+                  //       className="h-7 px-2 py-0.5 text-xs"
+                  //     />
+                  //     <button
+                  //       onClick={() => removeColumn(colIndex)}
+                  //       className="text-red-500 hover:text-red-700 text-xs"
+                  //       disabled={tableColumns.length <= 1}
+                  //     >
+                  //       ✕
+                  //     </button>
+                  //   </div>
+                  // </TableHead>
+
                   <TableHead
                     key={String(col.key)}
-                    className="whitespace-nowrap"
+                    className="whitespace-nowrap cursor-move"
+                    draggable
+                    onDragStart={() => handleDragStart(colIndex)}
+                    onDragOver={(e) => e.preventDefault()} // Allow drop
+                    onDrop={() => handleDrop(colIndex)}
                   >
                     <div className="flex items-center gap-1">
                       <Input

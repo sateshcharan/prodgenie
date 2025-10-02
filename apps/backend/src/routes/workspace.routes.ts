@@ -78,4 +78,11 @@ router.get(
   asyncHandler(WorkspaceController.getWorkspaceConfig)
 );
 
+router.patch(
+  apiRoutes.workspace.setWorkspaceConfig(':configName'),
+  authenticateSupabaseJWT,
+  // authenticatePassportJWT,
+  asyncHandler(WorkspaceController.setWorkspaceConfig)
+);
+
 export { router };

@@ -35,6 +35,8 @@ model Plan {
   createdAt      DateTime  @default(now())
   deletedAt      DateTime?
   isDeleted      Boolean   @default(false)
+  features       Json      @default("{}")
+  price          Float     @default(0)
 
   workspaces Workspace[]
 }

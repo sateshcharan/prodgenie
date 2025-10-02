@@ -1,75 +1,83 @@
-import React, { useState } from "react";
-import { PricingCard as PricingCardUI } from "@prodgenie/libs/ui";
-import { useAuthStore } from "@prodgenie/libs/store";
-import { cn } from "@prodgenie/libs/utils";
+import React, { useEffect, useState } from 'react';
+import { Button, PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
+import { useAuthStore } from '@prodgenie/libs/store';
+import { cn } from '@prodgenie/libs/utils';
 
-import handleCheckout from "./HandleCheckout";
+import handleCheckout from './HandleCheckout';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import { api } from '../utils';
 
-const PricingCard = ({ variant = "page" }: { variant?: "page" | "modal" }) => {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
-    "monthly"
+const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>(
+    'monthly'
   );
 
   const { setAuthType } = useAuthStore();
-  const handleClick = () => setAuthType("signup");
+  const handleClick = () => setAuthType('signup');
 
-  // ✅ Plan definitions in one place
-  const plans = [
-    {
-      id: "free",
-      title: "Free",
-      price: 0,
-      features: [
-        "Up to 50 job cards / month",
-        "Basic drawing import",
-        "Email support",
-      ],
-    },
-    {
-      id: "starter",
-      title: "Starter",
-      price: 99,
-      features: [
-        "Up to 500 job cards / month",
-        "BOM extraction",
-        "Standard integrations",
-        "Priority email support",
-      ],
-    },
-    {
-      id: "enterprise",
-      title: "Enterprise",
-      price: 299,
-      features: [
-        "Unlimited job cards",
-        "Custom workflows & API access",
-        "Dedicated account manager",
-        "24/7 phone support",
-      ],
-    },
-  ];
+  const [plans, setPlans] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const {
+          data: { data: dbplans },
+        } = await api.get(
+          `${apiRoutes.projectWide.base}${apiRoutes.projectWide.getPlans}`
+        );
+
+        const formattedPlans = dbplans.map((p: any) => {
+          let parsedFeatures: string[] = [];
+
+          try {
+            const raw =
+              typeof p.features === 'string'
+                ? JSON.parse(p.features)
+                : p.features;
+            parsedFeatures = raw?.features ?? [];
+          } catch (err) {
+            console.error('Error parsing features:', err);
+          }
+
+          return {
+            id: p.id,
+            title: p.name,
+            price: p.price,
+            features: parsedFeatures,
+          };
+        });
+
+        console.log(formattedPlans);
+        setPlans(formattedPlans);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   const computePrice = (base: number) =>
-    billingCycle === "monthly" ? base : base * 10;
+    billingCycle === 'monthly' ? base : base * 10;
 
   return (
     <section
       className={cn(
-        "bg-muted/50",
-        variant === "page" && "py-20",
-        variant === "modal" && "p-4 max-h-[70vh] overflow-y-auto rounded-lg"
+        'bg-muted/50',
+        variant === 'page' && 'py-20',
+        variant === 'modal' && 'p-4 max-h-[70vh] overflow-y-auto rounded-lg'
       )}
     >
       <div
         className={cn(
-          "mx-auto text-center",
-          variant === "page" ? "container px-4" : ""
+          'mx-auto text-center',
+          variant === 'page' ? 'container px-4' : ''
         )}
       >
         <h2
           className={cn(
-            "font-bold mb-6",
-            variant === "page" ? "text-3xl" : "text-xl"
+            'font-bold mb-6',
+            variant === 'page' ? 'text-3xl' : 'text-xl'
           )}
         >
           Choose Your Plan
@@ -77,19 +85,14 @@ const PricingCard = ({ variant = "page" }: { variant?: "page" | "modal" }) => {
 
         {/* Billing Cycle Toggle */}
         <div className="inline-flex rounded-lg bg-white p-1 mb-8">
-          {(["monthly", "annual"] as const).map((cycle) => (
-            <button
+          {(['monthly', 'annual'] as const).map((cycle) => (
+            <Button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm transition",
-                billingCycle === cycle
-                  ? "bg-black text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
+              variant={billingCycle === cycle ? 'default' : 'ghost'}
             >
-              {cycle === "monthly" ? "Monthly" : "Annual (2 months free)"}
-            </button>
+              {cycle === 'monthly' ? 'Monthly' : 'Annual (2 months free)'}
+            </Button>
           ))}
         </div>
 
@@ -105,6 +108,33 @@ const PricingCard = ({ variant = "page" }: { variant?: "page" | "modal" }) => {
               onClick={plan.price === 0 ? handleClick : handleCheckout}
             />
           ))}
+        </div>
+
+        {/* ➕ Credit Top-Up Option */}
+        <div className="bg-white rounded-lg shadow p-6 w-full mx-auto my-4">
+          <h3
+            className={cn(
+              'font-bold mb-2',
+              variant === 'page' ? 'text-3xl' : 'text-xl'
+            )}
+          >
+            Need more credits?
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Purchase extra credits anytime within your billing cycle.
+          </p>
+          <div className="flex justify-center gap-4">
+            {[50, 500, 1000].map((credits) => (
+              <Button
+                key={credits}
+                onClick={() =>
+                  handleCheckout({ type: 'credits', amount: credits })
+                }
+              >
+                {credits} credits
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
     </section>
