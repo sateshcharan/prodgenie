@@ -102,7 +102,9 @@ export class JobCardService {
           tables: tableConfigs,
           ...(jobCardForm.sections[templateSection.name] &&
             this.stringService.flattenObjectWith_({
-              jobCardForm: jobCardForm.sections[templateSection.name],
+              [`${templateSection.name}_jobCardForm`]:
+                jobCardForm.sections[templateSection.name],
+              // jobCardForm: jobCardForm.sections[templateSection.name],
             })),
           ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global),
           ...this.stringService.prefixKeys('bomItem', bomItem),
@@ -116,7 +118,7 @@ export class JobCardService {
           return acc;
         }, {} as Record<string, any>);
 
-        console.log(templateContext);
+        // console.log(templateContext);
 
         const evaluatedtemplateFormulas = this.evaluateFormulasUnified(
           templateFormulas,
@@ -462,6 +464,14 @@ export class JobCardService {
       ...formulas,
       ...(context?.sequenceFormulas || {}),
     };
+
+    // for (const key in allFormulas) {
+    //   let formula = allFormulas[key];
+    //   formula = formula.replace(/\bifelse\s*\(/g, 'ifelse(');
+    //   allFormulas[key] = formula;
+    // }
+
+    console.log(allFormulas);
 
     const escapeRegExp = (s: string) =>
       s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

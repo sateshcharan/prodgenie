@@ -13,44 +13,126 @@ import {
   ScrollArea,
 } from '@prodgenie/libs/ui';
 import {
-  apiRoutes,
-  jobCardFields,
+  // apiRoutes,
+  // jobCardFields,
   preDefinedOperators,
-  preDefinedKeywords,
+  // preDefinedKeywords,
 } from '@prodgenie/libs/constant';
-import { useUserStore } from '@prodgenie/libs/store';
+// import { useUserStore } from '@prodgenie/libs/store';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
-import { api } from '../utils';
+// import { api } from '../utils';
 import { useSuggestionTokens } from '../hooks/useSuggestionTokens';
+
+// 🧩 DnD imports
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Trash } from 'lucide-react';
+
+const stringService = new StringService();
 
 interface SuggestionInputProps {
   readonly?: boolean;
   value: string;
   onChange?: (val: string) => void;
   extraSuggestions?: string[];
+  templateName?: string;
+}
+
+interface SortableTokenProps {
+  id: string;
+  token: string;
+  readonly?: boolean;
+  onRemove: () => void;
+}
+
+// 🧩 Reusable draggable token component
+function SortableToken({ id, token, readonly, onRemove }: SortableTokenProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between gap-2 border  border-indigo-300 bg-indigo-50/60 text-indigo-900  pl-3 text-sm  hover:bg-indigo-100  "
+    >
+      {/* Left: Token label */}
+      <span className="font-medium ">{token}</span>
+
+      {/* Right: Action buttons */}
+      <div className="flex items-center gap-1">
+        {/* Drag handle */}
+        <Button
+          {...attributes}
+          {...listeners}
+          className="text-red-500 hover:text-red-600  "
+          size={'icon'}
+          variant="outline"
+          title="Drag to reorder"
+        >
+          <GripVertical />
+        </Button>
+
+        {/* Remove button */}
+        {!readonly && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onRemove();
+            }}
+            className="text-red-500 hover:text-red-600 "
+            size={'icon'}
+            variant="outline"
+            title="Remove token"
+          >
+            <Trash />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
-  ({ readonly, value, onChange, extraSuggestions = [] }, ref) => {
+  ({ readonly, value, onChange, extraSuggestions = [], templateName }, ref) => {
     const [tokens, setTokens] = useState<string[]>(() =>
       value ? value.split(' ') : []
     );
     const [open, setOpen] = useState(false);
     // const [suggestions, setSuggestions] = useState<string[]>([]);
-    const suggestions = useSuggestionTokens(extraSuggestions);
+    const suggestions = useSuggestionTokens(extraSuggestions, templateName);
 
-    const [searchParams] = useSearchParams();
-    const fileId = searchParams.get('id');
+    // const [searchParams] = useSearchParams();
+    // const fileId = searchParams.get('id');
 
-    const location = useLocation();
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const filetype = pathSegments[1];
+    // const location = useLocation();
+    // const pathSegments = location.pathname.split('/').filter(Boolean);
+    // const filetype = pathSegments[1];
 
-    const user = useUserStore((state) => state.user);
+    // const user = useUserStore((state) => state.user);
 
-    const stableUser = useMemo(() => user, []);
-    const stableExtraSuggestions = useMemo(() => [...extraSuggestions], []);
-    const hasFetchedSuggestionsRef = useRef(false);
+    // const stableUser = useMemo(() => user, []);
+    // const stableExtraSuggestions = useMemo(() => [...extraSuggestions], []);
+    // const hasFetchedSuggestionsRef = useRef(false);
 
     // useEffect(() => {
     //   if (hasFetchedSuggestionsRef.current) return;
@@ -126,9 +208,9 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
     };
 
     const addToken = (token: string) => {
-      if (!tokens.includes(token)) {
-        updateTokens([...tokens, token]);
-      }
+      // if (!tokens.includes(token)) {
+      updateTokens([...tokens, token]);
+      // }
       setOpen(false);
     };
 
@@ -136,12 +218,15 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
       updateTokens(tokens.filter((_, i) => i !== index));
     };
 
+    // 🧩 Setup sensors for drag-and-drop
+    const sensors = useSensors(useSensor(PointerSensor));
+
     return (
       <div
         className="w-full border rounded p-2 flex flex-wrap gap-2 bg-white min-h-[40px]"
         ref={ref}
       >
-        {tokens.map((token, index) => (
+        {/* {tokens.map((token, index) => (
           <span
             key={`${token}-${index}`}
             className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-sm flex items-center gap-1"
@@ -156,7 +241,33 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
               </button>
             )}
           </span>
-        ))}
+        ))} */}
+
+        {/* 🧩 DnD Context for reordering */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={({ active, over }) => {
+            if (over && active.id !== over.id) {
+              const oldIndex = tokens.findIndex((t) => t === active.id);
+              const newIndex = tokens.findIndex((t) => t === over.id);
+              const reordered = arrayMove(tokens, oldIndex, newIndex);
+              updateTokens(reordered);
+            }
+          }}
+        >
+          <SortableContext items={tokens} strategy={rectSortingStrategy}>
+            {tokens.map((token, index) => (
+              <SortableToken
+                key={`${token}-${index}`}
+                id={token}
+                token={token}
+                readonly={readonly}
+                onRemove={() => removeToken(index)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         {!readonly && (
           <Popover open={open} onOpenChange={setOpen}>
@@ -169,23 +280,38 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
               </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="p-0 w-[500px]">
+            <PopoverContent
+              // className="p-0 w-[500px]"
+              className="p-0 w-auto max-w-[90vw]"
+            >
               <Command>
                 <CommandInput placeholder="Search..." />
-                <div className="flex gap-2 p-2">
+                {/* <div className="flex gap-2 p-2"> */}
+                <div className="grid grid-cols-[1fr_auto_auto] gap-2 p-2 max-w-full overflow-hidden">
                   {/* Variables Section */}
-                  {/* Column 1: Dynamically grouped variables */}
-                  <ScrollArea className="h-72 rounded-md border">
+                  {/* <ScrollArea className="min-w-[200px] shrink-0 max-h-72 rounded-md border"> */}
+                  <ScrollArea className="max-h-72 rounded-md border">
                     {Object.entries(
                       suggestions
                         .filter(
                           (s) =>
                             !preDefinedOperators.includes(s) && isNaN(Number(s))
                         )
-                        .reduce<Record<string, string[]>>((acc, item) => {
-                          const [prefix] = item.split('_');
+                        .reduce<
+                          Record<string, { key: string; label: string }[]>
+                        >((acc, item) => {
+                          // Preprocess once
+                          const [prefix, ...rest] = item.split('_');
                           const group = prefix || 'Other';
-                          acc[group] = [...(acc[group] || []), item];
+
+                          // If it's formula_, extract label cleanly
+                          const label =
+                            prefix === 'formula' ? rest.join('_') : item;
+
+                          acc[group] = [
+                            ...(acc[group] || []),
+                            { key: item, label },
+                          ];
                           return acc;
                         }, {})
                     ).map(([group, items]) => (
@@ -193,24 +319,28 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
                         key={group}
                         heading={
                           group === 'jobCardForm'
-                            ? 'Job Card Fields'
+                            ? 'jobcard global fields'
                             : group === 'user'
-                            ? 'User Fields'
+                            ? 'user fields'
+                            : group === 'formula'
+                            ? 'formula fields'
                             : group === 'depField' || group === 'currentDate'
-                            ? 'System Fields'
-                            : group.toUpperCase()
+                            ? 'system fields'
+                            : stringService.camelToNormal(group)
                         }
                       >
-                        {items.map((item) => (
-                          <CommandItem
-                            key={item}
-                            onSelect={() => addToken(item)}
-                            className="px-5
-                          "
-                          >
-                            {item}
-                          </CommandItem>
-                        ))}
+                        {items.map(
+                          ({ key, label }) => (
+                            <CommandItem
+                              key={key}
+                              onSelect={() => addToken(label)}
+                              className="px-5"
+                            >
+                              {label}
+                            </CommandItem>
+                          )
+                          // )
+                        )}
                       </CommandGroup>
                     ))}
                   </ScrollArea>

@@ -16,5 +16,6 @@ export const getFileData = async (fileId: string) => {
   const { data } = await api.get(
     `${apiRoutes.files.base}/getFileData/${fileId}`
   );
+
   return data?.data;
 };

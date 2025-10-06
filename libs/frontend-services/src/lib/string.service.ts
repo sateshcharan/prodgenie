@@ -11,6 +11,32 @@ export class StringService {
     return text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
   }
 
+  trimKeys(
+    obj: Record<string, any> | any[],
+    keys: string[],
+    options?: { toCamelCase?: boolean }
+  ): Record<string, any> | any[] {
+    const { toCamelCase = false } = options || {};
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.trimKeys(item, keys, options));
+    } else if (typeof obj === 'object' && obj !== null) {
+      const newObj: Record<string, any> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (keys.includes(key) && typeof value === 'string') {
+          // remove leading/trailing spaces and collapse multiple spaces
+          let trimmed = value.replace(/\s+/g, ' ').trim();
+          if (toCamelCase) trimmed = this.camelCase(trimmed);
+          newObj[key] = trimmed;
+        } else {
+          newObj[key] = this.trimKeys(value, keys, options);
+        }
+      }
+      return newObj;
+    }
+    return obj;
+  }
+
   // prefixKeys = (
   //   keyToReplace: string,
   //   objectToPrefixIn: Record<string, any>

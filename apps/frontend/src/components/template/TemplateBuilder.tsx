@@ -463,7 +463,7 @@
 
 import clsx from 'clsx';
 import { Save } from 'lucide-react';
-import { isEqual, template } from 'lodash-es';
+import { isEqual, template, update } from 'lodash-es';
 import { useSearchParams } from 'react-router-dom';
 import { useState, useRef, useEffect, memo } from 'react';
 
@@ -479,18 +479,32 @@ import {
   ScrollArea,
   toast,
 } from '@prodgenie/libs/ui';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
 import { api } from '../../utils';
 import FormBuilder from './FormBuilder';
 import SuggestionInput from '../SuggestionInput';
 
+const stringService = new StringService();
+
 // 🔹 Reusable field row
-const TemplateFieldRow = ({ label, value, readOnly = false, onChange }) => (
+const TemplateFieldRow = ({
+  label,
+  value,
+  readOnly = false,
+  onChange,
+  templateName,
+}) => (
   <div className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50">
     <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
       {label}:
     </label>
-    <SuggestionInput readOnly={readOnly} value={value} onChange={onChange} />
+    <SuggestionInput
+      readOnly={readOnly}
+      value={value}
+      onChange={onChange}
+      templateName={templateName}
+    />
   </div>
 );
 
@@ -546,13 +560,7 @@ const TemplateBuilder = () => {
           res.text()
         );
         const jobCardFormData = templateFile?.data?.jobCardForm;
-
-        // const { manual = {}, computed = {} } =
-        //   templateFile?.data?.templateFields ?? {};
-        // const combined = { ...manual, ...computed };
-
         const combined = templateFile?.data?.templateFields ?? {}; // templateFields
-
         const { fields, blocks } = extractPlaceholders(templateFileContent);
 
         setTemplateName(templateName);
@@ -595,6 +603,7 @@ const TemplateBuilder = () => {
 
     const matches = htmlContent.match(/{{(.*?)}}/g);
     if (!matches) return { fields, blocks };
+
     matches
       .map((m) => m.slice(2, -2).trim())
       .forEach((token) => {
@@ -607,7 +616,11 @@ const TemplateBuilder = () => {
           fields.push(token);
         }
       });
-    return { fields, blocks };
+
+    return {
+      fields: Array.from(new Set(fields)),
+      blocks: Array.from(new Set(blocks)),
+    };
   };
 
   const handleDrop = async (files: File[]) => {
@@ -661,21 +674,15 @@ const TemplateBuilder = () => {
       }
     }
 
-    // const manual: Record<string, string> = {};
-    // const computed: Record<string, string> = {};
-
-    // Object.entries(templateFieldValues).forEach(([key, val]) => {
-    //   const isComputed =
-    //     typeof val === 'string' &&
-    //     (preDefinedKeywords.some((op) => val.includes(op)) ||
-    //       preDefinedOperators.some((op) => val.includes(op)));
-    //   isComputed ? (computed[key] = val) : (manual[key] = val);
-    // });
+    const trimmedJobCardData = stringService.trimKeys(
+      UpdatedJobCardData,
+      ['name'],
+      { toCamelCase: true }
+    );
 
     const templateJson = {
       templateFields: templateFieldValues,
-      // templateFields: { manual, computed },
-      ...UpdatedJobCardData,
+      ...trimmedJobCardData,
     };
 
     try {
@@ -736,7 +743,6 @@ const TemplateBuilder = () => {
       )}
 
       {/* Right: Preview & File Upload */}
-
       <div className="bg-white border rounded shadow p-4 overflow-auto ">
         <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-white pb-2 border-b">
           {id === null ? (
@@ -792,6 +798,7 @@ const TemplateBuilder = () => {
                   label={blockName}
                   value={`${blockName}s[]`}
                   readOnly
+                  templateName={templateName}
                 />
               ))}
 
@@ -806,6 +813,7 @@ const TemplateBuilder = () => {
                       [field]: val,
                     }))
                   }
+                  templateName={templateName}
                 />
               ))}
             </div>

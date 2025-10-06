@@ -569,6 +569,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
         <div className="flex flex-row gap-2 p-2">
           <Button
             onClick={() => console.log('update preview logic')}
+            // onClick={() => window.location.reload()}
             variant="outline"
           >
             <RefreshCcw className="mr-2 w-4 h-4" />

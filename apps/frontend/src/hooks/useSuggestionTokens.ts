@@ -13,7 +13,10 @@ import { getFileData } from '../utils/fileService';
 
 let _cachedSuggestions: string[] | null = null;
 
-export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
+export const useSuggestionTokens = (
+  extraSuggestions: string[] = [],
+  templateName?: string
+) => {
   const [suggestions, setSuggestions] = useState<string[]>(
     _cachedSuggestions || []
   );
@@ -28,11 +31,11 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
   const user = useUserStore((state) => state.user);
   const hasFetchedRef = useRef(false);
 
+  const stableUser = useMemo(() => user, []);
   const stableExtraSuggestions = useMemo(
     () => [...extraSuggestions],
     [extraSuggestions]
   );
-  const stableUser = useMemo(() => user, []);
 
   useEffect(() => {
     if (_cachedSuggestions) return;
@@ -41,30 +44,26 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
     hasFetchedRef.current = true;
 
     const loadSuggestions = async () => {
+      // global job card fields
       const jobCardSuggestions = jobCardFields.flatMap((field) =>
         field.fields
           ? field.fields.map((f) => `jobCardForm_${f.name.replace('.', '_')}`)
           : [`jobCardForm_${field.name.replace('.', '_')}`]
       );
 
+      // bom fields
       const bomSuggestions: string[] = [];
       try {
-        // const {
-        //   data: { data: bomFile },
-        // } = await api.get(
-        //   `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
-        // );
-        // const response = await fetch(bomFile.path);
-        // const json = await response.json();
+        const {
+          data: {
+            data: { data: bomData },
+          },
+        } = await api.get(
+          `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
+        );
 
-        // const {
-        //   data: { data: json },
-        // } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
-
-        const json = await getFileData(fileId);
-
-        for (const section in json) {
-          const expected = json[section]?.header?.expected;
+        for (const section in bomData) {
+          const expected = bomData[section]?.header?.expected;
           if (Array.isArray(expected)) {
             bomSuggestions.push(
               ...expected.map((f: string) => `${section}_${f}`)
@@ -75,6 +74,7 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
         console.error('Error fetching BOM config:', err);
       }
 
+      // user fields
       const userSuggestions = Object.keys(stableUser).map(
         (key) => `user_${key}`
       );
@@ -93,21 +93,15 @@ export const useSuggestionTokens = (extraSuggestions: string[] = []) => {
             data: { data: dynamicFieldsData },
           } = await api.get(`${apiRoutes.files.base}/getFileData/${fileId}`);
 
-          // const dynamicFields =
-          //   dynamicFieldsData?.jobCardForm?.sections?.flatMap(
-          //     (section: any) => section.fields || []
-          //   ) ?? [];
-
-          // const dynamicSuggestions = dynamicFields.map(
-          //   (f: any) => `jobCardForm_${f.name?.split('.').join('_')}`
-          // );
-
+          // dynamic job card fields
           const sections = dynamicFieldsData?.jobCardForm?.sections ?? [];
 
           const dynamicSuggestions = sections.flatMap((section: any) =>
             (section.fields || []).map(
               (f: any) =>
-                `jobCardForm_${section.name}_${f.name?.split('.').join('_')}`
+                `${templateName}_jobCardForm_${section.name}_${f.name
+                  ?.split('.')
+                  .join('_')}`
             )
           );
 

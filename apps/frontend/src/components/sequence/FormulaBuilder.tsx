@@ -71,10 +71,11 @@ const FormulaBuilder = forwardRef(
 
     const jobCardFormSuggestions: string[] = fileData.flatMap((file: any) => {
       const sections = file.data.jobCardForm.sections || [];
+      const templateName = file.name.split('.')[0];
       return sections.flatMap((section: any) =>
         section.fields.map((field: any) => {
           const fieldKey = field.name?.split('.')[1] || field.name;
-          return `jobCardForm_${section.name}_${fieldKey}`;
+          return `${templateName}_jobCardForm_${section.name}_${fieldKey}`;
         })
       );
     });
@@ -177,7 +178,11 @@ const FormulaBuilder = forwardRef(
     // Dynamically extract all depField keys from all products
     // const commonFieldKeys = Object.keys(products[0].common);
 
-    const formulaFieldKeys = Object.keys(products[0].formulas);
+    // const formulaFieldKeys = Object.keys(products[0].formulas);
+
+    const formulaFieldKeys = Array.isArray(products[0]?.formulas)
+      ? products[0].formulas.map((f) => f.key)
+      : [];
 
     return (
       <div className="bg-white border rounded shadow p-2  h-[400px] flex flex-col">
