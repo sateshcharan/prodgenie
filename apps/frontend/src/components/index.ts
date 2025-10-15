@@ -20,6 +20,7 @@ export { default as Files } from './Files';
 export { default as FileDetails } from './FileDetails';
 export { default as JobCard } from './JobCard';
 export { default as BomItem } from './BomTable';
+export { default as DuplicateFile } from './modal/DuplicateFile';
 
 // Builders
 export { default as FileBuilder } from './FileBuilder';
@@ -29,6 +30,9 @@ export { default as FormulaBuilder } from './sequence/FormulaBuilder';
 export { default as SequenceBuilder } from './sequence/SequenceBuilder';
 export { default as TableBuilder } from './table/TableBuilder';
 export { default as MaterialBuilder } from './table/MaterialBuilder';
+
+//
+export { default as DeletePreset } from './modal/DeletePreset';
 
 // Workspace
 export { default as WorkspaceUsers } from './dashboard/WorkspaceUsers';

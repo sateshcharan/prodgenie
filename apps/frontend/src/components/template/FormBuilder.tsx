@@ -24,9 +24,12 @@ import {
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { formBuilderSchema } from '@prodgenie/libs/schema';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
 import { api } from '../../utils';
 import PreviewForm from './PreviewForm';
+
+const stringService = new StringService();
 
 export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;
 

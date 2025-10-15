@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { FolderService } from '../services/index.js';
 import { WorkspaceService } from '../services/index.js';
 
+const workspaceService = new WorkspaceService();
+
 export class WorkspaceController {
   static createWorkspace = async (req: Request, res: Response) => {
     const { workspaceName, planId } = req.body;
@@ -90,7 +92,7 @@ export class WorkspaceController {
   static getWorkspaceConfig = async (req: Request, res: Response) => {
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const config = await WorkspaceService.getWorkspaceConfig(
+    const config = await workspaceService.getWorkspaceConfig(
       activeWorkspaceId as string,
       req.params.configName
     );
@@ -109,6 +111,26 @@ export class WorkspaceController {
 
     try {
       const config = await WorkspaceService.setWorkspaceConfig(
+        activeWorkspaceId,
+        configName,
+        req.body
+      );
+
+      return res.status(200).json({ success: true, data: config });
+    } catch (err) {
+      console.error('Failed to update config', err);
+      return res
+        .status(500)
+        .json({ success: false, message: 'Failed to update config' });
+    }
+  };
+
+  static updateWorkspaceConfig = async (req: Request, res: Response) => {
+    const activeWorkspaceId = req.activeWorkspaceId!;
+    const configName = req.params.configName;
+
+    try {
+      const config = await WorkspaceService.updateWorkspaceConfig(
         activeWorkspaceId,
         configName,
         req.body

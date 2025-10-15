@@ -31,7 +31,13 @@ router.post(
   apiRoutes.files.setFileData(':fileId'),
   // validateFileType,
   asyncHandler(FileController.setFileDataController)
-)
+);
+
+router.patch(
+  apiRoutes.files.updateFileData(':fileId'),
+  // validateFileType,
+  asyncHandler(FileController.updateFileDataController)
+);
 
 router.get(
   apiRoutes.files.getByName(':fileName'),
@@ -62,6 +68,12 @@ router.post(
   // [upload.array('files'), validateFileType],
   [upload.array('files')],
   asyncHandler(FileController.replaceFileController)
+);
+
+router.post(
+  apiRoutes.files.duplicate(':fileType'),
+  // validateFileType,
+  asyncHandler(FileController.duplicateFileController)
 );
 
 router.delete(

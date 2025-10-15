@@ -27,6 +27,7 @@ export class JobCardService {
   private pdfService = new PdfService();
   private stringService = new StringService();
   private thumbnailService = new ThumbnailService();
+  private workspaceService = new WorkspaceService();
 
   async generateJobCard({
     bom,
@@ -40,9 +41,12 @@ export class JobCardService {
     if (!bom.length) return console.warn('bom is empty');
 
     const templates: string[] = [];
-    const workspaceName = activeWorkspace?.workspace?.name;
-    const workspaceId = activeWorkspace?.workspace?.id;
-    const workspaceCredits = activeWorkspace?.workspace?.credits;
+    const {
+      name: workspaceName,
+      id: workspaceId,
+      credits: workspaceCredits,
+    } = activeWorkspace?.workspace || {};
+
     if (workspaceCredits < 10) {
       throw new Error('Not enough credits'); // check org credits
     }
@@ -51,7 +55,7 @@ export class JobCardService {
 
     const tables = await this.fetchAllWorkspaceTables(workspaceId);
     const tableConfigs = await this.buildTableConfigs(tables);
-    const bomConfig = await WorkspaceService.getWorkspaceConfig(
+    const bomConfig = await this.workspaceService.getWorkspaceConfig(
       workspaceId,
       'bom.json'
     );
@@ -66,16 +70,18 @@ export class JobCardService {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
       }
-      const { sequenceData } = productSequence;
-      const sequenceFormulas = sequenceData?.formulas;
+      const {
+        sequenceData: { formulas: sequenceFormulas },
+      } = productSequence;
+
       const sequence = await this.fileHelperService.fetchJsonFromSignedUrl(
         productSequence.sequencePath
-      );
+      ); // sequence formulas
 
       for (const templateSection of sequence.sections) {
         const sectionUrl = await this.fileStorageService.getSignedUrl(
           `${workspaceName}/${templateSection.path}`
-        );
+        ); // template htm file in storage
 
         const templateData = await prisma.file.findFirst({
           where: {
@@ -89,27 +95,36 @@ export class JobCardService {
 
         if (!templateData) {
           console.warn(`⚠️ Missing template for: ${templateSection.name}`);
-          //skip further processing move to next section
           continue;
         }
-        const { templateFields: templateFormulas } = templateData?.data;
+
+        const { templateFields: templateFormulas } = templateData?.data || {}; // template formulas
 
         const templateContext = Object.entries({
           bomConfig,
           sequenceFormulas,
-          printingDetails,
-          sectionName: templateSection.name,
           tables: tableConfigs,
-          ...(jobCardForm.sections[templateSection.name] &&
-            this.stringService.flattenObjectWith_({
-              [`${templateSection.name}_jobCardForm`]:
-                jobCardForm.sections[templateSection.name],
-              // jobCardForm: jobCardForm.sections[templateSection.name],
-            })),
-          ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global),
-          ...this.stringService.prefixKeys('bomItem', bomItem),
+          sectionName: templateSection.name,
+          printingDetails: printingDetails?.filter(
+            (d) =>
+              d.printingPart?.trim().toLowerCase() ===
+              bomItem.description?.trim().toLowerCase()
+          ), // filters printing details by part
+
           ...this.stringService.prefixKeys('user', user),
+          ...this.stringService.prefixKeys('bomItem', bomItem),
           ...this.stringService.prefixKeys('titleBlock', titleBlock),
+          ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global), // global jobCardForm
+          ...(jobCardForm.sections[
+            this.stringService.camelCase(bomItem.description)
+          ] &&
+            this.stringService.flattenObjectWith_({
+              [`jobCardForm`]:
+                jobCardForm.sections[
+                  this.stringService.camelCase(bomItem.description)
+                ],
+            })), // section jobCardForm
+
           ...this.stringService.prefixKeys('keyword', {
             currentDate: new Date().toISOString().split('T')[0],
           }),
@@ -117,8 +132,6 @@ export class JobCardService {
           acc[key] = !isNaN(value as any) ? Number(value) : value;
           return acc;
         }, {} as Record<string, any>);
-
-        // console.log(templateContext);
 
         const evaluatedtemplateFormulas = this.evaluateFormulasUnified(
           templateFormulas,
@@ -228,10 +241,14 @@ export class JobCardService {
 
   private async identifyProduct(item: BomItem) {
     const keyword = this.stringService.camelCase(item.description); // e.g., "partitionLen"
-    const baseKeyword = keyword.replace(
-      /(Len|Wid|Ht|Size|Dim|Length|Width|Height)$/i,
-      ''
-    ); // remove common suffixes
+    const baseKeyword = keyword
+      .replace(
+        /^(Length|Width|Height|Master|Primary|Size|Dim|Len|Wid|Ht)|(?:Length|Width|Height|Master|Primary|Size|Dim|Len|Wid|Ht)$/gi,
+        ''
+      )
+      .replace(/^[_\s]+|[_\s]+$/g, '') // remove leftover spaces/underscores
+      .trim();
+
     const fallbackKeyword = baseKeyword.toLowerCase();
 
     try {
@@ -465,13 +482,13 @@ export class JobCardService {
       ...(context?.sequenceFormulas || {}),
     };
 
-    // for (const key in allFormulas) {
-    //   let formula = allFormulas[key];
-    //   formula = formula.replace(/\bifelse\s*\(/g, 'ifelse(');
-    //   allFormulas[key] = formula;
-    // }
-
-    console.log(allFormulas);
+    for (const key in allFormulas) {
+      const formula = allFormulas[key];
+      if (formula.includes('ifelse')) {
+        const expr = formula.replace(/\s*,\s*/g, ', ');
+        allFormulas[key] = expr;
+      }
+    }
 
     const escapeRegExp = (s: string) =>
       s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

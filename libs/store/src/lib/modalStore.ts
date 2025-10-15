@@ -12,6 +12,7 @@ type ModalType =
   | 'workspace:removeUserFromWorkspace'
   | 'workspace:fileUpload'
   | 'workspace:editThumbnail'
+  | 'workspace:duplicateFile'
   | 'workspace:pricing'
   | 'workspace:leaveWorkspace'
   | 'workspace:replacePassword'

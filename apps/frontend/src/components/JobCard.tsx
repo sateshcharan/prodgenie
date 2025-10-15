@@ -26,6 +26,7 @@ import { BomItem } from '@prodgenie/libs/types';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
+import { StringService } from '@prodgenie/libs/frontend-services';
 
 import { api } from '../utils';
 import BomTable from './BomTable';
@@ -33,6 +34,29 @@ import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import PresetSelector from './PresetSelector';
+import { CheckCheck } from 'lucide-react';
+
+const COLORS = [
+  'bg-red-50',
+  'bg-green-50',
+  'bg-blue-50',
+  'bg-yellow-50',
+  'bg-purple-50',
+  'bg-pink-50',
+  'bg-indigo-50',
+  'bg-teal-50',
+  'bg-orange-50',
+];
+
+const stringService = new StringService();
+
+function getColorForItem(key: string) {
+  const hash = key
+    .split('')
+    .reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+  const index = Math.abs(hash) % COLORS.length;
+  return COLORS[index];
+}
 
 interface JobCardProps {
   tables: {
@@ -55,16 +79,16 @@ const JobCard = ({
 }: JobCardProps) => {
   const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
     useBomStore();
-  const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
-    useJobCardStore();
+  // const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
+  //   useJobCardStore();
 
   const [activeTab, setActiveTab] = useState('select');
   const [isLoading, setIsLoading] = useState(true);
   const { jobCardData, setJobCardData } = useJobCardStore();
 
-  const bom = tables.data?.bom || [];
-  const titleBlock = tables.data?.titleBlock;
-  const printingDetails = tables.data?.printingDetails;
+  const bom = tables?.data?.bom;
+  const titleBlock = tables?.data?.titleBlock;
+  const printingDetails = tables?.data?.printingDetails;
 
   const generateJobCard = async ({
     file,
@@ -77,17 +101,17 @@ const JobCard = ({
     bom: BomItem[];
     file: { id: string };
     titleBlock: any;
+    signedUrl: string;
+    printingDetails: {
+      detail: string;
+      color: string;
+    }[];
     jobCardForm: {
       jobCardNumber: string;
       scheduleDate: string;
       poNumber: string;
       productionQty: number;
     };
-    signedUrl: string;
-    printingDetails: {
-      detail: string;
-      color: string;
-    }[];
   }) => {
     return api.post('/api/jobCard/generate', {
       bom,
@@ -114,10 +138,10 @@ const JobCard = ({
         const sequences = bom.map((b) => b.description);
         const responses = await Promise.all(
           sequences.map(async (sequence) => {
-            const res = await api.get(
+            const { data } = await api.get(
               `${apiRoutes.sequence.base}/getJobCardDataFromSequence/${sequence}`
             );
-            return res.data;
+            return { data, sequence };
           })
         );
         setJobCardData(responses);
@@ -152,8 +176,10 @@ const JobCard = ({
   }, []);
 
   // ⏳ Dynamic schema and fields
-  const dynamicFields = jobCardData[0]?.map((section) =>
-    section.sections.map((section) => section.fields)
+  const dynamicFields = jobCardData.map((sequence) =>
+    sequence.data.map((section) =>
+      section.sections.map((section) => section.fields)
+    )
   );
 
   // const dynamicSchema = useMemo(() => {
@@ -226,13 +252,16 @@ const JobCard = ({
   // build dynamicSchema (preserve top-level group -> subsection -> fields)
   const dynamicSchema = useMemo(() => {
     try {
-      if (!jobCardData?.length) return undefined;
-
       const topShape: Record<string, any> = {};
+      if (!jobCardData?.length) return undefined;
 
       // jobCardData is e.g. [[ { name: 'thinBlade', sections: [...] }, { name: 'creasingSlotting', ... } ]]
       jobCardData.forEach((groupArray) => {
-        groupArray.forEach((group) => {
+        // const seqName = groupArray.sequence.replace(/\s+/g, '_');
+        const seqName = stringService.camelCase(groupArray.sequence);
+        const groupShape: Record<string, any> = {};
+
+        groupArray.data.forEach((group) => {
           const groupName = group.name;
           const subShapes: Record<string, any> = {};
 
@@ -265,9 +294,12 @@ const JobCard = ({
             subShapes[subSection.name] = z.object(fieldShape);
           });
 
-          // make sure group has at least an object (a group can contain multiple subsections)
-          topShape[groupName] = z.object(subShapes);
+          groupShape[groupName] = z.object(subShapes);
         });
+
+        // topShape[`${stringService.camelCase(seqName)}`] = z.object(groupShape);
+        topShape[seqName] = z.object(groupShape);
+        console.log(topShape);
       });
 
       return z.object(topShape);
@@ -281,10 +313,6 @@ const JobCard = ({
   const mergedSchema = useMemo(() => {
     if (!dynamicSchema) return jobCardSchema;
     const merged = jobCardSchema.merge(dynamicSchema);
-    // console.log(
-    //   'Merged schema (keys):',
-    //   Object.keys((merged as any)?._def?.shape ?? {})
-    // );
     return merged;
   }, [dynamicSchema, jobCardSchema]);
 
@@ -295,10 +323,11 @@ const JobCard = ({
     if (!jobCardData?.length) return defaults;
 
     jobCardData.forEach((groupArray) => {
-      groupArray.forEach((group) => {
-        const groupName = group.name;
+      groupArray.data.forEach((group) => {
+        const groupName =
+          // stringService.camelCase(groupArray.sequence) + '.' + group.name;
+          stringService.camelCase(groupArray.sequence);
         defaults[groupName] = defaults[groupName] || {};
-
         (group.sections || []).forEach((subSection: any) => {
           defaults[groupName][subSection.name] =
             defaults[groupName][subSection.name] || {};
@@ -318,6 +347,8 @@ const JobCard = ({
         });
       });
     });
+
+    console.log('dynamicDefaults', defaults);
 
     return defaults;
   }, [jobCardData]);
@@ -345,21 +376,18 @@ const JobCard = ({
       ...dynamicDefaults,
     };
 
-    // Only reset if form values are different
     const currentValues = form.getValues();
     if (JSON.stringify(currentValues) !== JSON.stringify(merged)) {
       form.reset(merged);
-
-      setIsLoading(false);
     }
   }, [dynamicDefaults, staticDefaults]);
 
   const onSubmit = async () => {
     try {
-      const values = form.getValues();
-
       const globalFields: Record<string, any> = {};
       const sections: Record<string, any> = {};
+
+      const values = form.getValues();
 
       Object.entries(values).forEach(([key, value]) => {
         if (typeof value === 'object' && value !== null) {
@@ -369,21 +397,20 @@ const JobCard = ({
         }
       });
 
-      const structuredForm = {
-        global: globalFields,
-        sections,
-      };
-
-      // 👇 send to backend
       const jobCardData = {
-        bom: bom.filter((item) => selectedItems.includes(item.slNo)),
+        bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,
         printingDetails,
         file: { id: fileId },
-        jobCardForm: structuredForm,
+        jobCardForm: {
+          global: globalFields,
+          sections,
+        },
         signedUrl,
       };
 
+      console.log(jobCardData.jobCardForm);
+      // 👇 send to backend
       const jobCard = await generateJobCard(jobCardData);
       setJobCardUrl(jobCard.data.url);
 
@@ -404,11 +431,16 @@ const JobCard = ({
     <Card className="border-none ">
       <CardContent className="p-0">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              console.error('❌ Validation errors:', errors);
+            })}
+          >
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
               className=" space-y-4"
+              activationMode="manual"
             >
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="select">Bom Details</TabsTrigger>
@@ -428,11 +460,12 @@ const JobCard = ({
                   />
                   <Separator />
                   <TitleBlock titleBlock={titleBlock} fileId={fileId} />
+                  <Separator />
                   {printingDetails && (
-                    <>
-                      <Separator />
-                      <PrintingDetail printingDetails={printingDetails} />
-                    </>
+                    <PrintingDetail
+                      printingDetails={printingDetails}
+                      fileId={fileId}
+                    />
                   )}
                 </div>
               </TabsContent>
@@ -450,14 +483,15 @@ const JobCard = ({
                       setValues={(vals) => form.reset(vals)}
                       activeDrawingId={fileId}
                     />
-
                     <Separator className="my-4" />
-
                     {/* static job card fields */}
-                    <h3 className="text-md font-semibold mb-2">
+                    <h3 className="text-md font-semibold mb-2 ">
                       JobCard Fields
                     </h3>
-                    <div className="space-y-4">
+                    <div className="space-y-2 ml-2 border-l-2 pl-2">
+                      <h3 className="text-md font-semibold capitalize">
+                        Global Fields
+                      </h3>
                       {jobCardFields.map((item) => (
                         <FormField
                           control={form.control}
@@ -465,8 +499,13 @@ const JobCard = ({
                           name={item.name as keyof jobCardFormValues}
                           render={({ field }) => (
                             <FormItem>
-                              <div className="flex items-center gap-2">
-                                <FormLabel>{item.label}</FormLabel>
+                              <div className="flex items-center gap-2 ">
+                                <FormLabel className="flex items-center gap-2">
+                                  <CheckCheck width={16} />
+                                  <span className="whitespace-nowrap">
+                                    {item.label}
+                                  </span>
+                                </FormLabel>
                                 <FormControl>
                                   <RenderField
                                     fieldConfig={item}
@@ -483,40 +522,54 @@ const JobCard = ({
 
                     {/* dynamic job card fields */}
                     <FormProvider {...form}>
-                      {jobCardData.map((sections, idx) => (
+                      {jobCardData.map(({ data, sequence }, idx) => (
                         <div
-                          className="space-y-4 border p-4 rounded-md mt-4"
+                          className={`space-y-4 border p-4 rounded-md mt-4 ${getColorForItem(
+                            sequence
+                          )}`}
                           key={idx}
                         >
-                          {sections.map((fields, i) => (
-                            <div key={i} className="space-y-2">
-                              {fields.name && (
+                          <h3 className="text-lg font-semibold capitalize">
+                            {sequence}
+                          </h3>
+
+                          {data.map((group, gi) => (
+                            <div key={gi}>
+                              {group.name && (
                                 <FormLabel className="text-lg font-semibold capitalize">
-                                  Section: {fields.name}
+                                  {group.name}
                                 </FormLabel>
                               )}
 
-                              {fields?.sections?.map((section) => (
+                              {group.sections?.map((subSection, si) => (
                                 <div
-                                  key={section.name}
+                                  key={si}
                                   className="space-y-2 border-l-2 pl-4 ml-2"
                                 >
-                                  <FormLabel className="text-lg font-semibold capitalize">
-                                    {section.name}
-                                  </FormLabel>
+                                  {subSection.name && (
+                                    <FormLabel className="text-lg font-semibold capitalize ">
+                                      {subSection.name}
+                                    </FormLabel>
+                                  )}
 
-                                  {section.fields.map((field) => (
+                                  {subSection.fields?.map((field, fi) => (
                                     <FormField
+                                      key={fi}
                                       control={form.control}
-                                      key={field.name}
-                                      name={
-                                        `${fields.name}.${section.name}.${field.name}` as any
-                                      }
+                                      name={`${stringService.camelCase(
+                                        sequence
+                                      )}.${group.name}.${subSection.name}.${
+                                        field.name
+                                      }`}
                                       render={({ field: rhfField }) => (
-                                        // (rhfField.name = `${fields.name}.${section.name}.${field.name}`),
                                         <FormItem>
                                           <div className="flex items-center gap-2">
-                                            <FormLabel>{field.label}</FormLabel>
+                                            <FormLabel className="flex gap-2 items-center ">
+                                              <CheckCheck width={16} />
+                                              <span className="whitespace-nowrap">
+                                                {field.label}
+                                              </span>
+                                            </FormLabel>
                                             <FormControl>
                                               <RenderField
                                                 fieldConfig={field}
@@ -536,7 +589,6 @@ const JobCard = ({
                         </div>
                       ))}
                     </FormProvider>
-
                     <Button type="submit" className="w-full mt-4">
                       Generate Job Cards
                     </Button>

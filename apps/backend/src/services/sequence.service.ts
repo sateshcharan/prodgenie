@@ -105,15 +105,36 @@ export class SequenceService {
   }
 
   async getJobCardDataFromSequence(sequence: string) {
-    // find the sequence file
-    const file = await prisma.file.findFirst({
-      where: { name: `${sequence.toLowerCase()}.json`, type: 'sequence' },
-      select: { path: true },
+    // Normalize input: lowercase + remove spaces, underscores, and dashes
+    const normalizedSeq = sequence
+      .toLowerCase()
+      .replace(/\s+|_|-/g, '') // remove spaces, underscores, and dashes
+      .trim();
+
+    // Fetch all sequence files
+    const files = await prisma.file.findMany({
+      where: { type: 'sequence' },
+      select: { name: true, path: true },
     });
 
-    // get json from sequence file
+    // Find the file whose name matches the normalized sequence
+    const matchedFile = files.find((file) => {
+      const fileBase = file.name
+        .toLowerCase()
+        .replace('.json', '') // remove extension
+        .replace(/\s+|_|-/g, ''); // remove formatting
+      return (
+        normalizedSeq.includes(fileBase) || fileBase.includes(normalizedSeq)
+      );
+    });
+
+    if (!matchedFile) {
+      throw new Error(`Sequence file not found for: ${sequence}`);
+    }
+
+    // Fetch JSON content from the file
     const json = await fileHelperService.fetchJsonFromSignedUrl(
-      `${file?.path}`
+      matchedFile.path
     );
 
     // get jobcarddata from the templates in json

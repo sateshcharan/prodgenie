@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Button, PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
-import { useAuthStore } from '@prodgenie/libs/store';
-import { cn } from '@prodgenie/libs/utils';
 
-import handleCheckout from './HandleCheckout';
+import { cn } from '@prodgenie/libs/utils';
+import { useAuthStore } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { Button, PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
+
 import { api } from '../utils';
+import handleCheckout from './HandleCheckout';
 
 const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
+  const [plans, setPlans] = useState<any[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>(
     'monthly'
   );
 
   const { setAuthType } = useAuthStore();
   const handleClick = () => setAuthType('signup');
-
-  const [plans, setPlans] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPlans = async () => {

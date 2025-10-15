@@ -99,7 +99,7 @@ export const useSuggestionTokens = (
           const dynamicSuggestions = sections.flatMap((section: any) =>
             (section.fields || []).map(
               (f: any) =>
-                `${templateName}_jobCardForm_${section.name}_${f.name
+                `jobCardForm_${templateName}_${section.name}_${f.name
                   ?.split('.')
                   .join('_')}`
             )

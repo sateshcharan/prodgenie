@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { Pencil, Check } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Pencil, Check, Plus } from 'lucide-react';
 
 import { useBomStore } from '@prodgenie/libs/store';
-import { Button, ScrollBar, ScrollArea } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { Button, ScrollBar, ScrollArea } from '@prodgenie/libs/ui';
 
 import { api } from '../utils';
 
@@ -48,10 +48,26 @@ const BomTable = ({
     );
   };
 
-  const handleConfirm = () => {
-    // console.log({ bom: editableBom });
-    setIsEditing(false);
+  const handleAddRow = () => {
+    const newRow: any = {};
+    bomHeaders.forEach((header) => {
+      newRow[header] = ''; // default empty string for new fields
+    });
+    // Generate a temporary slNo if missing
+    newRow.slNo = String(editableBom.length + 1);
+    setEditableBom((prev) => [...prev, newRow]);
   };
+
+  const handleConfirm = useCallback(async () => {
+    const updatedData = { bom: editableBom };
+
+    await api.patch(
+      `${apiRoutes.files.base}/updateFileData/${fileId}`,
+      updatedData
+    );
+
+    setIsEditing(false);
+  }, [editableBom, fileId]);
 
   useEffect(() => {
     const fetchBOM = async () => {
@@ -62,7 +78,7 @@ const BomTable = ({
       } = await api.get(
         `${apiRoutes.workspace.base}/getWorkspaceConfig/bom.json`
       );
-      setBomHeaders(bomJson.bomItem.header.expected);
+      setBomHeaders(bomJson.bom.header.expected);
     };
     fetchBOM();
   }, [fileId]);
@@ -81,6 +97,16 @@ const BomTable = ({
           {isEditing ? <Check size={18} /> : <Pencil size={18} />}
         </Button>
         <h2 className="text-lg font-semibold">BOM</h2>
+        {isEditing && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-2 flex items-center gap-1"
+            onClick={handleAddRow}
+          >
+            <Plus size={14} /> Add Row
+          </Button>
+        )}
       </div>
 
       <ScrollArea>
@@ -93,7 +119,6 @@ const BomTable = ({
                   {header}
                 </th>
               ))}
-
               <th className="border px-2 py-2 text-center">Select</th>
             </tr>
           </thead>
@@ -139,7 +164,7 @@ const BomTable = ({
           onClick={handleConfirm}
           className="flex items-center gap-2 ml-0 my-4"
         >
-          <Check size={16} /> Confirm Changes
+          <Check size={16} /> Confirm
         </Button>
       )}
     </div>

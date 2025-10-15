@@ -11,8 +11,10 @@ interface jobCardRequest {
   titleBlock: any;
   signedUrl: string;
   printingDetails: {
-    detail: string;
-    color: string;
+    printingDetail: string;
+    printingColor: string;
+    printingLocation: string;
+    printingPart: string;
   }[];
   activeWorkspace: any;
 }

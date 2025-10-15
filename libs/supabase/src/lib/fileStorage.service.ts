@@ -150,4 +150,25 @@ export class FileStorageService {
       throw new Error('Failed to replace file');
     }
   }
+
+  async duplicateFile(
+    oldPath: string,
+    fileType: string,
+    newPath: string
+  ): Promise<{ data: any; error: any }> {
+    try {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .copy(oldPath, newPath);
+
+      if (error) {
+        console.error('Supabase duplicate error:', error.message);
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      console.error('Duplicate operation failed:', err.code || '', err.message);
+      throw err;
+    }
+  }
 }

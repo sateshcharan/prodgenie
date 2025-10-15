@@ -1,21 +1,21 @@
 import { RouteObject } from 'react-router-dom';
 
 import {
+  fileDetailsLoader,
+  fileDatasLoader,
+  fileBuilderLoader,
+  settingsLoader,
+} from '../loaders';
+import {
   Files,
   FileDetails,
   FileBuilder,
   FormulaBuilder,
   Settings,
 } from '../components';
-import {
-  fileDetailsLoader,
-  fileDatasLoader,
-  fileBuilderLoader,
-  settingsLoader,
-} from '../loaders';
 import { Dashboard } from '../pages';
-import { PrivateLayout } from '../layouts';
 import PrivateRoute from './PrivateRoute';
+import { PrivateLayout } from '../layouts';
 
 const PrivateRoutes: RouteObject[] = [
   {
@@ -49,7 +49,7 @@ export const privateRoutes = [
     path: 'dashboard',
     element: (
       // <PrivateRoute>
-        <PrivateLayout />
+      <PrivateLayout />
       // </PrivateRoute>
     ),
     children: PrivateRoutes,

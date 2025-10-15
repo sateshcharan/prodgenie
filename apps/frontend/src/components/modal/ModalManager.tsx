@@ -14,11 +14,12 @@ import {
   Auth,
   Modal,
   FileDropZone,
+  DuplicateFile,
+  DeletePreset,
 } from '..';
 
 import { authDialogImage } from '@prodgenie/libs/ui';
 import { useModalStore } from '@prodgenie/libs/store';
-import DeletePreset from './DeletePreset';
 
 const ModalManager = () => {
   const { modalType, modalProps, isOpen, closeModal } = useModalStore();
@@ -161,11 +162,24 @@ const ModalManager = () => {
         </Modal>
       );
 
+    case 'workspace:duplicateFile':
+      return (
+        <Modal title={modalProps?.title} description={modalProps?.description}>
+          <DuplicateFile
+            title={modalProps?.title}
+            description={modalProps?.description}
+            submitUrl={modalProps?.submitUrl}
+            fileId={modalProps?.fileId}
+            fileType={modalProps?.fileType}
+            onUploadSuccess={modalProps?.onUploadSuccess}
+          />
+        </Modal>
+      );
+
     case 'workspace:deletePreset':
       return (
         <Modal title={modalProps?.title} description={modalProps?.description}>
           <DeletePreset
-            presetId={modalProps?.presetId}
             presets={modalProps?.presets}
             onDeleteSuccess={modalProps?.onDeleteSuccess}
           />

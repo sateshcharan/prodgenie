@@ -94,6 +94,17 @@ const Files = () => {
     });
   };
 
+  const handleDuplicate = async (id: string) => {
+    openModal('workspace:duplicateFile', {
+      title: `Duplicate ${fileType}`,
+      description: `Duplicate the selected ${fileType}`,
+      submitUrl: `${apiRoutes.files.base}/${fileType}/duplicate`,
+      fileType,
+      fileId: id,
+      onUploadSuccess: fetchFiles,
+    });
+  };
+
   const handleCardDownload = (path: string, name: string) => {
     downloadFile(path, name).catch((err) =>
       console.error('Error downloading file:', err)
@@ -157,6 +168,7 @@ const Files = () => {
               onEdit={handleCardEdit}
               onDownload={handleCardDownload}
               onDelete={handleCardDelete}
+              onDuplicate={handleDuplicate}
               onClick={handleCardClick}
             />
           ))}

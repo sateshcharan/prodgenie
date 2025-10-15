@@ -36,6 +36,8 @@ export const apiRoutes = {
       `/getWorkspaceConfig/${configName}`,
     setWorkspaceConfig: (configName: string) =>
       `/setWorkspaceConfig/${configName}`,
+    updateWorkspaceConfig: (configName: string) =>
+      `/updateWorkspaceConfig/${configName}`,
   },
 
   files: {
@@ -43,10 +45,12 @@ export const apiRoutes = {
     list: (fileType: string) => `/${fileType}/list`,
     upload: (fileType: string) => `/${fileType}/upload`,
     delete: (fileType: string, fileId: string) => `/${fileType}/${fileId}`,
+    duplicate: (fileType: string) => `/${fileType}/duplicate`,
     getById: (fileId: string) => `/getById/${fileId}`,
     getByName: (fileName: string) => `/getByName/${fileName}`,
     getFileData: (fileId: string) => `/getFileData/${fileId}`,
     setFileData: (fileId: string) => `/setFileData/${fileId}`,
+    updateFileData: (fileId: string) => `/updateFileData/${fileId}`,
     rename: (fileType: string) => `/${fileType}`,
     update: (fileId: string) => `/${fileId}/update`,
     replace: (fileType: string, fileId: string) =>

@@ -203,7 +203,7 @@ export class WorkspaceService {
     return workspace ? true : false;
   }
 
-  static async getWorkspaceConfig(workspaceId: string, configName: string) {
+  async getWorkspaceConfig(workspaceId: string, configName: string) {
     const config = await prisma.file.findFirst({
       where: {
         workspaceId,
@@ -222,7 +222,7 @@ export class WorkspaceService {
   static async setWorkspaceConfig(
     workspaceId: string,
     configName: string,
-    content: any // JSON object or string
+    content: any
   ) {
     const config = await prisma.file.findFirst({
       where: {
@@ -248,6 +248,37 @@ export class WorkspaceService {
     return {
       updatedConfig,
     };
+  }
+
+  static async updateWorkspaceConfig(
+    workspaceId: string,
+    configName: string,
+    content: any
+  ) {
+    const config = await prisma.file.findFirst({
+      where: {
+        workspaceId,
+        type: 'config',
+        name: configName,
+      },
+      select: { data: true, id: true },
+    });
+
+    if (!config) {
+      throw new Error(
+        `Config "${configName}" not found for workspace ${workspaceId}`
+      );
+    }
+
+    const updatedConfig = {
+      ...config.data,
+      ...content,
+    };
+
+    return await prisma.file.update({
+      where: { id: config.id },
+      data: { data: updatedConfig },
+    });
   }
 
   static async updateUserRole(

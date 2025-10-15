@@ -5,6 +5,7 @@ import puppeteerExtra from 'puppeteer-extra';
 import type { PuppeteerExtra } from 'puppeteer-extra';
 // import type { Page, ElementHandle } from 'puppeteer';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
 import { extractBOMPrompt } from '@prodgenie/libs/constant';
 
 const puppeteer = puppeteerExtra as unknown as PuppeteerExtra;
@@ -28,6 +29,7 @@ export class PuppeteerService {
   private singletonLockPath = path.join(this.userDataDir, 'SingletonLock');
 
   public async extractFromChatGPT(filePath: string): Promise<string> {
+    console.log(`Processing file: ${filePath}`);
     const browser = await this.launchBrowser();
 
     // console.log(filePath);

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Pencil, Check } from 'lucide-react'; // Or any icon lib you're using
+import React, { useCallback, useState } from 'react';
+import { Pencil, Check, Plus } from 'lucide-react'; // Or any icon lib you're using
 import { Button } from '@prodgenie/libs/ui'; // from ShadCN
+import { api } from '../utils';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 interface PrintingDetailItem {
   printingDetail: string;
@@ -10,9 +12,10 @@ interface PrintingDetailItem {
 
 interface PrintingDetailProps {
   printingDetails: PrintingDetailItem[];
+  fileId: string;
 }
 
-const PrintingDetail: React.FC<PrintingDetailProps> = ({ printingDetails }) => {
+const PrintingDetail: React.FC<PrintingDetailProps> = ({ printingDetails, fileId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableDetails, setEditableDetails] =
     useState<PrintingDetailItem[]>(printingDetails);
@@ -22,15 +25,30 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({ printingDetails }) => {
     key: keyof PrintingDetailItem,
     value: string
   ) => {
-    const updated = [...editableDetails];
-    updated[index][key] = value;
-    setEditableDetails(updated);
+    setEditableDetails((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
+    );
   };
 
-  const handleConfirm = () => {
-    console.log({ printingDetails: editableDetails });
-    setIsEditing(false);
+  const handleAddRow = () => {
+    const newRow: PrintingDetailItem = {
+      printingDetail: '',
+      printingColour: '',
+      printingLocation: '',
+    };
+    setEditableDetails((prev) => [...prev, newRow]);
   };
+
+  const handleConfirm = useCallback(async () => {
+    const updatedData = { printingDetails: editableDetails };
+
+    await api.patch(
+      `${apiRoutes.files.base}/updateFileData/${fileId}`,
+      updatedData
+    );
+
+    setIsEditing(false);
+  }, [editableDetails, fileId]);
 
   return (
     <div>
@@ -44,6 +62,17 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({ printingDetails }) => {
         </Button>
 
         <h2 className="text-lg font-semibold">Printing Details</h2>
+
+        {isEditing && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-2 flex items-center gap-1"
+            onClick={handleAddRow}
+          >
+            <Plus size={14} /> Add Row
+          </Button>
+        )}
       </div>
 
       <div className="space-y-3">

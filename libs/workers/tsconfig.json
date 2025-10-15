@@ -7,6 +7,9 @@
       "path": "../server-services"
     },
     {
+      "path": "../supabase"
+    },
+    {
       "path": "../prisma"
     },
     {

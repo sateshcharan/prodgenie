@@ -1,8 +1,11 @@
+import { randomUUID } from 'crypto';
+import { json } from 'stream/consumers';
+
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { ThumbnailService } from './thumbnail.service';
 import { FileType } from '@prisma/client';
-import { json } from 'stream/consumers';
+
+import { ThumbnailService } from './thumbnail.service';
 
 const storageFileService = new FileStorageService();
 const thumbnailService = new ThumbnailService();
@@ -36,7 +39,7 @@ export class FileService {
             name: file.originalname,
             path: uploadPath,
             uploadedBy: userId,
-            workspaceId, // fix this is incorrect
+            workspaceId,
             type: fileType as FileType,
           },
         });
@@ -137,6 +140,23 @@ export class FileService {
     });
   }
 
+  async updateFileData(fileId: string, data: any) {
+    const { data: existingFileData } = await prisma.file.findUnique({
+      where: { id: fileId },
+      select: { data: true },
+    });
+
+    const updatedFileData = {
+      ...existingFileData,
+      ...data,
+    };
+
+    return prisma.file.update({
+      where: { id: fileId },
+      data: { data: updatedFileData },
+    });
+  }
+
   async getThumbnail(fileId: string, workspaceId: string) {
     const file = await prisma.file.findUnique({
       where: { id: fileId, workspaceId },
@@ -173,6 +193,40 @@ export class FileService {
       where: { id: fileId },
       data: { thumbnail: newThumb.path },
     });
+  }
+
+  async duplicateFile(
+    fileId: string,
+    fileType: string,
+    duplicateFileName: string
+  ) {
+    const file = await prisma.file.findUnique({ where: { id: fileId } });
+    if (!file) throw new Error('File not found');
+
+    const duplicateFileId = randomUUID();
+    const extension = file.path.split('.').pop();
+    const newPath =
+      file.path.split('/').slice(0, -1).join('/') +
+      `/${duplicateFileId}.${extension}`;
+
+    // Duplicate file entry in the database
+    await prisma.file.create({
+      data: {
+        id: duplicateFileId,
+        name: `${duplicateFileName}.${extension}`,
+        path: newPath,
+        type: file.type,
+        workspaceId: file.workspaceId,
+        uploadedBy: file.uploadedBy,
+        data: file.data,
+        thumbnail: file.thumbnail,
+      },
+    });
+
+    // Duplicate the file in storage
+    await storageFileService.duplicateFile(file.path, fileType, newPath);
+
+    //Duplicate thumbnail entry in database
   }
 
   async deleteFile(

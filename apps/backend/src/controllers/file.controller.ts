@@ -3,8 +3,9 @@ import { Request, Response } from 'express';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { FileService, ThumbnailService } from '../services/index.js';
-import { fileProcessingQueue } from '@prodgenie/libs/queues';
+
 import { prisma } from '@prodgenie/libs/prisma';
+import { fileProcessingQueue } from '@prodgenie/libs/queues';
 
 const fileService = new FileService();
 const thumbnailService = new ThumbnailService();
@@ -12,16 +13,19 @@ const thumbnailService = new ThumbnailService();
 export class FileController {
   static uploadFileController = async (req: Request, res: Response) => {
     const user = req.user!;
-    const activeWorkspaceId = req.activeWorkspaceId!;
     const { fileType } = req.params;
+    const activeWorkspaceId = req.activeWorkspaceId!;
     const files = req.files as Express.Multer.File[];
+
+    if (!files?.length) {
+      return res.status(400).json({ message: 'No files uploaded' });
+    }
 
     const activeWorkspace = user.memberships.find(
       (m) => m.workspace.id === activeWorkspaceId
     );
-
-    if (!files?.length) {
-      return res.status(400).json({ message: 'No files uploaded' });
+    if (!activeWorkspace) {
+      return res.status(403).json({ message: 'Invalid workspace' });
     }
 
     const filesWithId = files.map((file) => ({
@@ -29,6 +33,7 @@ export class FileController {
       id: randomUUID(),
     }));
 
+    // upload files
     const result = await fileService.uploadFile(
       filesWithId,
       fileType,
@@ -36,6 +41,7 @@ export class FileController {
       activeWorkspace
     );
 
+    // queue thumbnail generation
     for (const file of filesWithId) {
       const screenshotBuffer = await thumbnailService.generate(file, fileType);
 
@@ -55,10 +61,35 @@ export class FileController {
           activeWorkspace
         );
       }
-    }
+      // }
 
-    if (fileType === 'drawing') {
-      for (const file of filesWithId) {
+      if (fileType === 'drawing') {
+        // add empty file data using the bom.json config
+        const { data: bomConfigData } = await prisma.file.findFirst({
+          where: {
+            workspaceId: activeWorkspaceId,
+            type: 'config',
+            name: 'bom.json',
+          },
+          select: { data: true },
+        });
+
+        const emptyBomData = Object.keys(bomConfigData).reduce(
+          (acc, key) => ({
+            ...acc,
+            [key]: [],
+          }),
+          {}
+        );
+
+        await prisma.file.update({
+          where: { id: file.id },
+          data: {
+            data: emptyBomData,
+          },
+        });
+
+        // add file to processing queue for processing
         await fileProcessingQueue.add(
           'process-file',
           { file },
@@ -96,6 +127,18 @@ export class FileController {
       fileType,
       uploadedFiles,
       user
+    );
+    return res.status(200).json(result);
+  };
+
+  static duplicateFileController = async (req: Request, res: Response) => {
+    const { fileType } = req.params;
+    const { fileId, duplicateFileName } = req.body;
+
+    const result = await fileService.duplicateFile(
+      fileId,
+      fileType,
+      duplicateFileName
     );
     return res.status(200).json(result);
   };
@@ -159,6 +202,14 @@ export class FileController {
     const data = req.body;
 
     const file = await fileService.setFileData(fileId, data);
+    return res.status(200).json(file);
+  };
+
+  static updateFileDataController = async (req: Request, res: Response) => {
+    const { fileId } = req.params;
+    const data = req.body;
+
+    const file = await fileService.updateFileData(fileId, data);
     return res.status(200).json(file);
   };
 

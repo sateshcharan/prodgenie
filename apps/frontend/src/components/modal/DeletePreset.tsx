@@ -15,33 +15,30 @@ import { useModalStore } from '@prodgenie/libs/store';
 import { api } from '../../utils';
 
 export default function DeletePreset({
-  presetId,
   presets,
   onDeleteSuccess,
 }: {
-  presetId: string;
   presets: any[];
-  onDeleteSuccess: (updatedPresets: any[]) => void;
+  onDeleteSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const { closeModal } = useModalStore();
 
   const deletePreset = async () => {
-    if (!presetId) return;
     try {
       setLoading(true);
-      const updatedPresets = presets.filter((p) => p.id !== presetId);
 
       await api.patch(
-        `${apiRoutes.workspace.base}/setWorkspaceConfig/preset.json`,
-        updatedPresets
+        `${apiRoutes.workspace.base}/updateWorkspaceConfig/preset.json`,
+        presets
       );
 
       // ✅ tell parent that presets have changed
-      if (onDeleteSuccess) {
-        onDeleteSuccess(updatedPresets);
-      }
+      // if (onDeleteSuccess) {
+      //   onDeleteSuccess(presets); //
+      // }
 
+      onDeleteSuccess?.();
       closeModal();
       // return updatedPresets;
     } catch (err: any) {
