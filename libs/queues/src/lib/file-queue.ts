@@ -11,5 +11,5 @@ export const fileProcessingQueue = new Queue('file-processing', { connection });
   await fileProcessingQueue.clean(0, 0, 'wait');
   await fileProcessingQueue.clean(0, 0, 'failed');
   await fileProcessingQueue.clean(0, 0, 'completed');
-  console.log('Queue cleaned');
+  console.log('file-processing Queue cleaned');
 })();

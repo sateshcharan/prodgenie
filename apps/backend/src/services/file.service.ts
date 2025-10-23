@@ -1,14 +1,16 @@
 import { randomUUID } from 'crypto';
 import { json } from 'stream/consumers';
 
-import { prisma } from '@prodgenie/libs/prisma';
-import { FileStorageService } from '@prodgenie/libs/supabase';
 import { FileType } from '@prisma/client';
+import { EventStatus, prisma } from '@prodgenie/libs/prisma';
+import { EventService } from '@prodgenie/libs/db';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 import { ThumbnailService } from './thumbnail.service';
 
-const storageFileService = new FileStorageService();
+const fileStorageService = new FileStorageService();
 const thumbnailService = new ThumbnailService();
+const eventService = new EventService();
 
 export class FileService {
   async uploadFile(
@@ -31,7 +33,7 @@ export class FileService {
       const uploadPath = `${folder}/${fileType}/${file.id}.${extension}`;
 
       try {
-        await storageFileService.uploadFile(uploadPath, file, fileType, user);
+        await fileStorageService.uploadFile(uploadPath, file, fileType, user);
 
         const savedFile = await prisma.file.create({
           data: {
@@ -49,6 +51,21 @@ export class FileService {
         console.error(`Upload failed for ${file.originalname}:`, err);
       }
     }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { credits: true },
+    });
+
+    // await EventService.record({
+    //   userId,
+    //   workspaceId,
+    //   relatedFileId: savedFiles[0].id,
+    //   type: 'FILE_UPLOADED',
+    //   details: { filename: 'plan.pdf' },
+    //   status: EventStatus.COMPLETED,
+    //   reason: 'File uploaded successfully',
+    // });
 
     return savedFiles;
   }
@@ -74,7 +91,7 @@ export class FileService {
     const dbFile = await prisma.file.findUnique({ where: { id: fileId } });
     if (!dbFile) throw new Error('File not found');
 
-    const replacement = await storageFileService.replaceFile(
+    const replacement = await fileStorageService.replaceFile(
       dbFile.path,
       uploadedFiles[0],
       fileType,
@@ -97,7 +114,7 @@ export class FileService {
     const data = await Promise.all(
       files.map(async (file) => ({
         ...file,
-        path: await storageFileService.getSignedUrl(file.path),
+        path: await fileStorageService.getSignedUrl(file.path),
       }))
     );
 
@@ -110,7 +127,7 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(file.path);
+    const signedUrl = await fileStorageService.getSignedUrl(file.path);
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
@@ -120,7 +137,7 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(file.path);
+    const signedUrl = await fileStorageService.getSignedUrl(file.path);
     return { data: { ...file, signedUrl }, error: null };
   }
 
@@ -163,7 +180,7 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(file.thumbnail);
+    const signedUrl = await fileStorageService.getSignedUrl(file.thumbnail);
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
@@ -182,7 +199,7 @@ export class FileService {
 
     if (!dbFile) throw new Error('File not found');
 
-    const newThumb = await storageFileService.replaceFile(
+    const newThumb = await fileStorageService.replaceFile(
       dbFile.thumbnail,
       uploadedFile,
       'thumbnail',
@@ -224,7 +241,7 @@ export class FileService {
     });
 
     // Duplicate the file in storage
-    await storageFileService.duplicateFile(file.path, fileType, newPath);
+    await fileStorageService.duplicateFile(file.path, fileType, newPath);
 
     //Duplicate thumbnail entry in database
   }
@@ -245,7 +262,7 @@ export class FileService {
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
-    await storageFileService.deleteFile(file.path, fileType, user);
+    await fileStorageService.deleteFile(file.path, fileType, user);
     return prisma.file.delete({ where: { id: fileId } });
   }
 
@@ -259,7 +276,7 @@ export class FileService {
 
     const newNameWithExtension = newName + '.' + extension;
 
-    await storageFileService.renameFile(file.path, newPath);
+    await fileStorageService.renameFile(file.path, newPath);
 
     return prisma.file.update({
       where: { id: fileId },

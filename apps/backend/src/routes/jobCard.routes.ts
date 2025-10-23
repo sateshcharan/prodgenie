@@ -1,9 +1,9 @@
 import express, { Router } from 'express';
 
-import { JobCardController } from '../controllers/jobCard.controller.js';
-import { asyncHandler } from '../middlewares/index.js';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { asyncHandler } from '../middlewares/index.js';
+import { JobCardController } from '../controllers/jobCard.controller.js';
 
 const router: Router = express.Router();
 

@@ -17,13 +17,8 @@ router.post(
   PaymentController.handleStripeWebhook
 );
 
-// Instamojo
-router.post('/instamojo/payment', PaymentController.createInstamojoPayment);
-router.get(
-  '/instamojo/status/:paymentRequestId',
-  PaymentController.getInstamojoPaymentStatus
-);
-
-router.post(apiRoutes.payment.upiOrder, PaymentController.createUpiOrder);
+// PhonePe
+router.post('/phonepe/payment', PaymentController.createPhonePePayment);
+router.get('/phonepe/status/:orderId', PaymentController.getPhonePeStatus);
 
 export { router };

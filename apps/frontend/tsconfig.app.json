@@ -34,9 +34,17 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "../ui/src/components/FolderDropZone.tsx"
-, "src/components/CreateWorkspaceModal.backup", "src/components/modal/FileDropZone.tsx"  ],
+    "../ui/src/components/FolderDropZone.tsx",
+    "src/components/CreateWorkspaceModal.backup",
+    "src/components/modal/FileDropZone.tsx"
+  ],
   "references": [
+    {
+      "path": "../../libs/utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/shared-utils/tsconfig.lib.json"
+    },
     {
       "path": "../../libs/schema/tsconfig.lib.json"
     },
@@ -44,13 +52,10 @@
       "path": "../../libs/types/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/utils/tsconfig.lib.json"
+      "path": "../../libs/store/tsconfig.lib.json"
     },
     {
       "path": "../../libs/constant/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/store/tsconfig.lib.json"
     },
     {
       "path": "../../libs/ui/tsconfig.lib.json"

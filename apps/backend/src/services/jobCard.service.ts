@@ -6,6 +6,7 @@ import { Parser } from 'expr-eval';
 import { randomUUID } from 'crypto';
 
 import { prisma } from '@prodgenie/libs/prisma';
+// import { EventService } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { StringService } from '@prodgenie/libs/frontend-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
@@ -46,6 +47,15 @@ export class JobCardService {
       id: workspaceId,
       credits: workspaceCredits,
     } = activeWorkspace?.workspace || {};
+
+    // await EventService.record({
+    //   userId: user.id,
+    //   workspaceId,
+    //   type: 'job-card',
+    //   details: {
+    //     jobCardNumber: jobCardForm.global.jobCardNumber,
+    //   },
+    // });
 
     if (workspaceCredits < 10) {
       throw new Error('Not enough credits'); // check org credits

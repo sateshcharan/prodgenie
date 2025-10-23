@@ -5,7 +5,7 @@ import { Job } from 'bullmq';
 import { prisma } from '@prodgenie/libs/prisma';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import {
-  PuppeteerService,
+  // PuppeteerService,
   OpenRouterService,
 } from '@prodgenie/libs/server-services';
 
@@ -27,7 +27,9 @@ export const processDrawingBom = async (job: Job) => {
     select: { path: true },
   });
 
-  const fileSignedUrl = await fileStorageService.getSignedUrl(filePath?.path);
+  const fileSignedUrl = await fileStorageService.getSignedUrl(
+    filePath?.path || ''
+  );
 
   try {
     // const data = await puppeteerService.extractFromChatGPT(tempFilePath);

@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 
-import { StripeService, UpiService, InstamojoService } from '../services';
+import { StripeService, PhonePeService } from '../services';
 
 export const PaymentController = {
+  // === Stripe ===
   async createStripeSession(req: Request, res: Response) {
     const orgId = req.user?.org?.id;
     const { email, priceId } = req.body;
@@ -18,26 +19,21 @@ export const PaymentController = {
     await StripeService.processEvent(req);
   },
 
-  async createUpiOrder(req: Request, res: Response) {
-    const { amount, receipt } = req.body;
-    const order = await UpiService.createOrder(amount, receipt);
-    res.json(order);
-  },
-
-  async createInstamojoPayment(req: Request, res: Response) {
-    const { amount, purpose, email, redirectUrl } = req.body;
-    const payment = await InstamojoService.createPaymentRequest(
+  // === PhonePe ===
+  async createPhonePePayment(req: Request, res: Response) {
+    const { orderId, amount, mobile, name } = req.body;
+    const response = await PhonePeService.createPayment(
+      orderId,
       amount,
-      purpose,
-      email,
-      redirectUrl
+      mobile,
+      name
     );
-    res.json(payment);
+    res.json(response);
   },
 
-  async getInstamojoPaymentStatus(req: Request, res: Response) {
-    const { paymentRequestId } = req.params;
-    const status = await InstamojoService.getPaymentStatus(paymentRequestId);
-    res.json(status);
+  async getPhonePeStatus(req: Request, res: Response) {
+    const { orderId } = req.params;
+    const response = await PhonePeService.verifyPayment(orderId);
+    res.json(response);
   },
 };

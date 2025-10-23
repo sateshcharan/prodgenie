@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CheckCheck } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
@@ -23,10 +24,10 @@ import {
   ScrollBar,
 } from '@prodgenie/libs/ui';
 import { BomItem } from '@prodgenie/libs/types';
+import { StringService } from '@prodgenie/libs/shared-utils';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
-import { apiRoutes, jobCardFields } from '@prodgenie/libs/constant';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
-import { StringService } from '@prodgenie/libs/frontend-services';
+import { apiRoutes, jobCardFields, COLORS } from '@prodgenie/libs/constant';
 
 import { api } from '../utils';
 import BomTable from './BomTable';
@@ -34,19 +35,6 @@ import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import PresetSelector from './PresetSelector';
-import { CheckCheck } from 'lucide-react';
-
-const COLORS = [
-  'bg-red-50',
-  'bg-green-50',
-  'bg-blue-50',
-  'bg-yellow-50',
-  'bg-purple-50',
-  'bg-pink-50',
-  'bg-indigo-50',
-  'bg-teal-50',
-  'bg-orange-50',
-];
 
 const stringService = new StringService();
 
@@ -58,7 +46,12 @@ function getColorForItem(key: string) {
   return COLORS[index];
 }
 
-interface JobCardProps {
+const JobCard = ({
+  tables,
+  fileId,
+  signedUrl,
+  setJobCardUrl,
+}: {
   tables: {
     data?: {
       bom: BomItem[];
@@ -69,21 +62,14 @@ interface JobCardProps {
   fileId: string;
   signedUrl: string;
   setJobCardUrl: (url: string) => void;
-}
-
-const JobCard = ({
-  tables,
-  fileId,
-  signedUrl,
-  setJobCardUrl,
-}: JobCardProps) => {
+}) => {
   const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
     useBomStore();
   // const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
   //   useJobCardStore();
 
   const [activeTab, setActiveTab] = useState('select');
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const { jobCardData, setJobCardData } = useJobCardStore();
 
   const bom = tables?.data?.bom;
@@ -98,20 +84,21 @@ const JobCard = ({
     signedUrl,
     printingDetails,
   }: {
-    bom: BomItem[];
     file: { id: string };
+    bom: BomItem[];
     titleBlock: any;
+    // jobCardForm: {
+    //   jobCardNumber: string;
+    //   scheduleDate: string;
+    //   poNumber: string;
+    //   productionQty: number;
+    // };
+    jobCardForm: jobCardFormValues;
     signedUrl: string;
     printingDetails: {
       detail: string;
       color: string;
     }[];
-    jobCardForm: {
-      jobCardNumber: string;
-      scheduleDate: string;
-      poNumber: string;
-      productionQty: number;
-    };
   }) => {
     return api.post('/api/jobCard/generate', {
       bom,
@@ -166,7 +153,7 @@ const JobCard = ({
         const jobCardNo = await api.get(
           `${apiRoutes.jobCard.base}${apiRoutes.jobCard.getNumber}`
         );
-        form.setValue('jobCardNumber', jobCardNo.data.data);
+        form.setValue('global.jobCardNumber', jobCardNo.data.data);
       } catch (err) {
         toast.error('Failed to fetch job card number.');
       }
@@ -175,7 +162,7 @@ const JobCard = ({
     fetchJobCardNo();
   }, []);
 
-  // ⏳ Dynamic schema and fields
+  // ⏳ Dynamic fields
   const dynamicFields = jobCardData.map((sequence) =>
     sequence.data.map((section) =>
       section.sections.map((section) => section.fields)
@@ -250,14 +237,69 @@ const JobCard = ({
   // }, [dynamicFields]);
 
   // build dynamicSchema (preserve top-level group -> subsection -> fields)
+  // const dynamicSchema = useMemo(() => {
+  //   try {
+  //     const topShape: Record<string, any> = {};
+  //     if (!jobCardData?.length) return undefined;
+
+  //     // jobCardData is e.g. [[ { name: 'thinBlade', sections: [...] }, { name: 'creasingSlotting', ... } ]]
+  //     jobCardData.forEach((groupArray) => {
+  //       // const seqName = groupArray.sequence.replace(/\s+/g, '_');
+  //       const seqName = stringService.camelCase(groupArray.sequence);
+  //       const groupShape: Record<string, any> = {};
+
+  //       groupArray.data.forEach((group) => {
+  //         const groupName = group.name;
+  //         const subShapes: Record<string, any> = {};
+
+  //         (group.sections || []).forEach((subSection: any) => {
+  //           const fieldShape: Record<string, any> = {};
+
+  //           (subSection.fields || []).forEach((f: any) => {
+  //             const t = f.type;
+
+  //             if (t === 'number') {
+  //               // Accept string numbers from form inputs and validate as numbers
+  //               fieldShape[f.name] = z.preprocess((val) => {
+  //                 if (val === '' || val === null || typeof val === 'undefined')
+  //                   return undefined;
+  //                 return Number(val);
+  //               }, z.number().min(1));
+  //             } else if (t === 'string') {
+  //               fieldShape[f.name] = z.string().min(1);
+  //             } else if (t === 'select') {
+  //               // assume select values are strings; change to z.any() if not
+  //               fieldShape[f.name] = z.string().min(1);
+  //             } else if (t === 'boolean') {
+  //               fieldShape[f.name] = z.boolean();
+  //             } else {
+  //               // fallback
+  //               fieldShape[f.name] = z.any();
+  //             }
+  //           });
+
+  //           subShapes[subSection.name] = z.object(fieldShape);
+  //         });
+
+  //         groupShape[groupName] = z.object(subShapes);
+  //       });
+
+  //       topShape[seqName] = z.object(groupShape);
+  //     });
+
+  //     return z.object(topShape);
+  //   } catch (e) {
+  //     console.error('Failed to build dynamicSchema:', e);
+  //     return undefined;
+  //   }
+  // }, [jobCardData]);
   const dynamicSchema = useMemo(() => {
     try {
-      const topShape: Record<string, any> = {};
       if (!jobCardData?.length) return undefined;
 
-      // jobCardData is e.g. [[ { name: 'thinBlade', sections: [...] }, { name: 'creasingSlotting', ... } ]]
+      const topShape: Record<string, any> = {};
+
       jobCardData.forEach((groupArray) => {
-        // const seqName = groupArray.sequence.replace(/\s+/g, '_');
         const seqName = stringService.camelCase(groupArray.sequence);
         const groupShape: Record<string, any> = {};
 
@@ -269,24 +311,19 @@ const JobCard = ({
             const fieldShape: Record<string, any> = {};
 
             (subSection.fields || []).forEach((f: any) => {
-              const t = f.type;
-
-              if (t === 'number') {
-                // Accept string numbers from form inputs and validate as numbers
+              if (f.type === 'number') {
                 fieldShape[f.name] = z.preprocess((val) => {
-                  if (val === '' || val === null || typeof val === 'undefined')
+                  if (val === '' || val === null || val === undefined)
                     return undefined;
                   return Number(val);
                 }, z.number().min(1));
-              } else if (t === 'string') {
+              } else if (f.type === 'string') {
                 fieldShape[f.name] = z.string().min(1);
-              } else if (t === 'select') {
-                // assume select values are strings; change to z.any() if not
+              } else if (f.type === 'select') {
                 fieldShape[f.name] = z.string().min(1);
-              } else if (t === 'boolean') {
+              } else if (f.type === 'boolean') {
                 fieldShape[f.name] = z.boolean();
               } else {
-                // fallback
                 fieldShape[f.name] = z.any();
               }
             });
@@ -297,12 +334,13 @@ const JobCard = ({
           groupShape[groupName] = z.object(subShapes);
         });
 
-        // topShape[`${stringService.camelCase(seqName)}`] = z.object(groupShape);
         topShape[seqName] = z.object(groupShape);
-        console.log(topShape);
       });
 
-      return z.object(topShape);
+      // this dynamic schema now matches `sections`
+      return z.object({
+        sections: z.object(topShape),
+      });
     } catch (e) {
       console.error('Failed to build dynamicSchema:', e);
       return undefined;
@@ -348,8 +386,6 @@ const JobCard = ({
       });
     });
 
-    console.log('dynamicDefaults', defaults);
-
     return defaults;
   }, [jobCardData]);
 
@@ -362,9 +398,13 @@ const JobCard = ({
 
   const form = useForm<jobCardFormValues>({
     resolver: zodResolver(mergedSchema),
+    // defaultValues: {
+    //   ...staticDefaults,
+    //   ...dynamicDefaults,
+    // },
     defaultValues: {
-      ...staticDefaults,
-      ...dynamicDefaults,
+      global: staticDefaults,
+      sections: dynamicDefaults,
     },
   });
 
@@ -382,50 +422,79 @@ const JobCard = ({
     }
   }, [dynamicDefaults, staticDefaults]);
 
-  const onSubmit = async () => {
+  // const onSubmit = async () => {
+  //   try {
+  //     const globalFields: Record<string, any> = {};
+  //     const sections: Record<string, any> = {};
+
+  //     const values = form.getValues();
+
+  //     Object.entries(values).forEach(([key, value]) => {
+  //       if (typeof value === 'object' && value !== null) {
+  //         sections[key] = value; // dynamic section
+  //       } else {
+  //         globalFields[key] = value; // static/global
+  //       }
+  //     });
+
+  //     const jobCardData = {
+  //       bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
+  //       titleBlock,
+  //       printingDetails,
+  //       file: { id: fileId },
+  //       jobCardForm: {
+  //         global: globalFields,
+  //         sections,
+  //       },
+  //       signedUrl,
+  //     };
+
+  //     console.log(jobCardData.jobCardForm);
+  //     // 👇 send to backend
+  //     const jobCard = await generateJobCard(jobCardData);
+  //     setJobCardUrl(jobCard.data.url);
+
+  //     toast.success('Your Job Card is being generated. Please wait.');
+  //     setActiveTab('form');
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error('Failed to generate Job Card. Please try again.');
+  //   }
+  // };
+
+  // const watchedValues = useWatch({ control: form.control });
+  // useEffect(() => {
+  //   console.log(watchedValues);
+  // }, [watchedValues]);
+
+  const onSubmit = async (values: jobCardFormValues) => {
     try {
-      const globalFields: Record<string, any> = {};
-      const sections: Record<string, any> = {};
-
-      const values = form.getValues();
-
-      Object.entries(values).forEach(([key, value]) => {
-        if (typeof value === 'object' && value !== null) {
-          sections[key] = value; // dynamic section
-        } else {
-          globalFields[key] = value; // static/global
-        }
-      });
-
       const jobCardData = {
         bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,
         printingDetails,
         file: { id: fileId },
-        jobCardForm: {
-          global: globalFields,
-          sections,
-        },
+        jobCardForm: values,
         signedUrl,
       };
 
-      console.log(jobCardData.jobCardForm);
-      // 👇 send to backend
-      const jobCard = await generateJobCard(jobCardData);
-      setJobCardUrl(jobCard.data.url);
+      console.log(jobCardData);
 
-      toast.success('Your Job Card is being generated. Please wait.');
+      const jobCard = await generateJobCard(jobCardData);
+
+      //todo: in queue process the returned url will be empty
+      // need to check for the jobCardId's progress and update the url
+
+      setJobCardUrl(jobCard.data.url);
+      toast.success(
+        'Your Job Card is being generated. Your Queue position is 1. You can wait here or monitor the progress from the dashboard.'
+      );
       setActiveTab('form');
     } catch (err) {
       console.error(err);
       toast.error('Failed to generate Job Card. Please try again.');
     }
   };
-
-  // const watchedValues = useWatch({ control: form.control });
-  // useEffect(() => {
-  //   console.log(watchedValues);
-  // }, [watchedValues]);
 
   return (
     <Card className="border-none ">
@@ -472,18 +541,17 @@ const JobCard = ({
 
               {/* job card details */}
               <TabsContent value="form">
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <ScrollBar orientation="horizontal" />
-                  <div className="p-4">
-                    <h3 className="text-md font-semibold mb-2">
-                      Preset Options
-                    </h3>
-                    <PresetSelector
-                      getValues={form.getValues}
-                      setValues={(vals) => form.reset(vals)}
-                      activeDrawingId={fileId}
-                    />
-                    <Separator className="my-4" />
+                <div className="p-4">
+                  <h3 className="text-md font-semibold mb-2">Preset Options</h3>
+                  <PresetSelector
+                    getValues={form.getValues}
+                    setValues={(vals) => form.reset(vals)}
+                    activeDrawingId={fileId}
+                  />
+                  <Separator className="my-4" />
+
+                  <ScrollArea className="h-[calc(100vh-200px)]">
+                    <ScrollBar orientation="horizontal" />
                     {/* static job card fields */}
                     <h3 className="text-md font-semibold mb-2 ">
                       JobCard Fields
@@ -496,7 +564,8 @@ const JobCard = ({
                         <FormField
                           control={form.control}
                           key={item.name}
-                          name={item.name as keyof jobCardFormValues}
+                          // name={item.name as keyof jobCardFormValues}
+                          name={`global.${item.name}` as const}
                           render={({ field }) => (
                             <FormItem>
                               <div className="flex items-center gap-2 ">
@@ -556,7 +625,7 @@ const JobCard = ({
                                     <FormField
                                       key={fi}
                                       control={form.control}
-                                      name={`${stringService.camelCase(
+                                      name={`sections.${stringService.camelCase(
                                         sequence
                                       )}.${group.name}.${subSection.name}.${
                                         field.name
@@ -589,11 +658,11 @@ const JobCard = ({
                         </div>
                       ))}
                     </FormProvider>
-                    <Button type="submit" className="w-full mt-4">
-                      Generate Job Cards
-                    </Button>
-                  </div>
-                </ScrollArea>
+                  </ScrollArea>
+                  <Button type="submit" className="w-full mt-4">
+                    Generate Job Cards
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </form>

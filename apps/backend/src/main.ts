@@ -19,6 +19,7 @@ import {
   sequenceRoutes,
   webhookRoutes,
   projectWideRoutes,
+  sseRoutes,
 } from './routes';
 import {
   // passport,
@@ -109,8 +110,14 @@ app.use(
 app.use(
   apiRoutes.projectWide.base,
   // authenticatePassportJWT,
-  authenticateSupabaseJWT,
+  // authenticateSupabaseJWT,
   projectWideRoutes
+);
+app.use(
+  apiRoutes.sse.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  sseRoutes
 );
 
 // Error Handler

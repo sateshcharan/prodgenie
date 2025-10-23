@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../sse"
+    },
+    {
       "path": "../prisma"
     },
     {

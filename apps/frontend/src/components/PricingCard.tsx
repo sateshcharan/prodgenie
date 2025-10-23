@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@prodgenie/libs/utils';
-import { useAuthStore } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { useAuthStore } from '@prodgenie/libs/store';
 import { Button, PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
 
 import { api } from '../utils';
@@ -47,7 +47,6 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
           };
         });
 
-        console.log(formattedPlans);
         setPlans(formattedPlans);
       } catch (err) {
         console.error(err);
@@ -105,7 +104,9 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               price={computePrice(plan.price)}
               cycle={billingCycle}
               features={plan.features}
-              onClick={plan.price === 0 ? handleClick : handleCheckout}
+              onClick={
+                plan.price === 0 ? handleClick : () => handleCheckout('phonepe')
+              }
             />
           ))}
         </div>

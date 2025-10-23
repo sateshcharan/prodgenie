@@ -1,5 +1,11 @@
-import { Home, Pricing } from '../pages';
-import { PublicLayout } from '../layouts';
+import {
+  PrivacyPolicy,
+  RefundsCancellation,
+  TermsConditions,
+  CookiePolicy,
+} from '../pages/policySections';
+import { Home, Pricing, Contact } from '../pages';
+import { PublicLayout, PolicyLayout } from '../layouts';
 
 export const publicRoutes = [
   {
@@ -8,6 +14,18 @@ export const publicRoutes = [
     children: [
       { index: true, element: <Home /> },
       { path: 'pricing', element: <Pricing /> },
+      {
+        path: 'policy',
+        element: <PolicyLayout />,
+        children: [
+          { index: true, element: <TermsConditions /> },
+          { path: 'cookies', element: <CookiePolicy /> },
+          { path: 'privacy', element: <PrivacyPolicy /> },
+          { path: 'refunds', element: <RefundsCancellation /> },
+        ],
+      },
+
+      { path: 'contact', element: <Contact /> },
     ],
   },
 ];

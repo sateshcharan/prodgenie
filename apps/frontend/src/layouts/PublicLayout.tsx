@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
-import { PublicHeader, PublicFooter } from '../navigation';
 import { ModalManager } from '../components';
+import { PublicHeader, PublicFooter } from '../navigation';
 
 const PublicLayout = () => {
   return (
@@ -10,6 +10,7 @@ const PublicLayout = () => {
       <Outlet />
       <PublicFooter />
 
+      {/* public modals render here */}
       <ModalManager />
     </div>
   );

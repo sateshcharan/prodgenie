@@ -1,26 +1,14 @@
-import {
-  useEffect,
-  // useState
-} from 'react';
+import { useEffect } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 
-import {
-  useUserStore,
-  useWorkspaceStore,
-  // useWorkspaceModalStore,
-} from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
 
-// import DeleteUser from '../components/DeleteUser';
-import {
-  AppSidebar,
-  //  CreateWorkspace,
-  ModalManager,
-} from '../components';
 import { api } from '../utils';
 import { PrivateHeader } from '../navigation';
 import ChatWidget from '../components/ChatWidget';
+import { AppSidebar, ModalManager } from '../components';
 
 const PrivateLayout = () => {
   const setUser = useUserStore((state) => state.setUser);
@@ -31,17 +19,16 @@ const PrivateLayout = () => {
     activeWorkspace,
   } = useWorkspaceStore((state) => state);
 
-  // const { modalType } = useWorkspaceModalStore((state) => state);
-
-  let { fileType } = useParams();
+  const { fileType } = useParams();
 
   // determine title for SiteHeader
   const getPageTitle = () => {
-    if (fileType) return fileType; // param-based routes
+    if (fileType) return fileType;
     if (location.pathname.includes('settings')) return 'Settings';
     return 'Dashboard';
   };
 
+  // fetch current user
   useEffect(() => {
     const fetchUserData = async () => {
       const { data } = await api.get(
@@ -55,6 +42,7 @@ const PrivateLayout = () => {
     fetchUserData();
   }, [setUser, setWorkspaces, setActiveWorkspace]);
 
+  // fetch workspace users
   useEffect(() => {
     if (!activeWorkspace) return;
     const fetchWorkspaceUsers = async () => {
@@ -82,8 +70,10 @@ const PrivateLayout = () => {
         </SidebarInset>
       </SidebarProvider>
 
+      {/* chat widget */}
       <ChatWidget />
 
+      {/* all private modals render here */}
       <ModalManager />
     </>
   );

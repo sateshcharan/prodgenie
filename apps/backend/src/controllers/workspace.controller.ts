@@ -57,19 +57,19 @@ export class WorkspaceController {
     return res.status(200).json({ success: true, data: users });
   };
 
-  static getWorkspaceActivity = async (req: Request, res: Response) => {
+  static getWorkspaceEvents = async (req: Request, res: Response) => {
     const workspaceId = req.activeWorkspaceId;
-    const activity = await WorkspaceService.getWorkspaceActivity(workspaceId);
-    return res.status(200).json({ success: true, data: activity });
+    const events = await WorkspaceService.getWorkspaceEvents(workspaceId);
+    return res.status(200).json({ success: true, data: events });
   };
 
-  static getWorkspaceTransactions = async (req: Request, res: Response) => {
-    const workspaceId = req.activeWorkspaceId;
-    const transactions = await WorkspaceService.getWorkspaceTransactions(
-      workspaceId
-    );
-    return res.status(200).json({ success: true, data: transactions });
-  };
+  // static getWorkspaceTransactions = async (req: Request, res: Response) => {
+  //   const workspaceId = req.activeWorkspaceId;
+  //   const transactions = await WorkspaceService.getWorkspaceTransactions(
+  //     workspaceId
+  //   );
+  //   return res.status(200).json({ success: true, data: transactions });
+  // };
 
   static checkWorkspaceExists = async (req: Request, res: Response) => {
     const { workspaceName } = req.query;

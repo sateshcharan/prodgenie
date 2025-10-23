@@ -3,19 +3,22 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/utils"
+    },
+    {
+      "path": "../../libs/shared-utils"
+    },
+    {
       "path": "../../libs/schema"
     },
     {
       "path": "../../libs/types"
     },
     {
-      "path": "../../libs/utils"
+      "path": "../../libs/store"
     },
     {
       "path": "../../libs/constant"
-    },
-    {
-      "path": "../../libs/store"
     },
     {
       "path": "../../libs/ui"

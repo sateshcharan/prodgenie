@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-// import { ActivityService } from '@prodgenie/libs/db';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -35,16 +34,6 @@ export class FileStorageService {
         console.error('Supabase upload error:', error.message);
         throw new Error(`Upload failed: ${error.message}`);
       }
-
-      // const userId = user?.id;
-      // const workspaceId = user?.workspace?.id;
-
-      // ActivityService.record({
-      //   userId,
-      //   workspaceId,
-      //   action: `${fileType} uploaded`,
-      //   details: fileType,
-      // });
 
       return data;
     } catch (err: any) {
@@ -88,16 +77,6 @@ export class FileStorageService {
         console.error('Supabase delete error:', error.message);
         throw new Error(`Delete failed: ${error.message}`);
       }
-
-      // const userId = user?.id;
-      // const workspaceId = user?.workspace?.id;
-
-      // ActivityService.record({
-      //   userId,
-      //   workspaceId,
-      //   action: `${fileType} deleted`,
-      //   details: fileType,
-      // });
 
       return data;
     } catch (err: any) {

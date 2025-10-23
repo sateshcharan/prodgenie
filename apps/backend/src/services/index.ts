@@ -10,8 +10,9 @@ export * from './xlsx.service.js';
 export * from './thumbnail.service.js';
 export * from './sequence.service.js';
 export * from './projectWide.service.js';
-// export * from './webhook.service.js';
 
-export * from './payment/instamojo.service.js';
+// payment
 export * from './payment/stripe.service.js';
-export * from './payment/upi.service.js';
+export * from './payment/phonepe.service.js';
+
+// export * from './webhook.service.js';

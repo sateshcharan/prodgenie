@@ -19,15 +19,20 @@ export const FileType = {
   table: 'table',
 } as const;
 
-export const ActivityType = {
+export const EventType = {
   userInvited: 'USER_INVITED',
   userJoined: 'USER_JOINED',
   fileUploaded: 'FILE_UPLOADED',
   jobCreated: 'JOB_CREATED',
+  jobProcessing: 'JOB_PROCESSING',
   jobCompleted: 'JOB_COMPLETED',
   jobFailed: 'JOB_FAILED',
   planChanged: 'PLAN_CHANGED',
+  manualTopup: 'MANUAL_TOPUP',
+  description: 'SUBSCRIPTION',
 };
+
+export type EventType = (typeof EventType)[keyof typeof EventType];
 
 export type WorkspaceRole = (typeof WorkspaceRole)[keyof typeof WorkspaceRole];
 

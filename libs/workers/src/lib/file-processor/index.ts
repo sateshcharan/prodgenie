@@ -1,8 +1,8 @@
 import { Worker } from 'bullmq';
 
-import { processDrawingBom } from './processor.js';
-
 import connection from '@prodgenie/libs/redis';
+
+import { processDrawingBom } from './processor.js';
 
 const worker = new Worker('file-processing', processDrawingBom, connection);
 

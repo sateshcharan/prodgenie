@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
+
 import { api } from '../utils';
 
 type Plan = {
@@ -33,7 +34,9 @@ export function PlanDropdown({
         setPlans(data.data);
 
         // default to Free plan
-        const freePlan = data.data.find((p: Plan) => p.name.toLowerCase() === 'free');
+        const freePlan = data.data.find(
+          (p: Plan) => p.name.toLowerCase() === 'free'
+        );
         const defaultPlan = freePlan || data.data[0] || null;
 
         setSelectedPlan(defaultPlan);

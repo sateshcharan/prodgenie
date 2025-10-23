@@ -54,6 +54,6 @@ export { default as NotificationSettings } from './settings/NotificationSettings
 // Payments
 export { default as HandleCheckout } from './HandleCheckout';
 
-export { default as TransactionTable } from './dashboard/TransactionTable';
+export { default as EventTable } from './dashboard/EventTable';
 export { default as SectionCards } from './dashboard/SectionCards';
 export { default as DeleteUser } from './modal/DeleteUser';

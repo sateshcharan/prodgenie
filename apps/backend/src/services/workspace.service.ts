@@ -56,7 +56,7 @@ export class WorkspaceService {
     }
 
     // delete all workspace activity
-    await prisma.workspaceActivity.updateMany({
+    await prisma.event.updateMany({
       where: { workspaceId },
       data: { isDeleted: true, deletedAt: new Date() },
     });
@@ -168,11 +168,10 @@ export class WorkspaceService {
     return users;
   }
 
-  static async getWorkspaceActivity(workspaceId: string) {
-    const activity = await prisma.activity.findMany({
+  static async getWorkspaceEvents(workspaceId: string) {
+    const events = await prisma.event.findMany({
       where: {
         workspaceId,
-        isDeleted: false,
       },
       include: {
         user: {
@@ -183,17 +182,17 @@ export class WorkspaceService {
         },
       },
     });
-    return activity;
+    return events;
   }
 
-  static async getWorkspaceTransactions(workspaceId: string) {
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        workspaceId,
-      },
-    });
-    return transactions;
-  }
+  // static async getWorkspaceTransactions(workspaceId: string) {
+  //   const transactions = await prisma.transaction.findMany({
+  //     where: {
+  //       workspaceId,
+  //     },
+  //   });
+  //   return transactions;
+  // }
 
   static async checkWorkspaceExists(workspaceName: string) {
     const workspace = await prisma.workspace.findFirst({

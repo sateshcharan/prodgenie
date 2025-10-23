@@ -17,6 +17,8 @@ const frontendServicesLibPath = resolve(
   __dirname,
   '../../libs/frontend-services/src'
 );
+const sharedUtilsLibPath = resolve(__dirname, '../../libs/shared-utils/src');
+const sseLibPath = resolve(__dirname, '../../libs/sse/src');
 
 module.exports = {
   externals: {
@@ -39,6 +41,8 @@ module.exports = {
       '@prodgenie/libs/redis': redisLibPath,
       '@prodgenie/libs/server-services': serverServicesLibPath,
       '@prodgenie/libs/frontend-services': frontendServicesLibPath,
+      '@prodgenie/libs/shared-utils': sharedUtilsLibPath,
+      '@prodgenie/libs/sse': sseLibPath,
     },
     extensions: ['.ts', '.js'],
   },

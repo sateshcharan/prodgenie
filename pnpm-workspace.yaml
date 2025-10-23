@@ -1,6 +1,18 @@
 packages:
-  - "apps/*"
-  - "prisma"
-  - "libs/*"
-  - "libs"
-  - "libs/libs/*"
+  - apps/*
+  - prisma
+  - libs/*
+  - libs
+  - libs/libs/*
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - canvas
+  - core-js-pure
+  - esbuild
+  - msgpackr-extract
+  - nx
+  - prisma
+  - puppeteer

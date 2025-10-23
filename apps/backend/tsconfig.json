@@ -7,10 +7,13 @@
       "path": "../../libs/server-services"
     },
     {
-      "path": "../../libs/types"
+      "path": "../../libs/schema"
     },
     {
-      "path": "../../libs/schema"
+      "path": "../../libs/sse"
+    },
+    {
+      "path": "../../libs/types"
     },
     {
       "path": "../../libs/supabase"
@@ -22,10 +25,10 @@
       "path": "../../libs/db"
     },
     {
-      "path": "../../libs/prisma"
+      "path": "../../libs/queues"
     },
     {
-      "path": "../../libs/queues"
+      "path": "../../libs/prisma"
     },
     {
       "path": "./tsconfig.app.json"

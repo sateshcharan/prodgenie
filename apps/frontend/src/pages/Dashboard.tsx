@@ -1,94 +1,84 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {
-  ChartAreaInteractive,
-  HistoryTable,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { ChartAreaInteractive } from '@prodgenie/libs/ui';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
-import { SectionCards, TransactionTable, WorkspaceUsers } from '../components';
+import { useSSE } from '../hooks/useSSE';
+import { SectionCards, WorkspaceUsers, EventTable } from '../components';
 
 const Dashboard = () => {
   const user = useUserStore((state) => state.user);
   const { activeWorkspace } = useWorkspaceStore((state) => state);
-
-  const [workspaceActivity, setWorkspaceActivity] = useState([]);
-  const [workspaceTransactions, setWorkspaceTransactions] = useState([]);
-
   const workspaceId = activeWorkspace?.id;
-  const credits = activeWorkspace?.credits;
+  const queryClient = useQueryClient();
+
   const role = user?.memberships.find(
     (m) => m.workspace.id === workspaceId
   )?.role;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: activityData } = await api.get(
-          `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceActivity}`
-        );
-        const { data: transactionData } = await api.get(
-          `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceTransactions}`
-        );
+  // const [workspaceEvents, setWorkspaceEvents] = useState([]);
 
-        setWorkspaceActivity(activityData.data);
-        setWorkspaceTransactions(transactionData.data);
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      }
-    };
+  // const credits = activeWorkspace?.credits;
 
-    fetchData();
-  }, [workspaceId]);
+  // polling evetns via react-query
+  const {
+    data: workspaceEvents = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['workspaceEvents', workspaceId],
+    queryFn: async () => {
+      const { data } = await api.get(
+        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`
+      );
+      return data.data;
+    },
+    enabled: !!workspaceId, // only start when workspaceId is loaded
+    // refetchInterval: 30000, // polling every 5s
+    // refetchIntervalInBackground: false, // don't poll when tab is hidden
+  });
 
-  // polling with react-query
-  // const {
-  //   data: workspaceHistory,
-  //   refetch,
-  //   isLoading,
-  // } = useQuery({
-  //   queryKey: ['workspaceHistory'],
-  //   queryFn: async () => {
-  //     const { data } = await api.get('/api/workspaces/getWorkspaceHistory');
-  //     return data.data;
-  //   },
-  //   enabled: !!workspaceId, // only start when workspaceId is loaded
-  //   refetchInterval: 30000, // polling every 5s
-  //   refetchIntervalInBackground: false, // don't poll when tab is hidden
-  // });
+  // 🔹 Handle SSE messages and update cache
+  const onMessage = useCallback(
+    (msg) => {
+      queryClient.setQueryData(['workspaceEvents', workspaceId], (old = []) => {
+        let updated = old;
+
+        if (msg.type === 'created') {
+          updated = [msg.payload, ...old];
+        } else if (msg.type === 'update' || msg.type === 'progress') {
+          updated = old.map((e) =>
+            e.id === msg.payload.id
+              ? { ...e, ...msg.payload } // ✅ ensure new object reference
+              : e
+          );
+        }
+
+        // ✅ always return a fresh array reference
+        return [...updated];
+      });
+    },
+    [queryClient, workspaceId]
+  );
+
+  useSSE(workspaceId, onMessage);
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
       {(role === 'OWNER' || role === 'ADMIN') && (
-        <>
-          <WorkspaceUsers />
-          <SectionCards />
-        </>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4 ">
+            <WorkspaceUsers />
+            <SectionCards />
+          </div>
+          <ChartAreaInteractive />
+        </div>
       )}
 
-      <Tabs defaultValue="trend">
-        <TabsList>
-          <TabsTrigger value="trend">Trend</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="transaction">Transaction</TabsTrigger>
-        </TabsList>
-        <TabsContent value="trend">
-          <ChartAreaInteractive />
-        </TabsContent>
-        <TabsContent value="activity">
-          <HistoryTable history={workspaceActivity ?? []} />
-        </TabsContent>
-        <TabsContent value="transaction">
-          <TransactionTable transactions={workspaceTransactions ?? []} />
-        </TabsContent>
-      </Tabs>
+      <EventTable key={workspaceId} events={workspaceEvents ?? []} />
     </div>
   );
 };

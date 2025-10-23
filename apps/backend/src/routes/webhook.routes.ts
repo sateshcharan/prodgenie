@@ -59,4 +59,12 @@ router.post('/user', express.json(), async (req, res) => {
   }
 });
 
+// === PhonePe ===
+router.post('/phonepe/callback', async (req, res) => {
+  console.log('PhonePe callback:', req.body);
+  // verify signature and update order status
+  res.status(200).send('OK');
+});
+
+
 export { router };

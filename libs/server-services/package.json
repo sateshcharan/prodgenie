@@ -2,10 +2,10 @@
   "name": "@prodgenie/server-services",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {

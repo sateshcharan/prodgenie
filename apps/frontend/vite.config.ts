@@ -54,6 +54,10 @@ export default defineConfig(() => ({
         '../../libs/frontend-services/src'
       ),
       '@prodgenie/libs/types': path.resolve(__dirname, '../../libs/types/src'),
+      '@prodgenie/libs/shared-utils': path.resolve(
+        __dirname,
+        '../../libs/shared-utils/src'
+      ),
     },
   },
   build: {

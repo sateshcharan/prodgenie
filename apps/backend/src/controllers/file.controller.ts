@@ -1,11 +1,12 @@
-import { randomUUID } from 'crypto';
-import { Request, Response } from 'express';
-import { writeFile } from 'fs/promises';
 import path from 'path';
-import { FileService, ThumbnailService } from '../services/index.js';
+import { randomUUID } from 'crypto';
+import { writeFile } from 'fs/promises';
+import { Request, Response } from 'express';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { fileProcessingQueue } from '@prodgenie/libs/queues';
+
+import { FileService, ThumbnailService } from '../services/index.js';
 
 const fileService = new FileService();
 const thumbnailService = new ThumbnailService();
@@ -74,22 +75,20 @@ export class FileController {
           select: { data: true },
         });
 
-        const emptyBomData = Object.keys(bomConfigData).reduce(
-          (acc, key) => ({
-            ...acc,
-            [key]: [],
-          }),
-          {}
-        );
-
         await prisma.file.update({
           where: { id: file.id },
           data: {
-            data: emptyBomData,
+            data: Object.keys(bomConfigData).reduce(
+              (acc, key) => ({
+                ...acc,
+                [key]: [],
+              }),
+              {}
+            ),
           },
         });
 
-        // add file to processing queue for processing
+        // add file to processing queue for data extraction
         await fileProcessingQueue.add(
           'process-file',
           { file },

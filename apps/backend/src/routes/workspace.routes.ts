@@ -48,17 +48,10 @@ router.get(
 );
 
 router.get(
-  apiRoutes.workspace.getWorkspaceActivity,
+  apiRoutes.workspace.getWorkspaceEvents,
   authenticateSupabaseJWT,
   // authenticatePassportJWT,
-  asyncHandler(WorkspaceController.getWorkspaceActivity)
-);
-
-router.get(
-  apiRoutes.workspace.getWorkspaceTransactions,
-  authenticateSupabaseJWT,
-  // authenticatePassportJWT,
-  asyncHandler(WorkspaceController.getWorkspaceTransactions)
+  asyncHandler(WorkspaceController.getWorkspaceEvents)
 );
 
 router.get(

@@ -28,8 +28,8 @@ export const apiRoutes = {
     inviteUserToWorkspace: '/inviteUserToWorkspace',
     removeUserFromWorkspace: '/removeUserFromWorkspace',
     getWorkspaceUsers: '/getWorkspaceUsers',
-    getWorkspaceActivity: '/getWorkspaceActivity',
-    getWorkspaceTransactions: '/getWorkspaceTransactions',
+    getWorkspaceEvents: '/getWorkspaceEvents',
+    // getWorkspaceTransactions: '/getWorkspaceTransactions',
     check: '/check',
     updateUserRoleInWorkspace: '/updateUserRoleInWorkspace',
     getWorkspaceConfig: (configName: string) =>
@@ -85,11 +85,15 @@ export const apiRoutes = {
   payment: {
     base: '/api/payment',
     stripeSession: '/stripe/session',
-    upiOrder: '/upi/order',
   },
 
   projectWide: {
     base: '/api/projectWide',
     getPlans: '/getPlans',
+  },
+
+  sse: {
+    base: '/api/sse',
+    stream: '/stream',
   },
 };

@@ -25,6 +25,8 @@ const FileDetails = () => {
         return response.data || [];
       };
 
+      // todo: add loading state for when jobcard is in processing queue
+
       if (!signedUrl) {
         console.error('Missing signed URL');
         return;
@@ -55,9 +57,7 @@ const FileDetails = () => {
         <iframe src={signedUrl} className="w-full h-full" title="PDF Preview" />
       </div>
     </div>
-  ) : fileType === 'template' ? (
-    <ExcelHTMLViewer url={signedUrl} />
-  ) : fileType === 'sequence' ? (
+  ) : fileType === 'template' || fileType === 'sequence' ? (
     <ExcelHTMLViewer url={signedUrl} />
   ) : fileType === 'config' ? (
     <div className="p-4 bg-gray-50 rounded-lg overflow-auto max-h-[80vh]">

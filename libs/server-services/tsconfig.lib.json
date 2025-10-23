@@ -7,12 +7,24 @@
     "emitDeclarationOnly": false,
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "types": ["node"]
+    "types": ["node", "express", "multer"]
   },
   "include": ["src/**/*.ts"],
   "references": [
     {
       "path": "../constant/tsconfig.lib.json"
+    },
+    {
+      "path": "../types/tsconfig.lib.json"
+    },
+    {
+      "path": "../shared-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../db/tsconfig.lib.json"
+    },
+    {
+      "path": "../prisma/tsconfig.lib.json"
     },
     {
       "path": "../supabase/tsconfig.lib.json"

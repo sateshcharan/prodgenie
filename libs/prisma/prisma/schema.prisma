@@ -19,11 +19,9 @@ model User {
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
-  memberships  WorkspaceMember[]
-  files        File[]
-  jobs         Job[]
-  transactions Transaction[]
-  activities   Activity[]
+  memberships WorkspaceMember[]
+  files       File[]
+  events      Event[]
 }
 
 model Plan {
@@ -53,11 +51,9 @@ model Workspace {
   planId String?
   plan   Plan?   @relation(fields: [planId], references: [id])
 
-  members      WorkspaceMember[]
-  files        File[]
-  jobs         Job[]
-  transactions Transaction[]
-  activities   Activity[]
+  members WorkspaceMember[]
+  files   File[]
+  events  Event[]
 }
 
 //
@@ -93,7 +89,7 @@ model WorkspaceMember {
 }
 
 //
-// Files, Jobs, and History
+// Files
 //
 
 enum FileType {
@@ -120,78 +116,43 @@ model File {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   user      User      @relation(fields: [uploadedBy], references: [id])
-  jobs      Job[]
-}
-
-enum JobStatus {
-  pending
-  processing
-  completed
-  failed
-}
-
-model Job {
-  id            String    @id @default(uuid())
-  workspaceId   String
-  fileId        String
-  createdById   String
-  jobCardNumber Int
-  config        Json
-  status        JobStatus @default(pending)
-  creditsUsed   Float
-  createdAt     DateTime  @default(now())
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
-
-  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
-  file         File          @relation(fields: [fileId], references: [id])
-  createdBy    User          @relation(fields: [createdById], references: [id])
-  transactions Transaction[]
-  activities   Activity[]
+  events    Event[]
 }
 
 //
-// Transactions & Activity
+// Events
 //
 
-model Transaction {
-  id           String   @id @default(uuid())
+enum EventType {
+  DRAWING_DATA_EXTRACTION
+  JOBCARD_GENERATION
+  PLAN_CHANGE
+  MANUAL_TOPUP
+  SUBSCRIPTION
+}
+
+enum EventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Event {
+  id           String      @id
   workspaceId  String
   userId       String
-  jobId        String?
-  amount       Float // +ve = credit added, -ve = credit spent
-  reason       String // e.g. "job_run", "manual_topup", "subscription"
-  balanceAfter Float // snapshot of workspace balance after txn
-  createdAt    DateTime @default(now())
+  type         EventType
+  creditChange Float?      @default(0) // +ve = added, -ve = spent
+  balanceAfter Float?
+  status       EventStatus @default(PENDING) // PENDING, PROCESSING, COMPLETED, FAILED
+  progress     Float?      @default(0)
+  errorData    Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  fileId       String?
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
+  File      File?     @relation(fields: [fileId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
-  job       Job?      @relation(fields: [jobId], references: [id])
-}
-
-enum ActivityType {
-  USER_INVITED
-  USER_JOINED
-  FILE_UPLOADED
-  JOB_CREATED
-  JOB_COMPLETED
-  JOB_FAILED
-  PLAN_CHANGED
-}
-
-model Activity {
-  id          String       @id @default(uuid())
-  workspaceId String
-  userId      String
-  jobId       String?
-  type        ActivityType
-  details     Json? // flexible metadata
-  createdAt   DateTime     @default(now())
-
-  isDeleted Boolean  @default(false)
-  deletedAt DateTime
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-  job       Job?      @relation(fields: [jobId], references: [id])
 }

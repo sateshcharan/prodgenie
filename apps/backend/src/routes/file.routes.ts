@@ -1,8 +1,8 @@
-import express, { Router } from 'express';
 import multer from 'multer';
+import express, { Router } from 'express';
 
-import { validateFileType, asyncHandler } from '../middlewares/index';
 import { FileController } from '../controllers/index';
+import { validateFileType, asyncHandler } from '../middlewares/index';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
@@ -11,13 +11,13 @@ const upload = multer();
 
 router.get(
   apiRoutes.files.list(':fileType'),
-  // validateFileType,
+  validateFileType,
   asyncHandler(FileController.listFilesController)
 );
 
 router.get(
   apiRoutes.files.getById(':fileId'),
-  // validateFileType,
+  validateFileType,
   asyncHandler(FileController.getFileByIdController)
 );
 
@@ -72,7 +72,7 @@ router.post(
 
 router.post(
   apiRoutes.files.duplicate(':fileType'),
-  // validateFileType,
+  validateFileType,
   asyncHandler(FileController.duplicateFileController)
 );
 
