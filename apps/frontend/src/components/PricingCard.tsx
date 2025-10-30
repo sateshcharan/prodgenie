@@ -105,7 +105,16 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               cycle={billingCycle}
               features={plan.features}
               onClick={
-                plan.price === 0 ? handleClick : () => handleCheckout('phonepe')
+                // plan.price === 0 ? handleClick : () => handleCheckout('phonepe')
+                plan.price === 0
+                  ? handleClick
+                  : () =>
+                      handleCheckout({
+                        gateway: 'stripe',
+                        planId: plan.id,
+                        amount: computePrice(plan.price),
+                        billingCycle,
+                      })
               }
             />
           ))}
@@ -129,7 +138,11 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               <Button
                 key={credits}
                 onClick={() =>
-                  handleCheckout({ type: 'credits', amount: credits })
+                  handleCheckout({
+                    gateway: 'phonepe',
+                    type: 'credits',
+                    amount: credits,
+                  })
                 }
               >
                 {credits} credits

@@ -10,6 +10,7 @@ export * from './xlsx.service.js';
 export * from './thumbnail.service.js';
 export * from './sequence.service.js';
 export * from './projectWide.service.js';
+export * from './notification.service.js';
 
 // payment
 export * from './payment/stripe.service.js';

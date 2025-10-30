@@ -25,6 +25,7 @@ export const appSidebarItems = {
       url: '/dashboard',
       icon: Home,
     },
+    { title: 'Notifications', url: '/dashboard/notifications', icon: BellIcon },
   ],
   navSecondary: [
     {

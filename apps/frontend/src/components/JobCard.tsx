@@ -65,8 +65,6 @@ const JobCard = ({
 }) => {
   const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
     useBomStore();
-  // const { setJobCardNumber, setScheduleDate, setPoNumber, setProductionQty } =
-  //   useJobCardStore();
 
   const [activeTab, setActiveTab] = useState('select');
   // const [isLoading, setIsLoading] = useState(true);
@@ -87,12 +85,6 @@ const JobCard = ({
     file: { id: string };
     bom: BomItem[];
     titleBlock: any;
-    // jobCardForm: {
-    //   jobCardNumber: string;
-    //   scheduleDate: string;
-    //   poNumber: string;
-    //   productionQty: number;
-    // };
     jobCardForm: jobCardFormValues;
     signedUrl: string;
     printingDetails: {
@@ -169,130 +161,6 @@ const JobCard = ({
     )
   );
 
-  // const dynamicSchema = useMemo(() => {
-  //   try {
-  //     if (!jobCardData?.length) return undefined;
-
-  //     // Build section schemas
-  //     const sectionsSchemas = jobCardData
-  //       .flatMap((sections) =>
-  //         sections.flatMap((section) =>
-  //           section.sections.map((subSection) => {
-  //             // Each subsection might define its own schema
-  //             if (!subSection?.schema) return null;
-
-  //             // Instead of eval, parse schema safely
-  //             // e.g. schema stored like: { name: "Color", type: "string", required: true }
-  //             const shape: Record<string, any> = {};
-  //             subSection.fields.forEach((field) => {
-  //               if (field.type === 'string') {
-  //                 shape[field.name] = field.required
-  //                   ? z.string().min(1)
-  //                   : z.string().optional();
-  //               }
-  //               if (field.type === 'number') {
-  //                 shape[field.name] = field.required
-  //                   ? z.number()
-  //                   : z.number().optional();
-  //               }
-  //               // add other field types here...
-  //             });
-
-  //             return { name: subSection.name, schema: z.object(shape) };
-  //           })
-  //         )
-  //       )
-  //       .filter(Boolean);
-
-  //     console.log(sectionsSchemas, jobCardData);
-
-  //     if (!sectionsSchemas.length) return undefined;
-
-  //     // Merge into a single schema keyed by section name
-  //     const dynamicObj: Record<string, any> = {};
-  //     sectionsSchemas.forEach((s) => {
-  //       dynamicObj[s!.name] = s!.schema;
-  //     });
-
-  //     return z.object(dynamicObj);
-  //   } catch (e) {
-  //     console.error('Failed to build schema:', e);
-  //     return undefined;
-  //   }
-  // }, [jobCardData]);
-
-  // const mergedSchema = useMemo(() => {
-  //   if (!dynamicSchema) return jobCardSchema;
-  //   return jobCardSchema.merge(dynamicSchema);
-  // }, [dynamicSchema]);
-
-  // const dynamicDefaults = useMemo(() => {
-  //   if (!dynamicFields?.fields) return {};
-  //   return dynamicFields.fields.reduce((acc, field) => {
-  //     const [parent, child] = field.name.split('.');
-  //     acc[parent] = acc[parent] || {};
-  //     acc[parent][child] = field.defaultValue;
-  //     return acc;
-  //   }, {} as any);
-  // }, [dynamicFields]);
-
-  // build dynamicSchema (preserve top-level group -> subsection -> fields)
-  // const dynamicSchema = useMemo(() => {
-  //   try {
-  //     const topShape: Record<string, any> = {};
-  //     if (!jobCardData?.length) return undefined;
-
-  //     // jobCardData is e.g. [[ { name: 'thinBlade', sections: [...] }, { name: 'creasingSlotting', ... } ]]
-  //     jobCardData.forEach((groupArray) => {
-  //       // const seqName = groupArray.sequence.replace(/\s+/g, '_');
-  //       const seqName = stringService.camelCase(groupArray.sequence);
-  //       const groupShape: Record<string, any> = {};
-
-  //       groupArray.data.forEach((group) => {
-  //         const groupName = group.name;
-  //         const subShapes: Record<string, any> = {};
-
-  //         (group.sections || []).forEach((subSection: any) => {
-  //           const fieldShape: Record<string, any> = {};
-
-  //           (subSection.fields || []).forEach((f: any) => {
-  //             const t = f.type;
-
-  //             if (t === 'number') {
-  //               // Accept string numbers from form inputs and validate as numbers
-  //               fieldShape[f.name] = z.preprocess((val) => {
-  //                 if (val === '' || val === null || typeof val === 'undefined')
-  //                   return undefined;
-  //                 return Number(val);
-  //               }, z.number().min(1));
-  //             } else if (t === 'string') {
-  //               fieldShape[f.name] = z.string().min(1);
-  //             } else if (t === 'select') {
-  //               // assume select values are strings; change to z.any() if not
-  //               fieldShape[f.name] = z.string().min(1);
-  //             } else if (t === 'boolean') {
-  //               fieldShape[f.name] = z.boolean();
-  //             } else {
-  //               // fallback
-  //               fieldShape[f.name] = z.any();
-  //             }
-  //           });
-
-  //           subShapes[subSection.name] = z.object(fieldShape);
-  //         });
-
-  //         groupShape[groupName] = z.object(subShapes);
-  //       });
-
-  //       topShape[seqName] = z.object(groupShape);
-  //     });
-
-  //     return z.object(topShape);
-  //   } catch (e) {
-  //     console.error('Failed to build dynamicSchema:', e);
-  //     return undefined;
-  //   }
-  // }, [jobCardData]);
   const dynamicSchema = useMemo(() => {
     try {
       if (!jobCardData?.length) return undefined;
@@ -398,14 +266,11 @@ const JobCard = ({
 
   const form = useForm<jobCardFormValues>({
     resolver: zodResolver(mergedSchema),
-    // defaultValues: {
-    //   ...staticDefaults,
-    //   ...dynamicDefaults,
-    // },
     defaultValues: {
       global: staticDefaults,
       sections: dynamicDefaults,
     },
+    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -548,7 +413,19 @@ const JobCard = ({
                     setValues={(vals) => form.reset(vals)}
                     activeDrawingId={fileId}
                   />
-                  <Separator className="my-4" />
+                  <Separator className="mt-4" />
+
+                  <Button
+                    type="submit"
+                    className={`w-full my-4 ${
+                      !form.formState.isValid
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                    disabled={!form.formState.isValid}
+                  >
+                    Generate Job Cards
+                  </Button>
 
                   <ScrollArea className="h-[calc(100vh-200px)]">
                     <ScrollBar orientation="horizontal" />
@@ -659,9 +536,6 @@ const JobCard = ({
                       ))}
                     </FormProvider>
                   </ScrollArea>
-                  <Button type="submit" className="w-full mt-4">
-                    Generate Job Cards
-                  </Button>
                 </div>
               </TabsContent>
             </Tabs>

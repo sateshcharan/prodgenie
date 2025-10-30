@@ -3,9 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle } from 'react-icons/fa';
 
-import { api } from '../../utils';
-import { useOAuth } from '../../hooks/useOAuth';
-
 import {
   Button,
   Card,
@@ -21,7 +18,14 @@ import { loginSchema } from '@prodgenie/libs/schema';
 import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 
+import { api } from '../../utils';
+import { useOAuth } from '../../hooks/useOAuth';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const { setAuthType } = useAuthStore();
   const { continueWithProvider } = useOAuth();
@@ -44,39 +48,15 @@ const Login = () => {
         data
       );
 
-      if (!res.data.success) {
-        toast.error(res.data.message || 'Login failed');
-        return;
+      if (res.status === 200) {
+        toast.success('Login successful!');
+        closeModal();
+        navigate('/dashboard');
+      } else if (res.status === 401) {
+        toast.error(res.data.message || 'Invalid email or password');
       }
-
-      closeModal();
-      navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Login failed');
-    }
-  };
-
-  const handlePasswordReset = async () => {
-    const email = getValues('email');
-    if (!email) {
-      toast.error('Please enter your email first');
-      return;
-    }
-
-    try {
-      const res = await api.post(
-        `${apiRoutes.auth.base}${apiRoutes.auth.resetPassword}`,
-        { email }
-      );
-
-      if (!res.data.success) {
-        toast.error(res.data.message || 'Password reset failed');
-        return;
-      }
-
-      toast.success('Password reset link sent to your email');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Password reset failed');
     }
   };
 
@@ -90,45 +70,76 @@ const Login = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleEmailLogin)}>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             {loginFields.map(({ name, label, type, placeholder }) => (
-              <div key={name} className="grid gap-2">
+              <div key={name} className="grid gap-2 relative">
                 <Label htmlFor={name}>{label}</Label>
-                <Input
-                  id={name}
-                  type={type}
-                  {...register(name)}
-                  placeholder={placeholder}
-                />
-                <p className="text-sm text-red-500">
-                  {errors?.[name as keyof typeof errors]?.message as string}
-                </p>
+
+                {type === 'password' ? (
+                  <div className="relative">
+                    <Input
+                      id={name}
+                      type={showPassword ? 'text' : 'password'}
+                      {...register(name)}
+                      placeholder={placeholder}
+                      className="pr-10" // gives space for the eye icon
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 h-6 w-6 p-0"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    id={name}
+                    type={type}
+                    {...register(name)}
+                    placeholder={placeholder}
+                  />
+                )}
+
+                {errors?.[name as keyof typeof errors]?.message && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors[name as keyof typeof errors]?.message as string}
+                  </p>
+                )}
               </div>
             ))}
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full mt-2">
               Login
             </Button>
 
             <Button
               type="button"
-              className="w-full mt-4"
               onClick={(e) => {
                 e.preventDefault();
                 continueWithProvider('google');
               }}
               variant="outline"
               size="sm"
+              className="w-full flex items-center justify-center gap-2 mt-2"
             >
-              <FaGoogle /> Continue with Google
+              <FaGoogle className="text-lg" /> Continue with Google
             </Button>
 
-            <div className=" text-center text-sm text-muted-foreground mt-4">
+            <div className="text-center text-sm text-muted-foreground mt-4">
               Don&apos;t have an account?{' '}
               <Button
                 variant="link"
                 type="button"
                 onClick={() => openModal('auth:signup')}
+                className="p-0 text-primary"
               >
                 Sign up
               </Button>
@@ -137,10 +148,8 @@ const Login = () => {
             <Button
               variant="link"
               type="button"
-              // onClick={handlePasswordReset}
-              onClick={(e) => {
-                openModal('auth:resetPassword');
-              }}
+              onClick={() => openModal('auth:resetPassword')}
+              className="p-0 text-sm text-muted-foreground"
             >
               Forgot password?
             </Button>

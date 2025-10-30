@@ -29,4 +29,14 @@ router.post(
   asyncHandler(AuthController.resetPassword)
 );
 
+router.post(
+  apiRoutes.auth.updatePassword,
+  asyncHandler(AuthController.updatePassword)
+);
+
+router.post(
+  apiRoutes.auth.resetPasswordCallback,
+  asyncHandler(AuthController.resetPasswordCallback)
+);
+
 export { router };

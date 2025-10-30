@@ -47,6 +47,7 @@ const ResetPassword = () => {
         toast.error(res.data.message || 'Failed to send reset link');
         return;
       }
+      
 
       toast.success('Password reset link sent to your email');
       closeModal();

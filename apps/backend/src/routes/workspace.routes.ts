@@ -34,6 +34,18 @@ router.post(
 );
 
 router.post(
+  apiRoutes.workspace.acceptInvite,
+  authenticateSupabaseJWT,
+  asyncHandler(WorkspaceController.acceptInvite)
+);
+
+router.post(
+  apiRoutes.workspace.rejectInvite,
+  authenticateSupabaseJWT,
+  asyncHandler(WorkspaceController.rejectInvite)
+);
+
+router.post(
   apiRoutes.workspace.removeUserFromWorkspace,
   authenticateSupabaseJWT,
   requireRole(WorkspaceRole.ADMIN),

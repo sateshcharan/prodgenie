@@ -8,5 +8,6 @@ export * from './lib/workspaceStore.js';
 export * from './lib/modalStore.js';
 export * from './lib/useChatStore.js';
 export * from './lib/presetStore.js';
+export * from './lib/notificationStore.js'
 // export * from './lib/authModalStore.js';
 // export * from './lib/workspaceModalStore.js';

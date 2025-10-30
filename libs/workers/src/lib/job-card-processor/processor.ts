@@ -12,7 +12,8 @@ export const processGenerateJobCard = async (job: Job) => {
 
   try {
     const jobCardUrl = await jobCardService.generateJobCard(
-      jobCardGenerationData, jobId
+      jobCardGenerationData,
+      jobId
     );
 
     // Step 2. Update Event Record

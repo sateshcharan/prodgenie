@@ -12,6 +12,7 @@ import {
   FileBuilder,
   FormulaBuilder,
   Settings,
+  UserNotifications,
 } from '../components';
 import { Dashboard } from '../pages';
 import PrivateRoute from './PrivateRoute';
@@ -41,6 +42,10 @@ const PrivateRoutes: RouteObject[] = [
     path: 'settings/:tab',
     element: <Settings />,
     loader: settingsLoader,
+  },
+  {
+    path: 'notifications',
+    element: <UserNotifications />,
   },
 ];
 

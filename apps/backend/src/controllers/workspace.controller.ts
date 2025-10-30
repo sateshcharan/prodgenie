@@ -37,6 +37,26 @@ export class WorkspaceController {
     return res.status(200).json({ success: true, data: invitedUser });
   };
 
+  static acceptInvite = async (req: Request, res: Response) => {
+    const user = req.user!;
+    const { workspaceId } = req.body;
+
+    await WorkspaceService.acceptInvite(workspaceId, user.id);
+    // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
+
+    return res.status(200).json({ success: true, message: 'Invite accepted' });
+  };
+
+  static rejectInvite = async (req: Request, res: Response) => {
+    const user = req.user!;
+    const { workspaceId } = req.params;
+
+    await WorkspaceService.rejectInvite(workspaceId, user.id);
+    // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
+
+    return res.status(200).json({ success: true, message: 'Invite rejected' });
+  };
+
   static removeUserFromWorkspace = async (req: Request, res: Response) => {
     const { workspaceId, userId } = req.body;
 

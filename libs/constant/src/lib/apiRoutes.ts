@@ -11,6 +11,8 @@ export const apiRoutes = {
       `/continueWithProvider/${provider}`,
     logout: '/logout',
     resetPassword: '/resetPassword',
+    resetPasswordCallback: '/resetPasswordCallback',
+    updatePassword: '/updatePassword',
   },
 
   users: {
@@ -21,11 +23,31 @@ export const apiRoutes = {
     updateProfile: '/updateProfile',
   },
 
+  notification: {
+    base: '/api/notification',
+    getUserNotifications: '/getUserNotifications',
+    markAsRead: '/markAsRead',
+    acceptInvite: '/acceptInvite',
+    rejectInvite: '/rejectInvite',
+  },
+
+  callback: {
+    base: '/api/callback',
+    oAuth: '/oAuth',
+  },
+
+  webhook: {
+    base: '/api/webhook',
+    stripe: '/stripe',
+  },
+
   workspace: {
     base: '/api/workspace',
     createWorkspace: '/createWorkspace',
     deleteWorkspace: '/deleteWorkspace',
     inviteUserToWorkspace: '/inviteUserToWorkspace',
+    acceptInvite: '/acceptInvite',
+    rejectInvite: '/rejectInvite',
     removeUserFromWorkspace: '/removeUserFromWorkspace',
     getWorkspaceUsers: '/getWorkspaceUsers',
     getWorkspaceEvents: '/getWorkspaceEvents',

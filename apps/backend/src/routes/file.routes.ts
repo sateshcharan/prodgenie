@@ -17,7 +17,7 @@ router.get(
 
 router.get(
   apiRoutes.files.getById(':fileId'),
-  validateFileType,
+  // validateFileType,
   asyncHandler(FileController.getFileByIdController)
 );
 

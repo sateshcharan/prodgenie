@@ -1,12 +1,13 @@
 import axios from 'axios';
 
 import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import { toast } from 'sonner';
 
 const isDev = import.meta.env.DEV;
 
 const api = axios.create({
   baseURL: isDev ? 'http://localhost:3000' : import.meta.env.VITE_API_URL,
-    withCredentials: true, // 👈 important: send cookies
+  withCredentials: true, // 👈 important: send cookies
 });
 
 // Add request interceptor
@@ -42,7 +43,7 @@ api.interceptors.response.use(
 
     if (err.response?.status === 401) {
       // localStorage.removeItem('token');
-      window.location.href = '/';
+      // window.location.href = '/';
     }
 
     return Promise.reject(err);

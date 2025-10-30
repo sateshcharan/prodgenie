@@ -64,8 +64,18 @@ export class AuthController {
     res.status(200).json({ success: true });
   }
 
+  static async updatePassword(req: Request, res: Response) {
+    const { password } = req.body;
+    await AuthService.updatePassword(password);
+    res.status(200).json({ success: true });
+  }
+
   //helper methods
   static async oAuthCallback(req: Request, res: Response) {
     const { url } = await AuthService.oAuthCallback(req, res);
+  }
+
+  static async resetPasswordCallback(req: Request, res: Response) {
+    const { url } = await AuthService.resetPasswordCallback(req, res);
   }
 }

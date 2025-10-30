@@ -1,1 +1,3 @@
-export * from './eventStream';
+import { SSEServer } from './SSEStream.js';
+
+export const sseServer = new SSEServer();

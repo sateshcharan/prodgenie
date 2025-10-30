@@ -6,7 +6,7 @@ import {
   EventStatus,
   // Event,
 } from '@prodgenie/libs/prisma';
-import { publish } from '@prodgenie/libs/sse/eventStream.js';
+// import { sseServer } from '@prodgenie/libs/sse';
 
 export class EventService {
   static async record(params: Prisma.EventUncheckedCreateInput) {
@@ -28,7 +28,7 @@ export class EventService {
         });
       }
 
-      return tx.event.create({
+      const event = await tx.event.create({
         data: {
           id: params.id,
           userId: params.userId,
@@ -40,44 +40,65 @@ export class EventService {
           balanceAfter,
         },
       });
+
+      // // Publish immediately on creation
+      // sseServer.publish(
+      //   event.workspaceId,
+      //   'event_created',
+      //   {
+      //     jobId: event.id,
+      //     status: event.status,
+      //     progress: event.progress ?? 0,
+      //     message: '',
+      //     createdAt: event.createdAt,
+      //   },
+      //   event.id
+      // );
+
+      return event;
     });
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: any, workspaceId?: string) {
     const updated = await prisma.event.update({
       where: { id },
       data,
     });
 
-    // Publish to SSE channel for the workspace
-    publish(
-      updated.workspaceId,
-      'event_update',
-      {
-        eventId: updated.id,
-        status: updated.status,
-        progress: updated.progress,
-        updatedAt: updated.updatedAt,
-      },
-      updated.id
-    ); // use updated.id as SSE id
+    // // Publish workspace-level SSE
+    // sseServer.publish(
+    //   workspaceId!,
+    //   'event_update',
+    //   {
+    //     jobId: updated.id,
+    //     status: updated.status,
+    //     progress: updated.progress,
+    //     message: data?.reason?.message || '',
+    //     updatedAt: updated.updatedAt,
+    //   },
+    //   updated.id
+    // );
 
     return updated;
   }
 
   async updateProgress(
+    workspaceId: string,
     jobId: string,
     status: EventStatus,
     progress: number,
     message?: string
+    // workspaceId: string,
   ) {
-    await this.update(jobId, {
-      status,
-      progress,
-      // reason: message ? { message } : undefined,
-    });
-
-    console.log(`🔹 Job ${jobId} - ${status} (${progress}%): ${message || ''}`);
+    await this.update(
+      jobId,
+      {
+        status,
+        progress,
+        // reason: message ? { message } : undefined,
+      },
+      workspaceId
+    );
   }
 
   static async getWorkspaceEvents(workspaceId: string) {

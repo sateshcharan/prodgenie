@@ -57,3 +57,4 @@ export { default as HandleCheckout } from './HandleCheckout';
 export { default as EventTable } from './dashboard/EventTable';
 export { default as SectionCards } from './dashboard/SectionCards';
 export { default as DeleteUser } from './modal/DeleteUser';
+export { default as UserNotifications } from './UserNotifications';

@@ -11,11 +11,6 @@ const clientId = process.env.PHONEPE_CLIENT_ID!;
 const clientSecret = process.env.PHONEPE_CLIENT_SECRET!;
 const clientVersion = 1;
 const env = process.env.PHONEPE_ENV === 'PROD' ? Env.PRODUCTION : Env.SANDBOX;
-// const redirectUrl =
-// process.env.PHONEPE_REDIRECT_URL || 'https://yourapp.com/payment/success';
-// const callbackUrl =
-//   process.env.PHONEPE_CALLBACK_URL ||
-//   'https://yourapp.com/api/payment/phonepe/callback';
 const redirectUrl = process.env.PHONEPE_REDIRECT_URL;
 const callbackUrl = process.env.PHONEPE_CALLBACK_URL;
 

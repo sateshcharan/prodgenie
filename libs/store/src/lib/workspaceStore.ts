@@ -33,24 +33,28 @@ type User = {
 
 interface WorkspaceStore {
   workspaces: Workspace[];
-  activeWorkspace: Workspace | null;
   workspaceUsers: User[];
+  activeWorkspace: Workspace | null;
+  activeWorkspaceRole: string | null;
 
   setWorkspaces: (workspaces: Workspace[]) => void;
-  setActiveWorkspace: (workspace: Workspace | null) => void;
   setWorkspaceUsers: (users: User[]) => void;
+  setActiveWorkspace: (workspace: Workspace | null) => void;
+  setActiveWorkspaceRole: (role: string | null) => void;
 
   fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
   workspaces: [],
-  activeWorkspace: null,
   workspaceUsers: [],
+  activeWorkspace: null,
+  activeWorkspaceRole: null,
 
   setWorkspaces: (workspaces) => set({ workspaces }),
-  setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setWorkspaceUsers: (workspaceUsers) => set({ workspaceUsers }),
+  setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
+  setActiveWorkspaceRole: (activeWorkspaceRole) => set({ activeWorkspaceRole }),
 
   fetchWorkspaceUsers: async (workspaceId) => {
     try {
@@ -58,7 +62,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
         `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
         { params: { workspaceId } }
       );
-
       set({ workspaceUsers: data.data });
     } catch (err) {
       console.error(err);

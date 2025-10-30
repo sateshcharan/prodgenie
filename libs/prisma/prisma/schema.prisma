@@ -12,16 +12,19 @@ datasource db {
 //
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String?
+  id       String  @id @default(uuid())
+  email    String  @unique
+  name     String?
+  provider String  @default("email")
+
   createdAt DateTime  @default(now())
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
-  memberships WorkspaceMember[]
-  files       File[]
-  events      Event[]
+  memberships  WorkspaceMember[]
+  files        File[]
+  events       Event[]
+  Notification Notification[]
 }
 
 model Plan {
@@ -51,9 +54,10 @@ model Workspace {
   planId String?
   plan   Plan?   @relation(fields: [planId], references: [id])
 
-  members WorkspaceMember[]
-  files   File[]
-  events  Event[]
+  members      WorkspaceMember[]
+  files        File[]
+  events       Event[]
+  Notification Notification[]
 }
 
 //
@@ -120,7 +124,7 @@ model File {
 }
 
 //
-// Events
+// Events (Transactions)
 //
 
 enum EventType {
@@ -143,9 +147,9 @@ model Event {
   workspaceId  String
   userId       String
   type         EventType
-  creditChange Float?      @default(0) // +ve = added, -ve = spent
+  creditChange Float?      @default(0)
   balanceAfter Float?
-  status       EventStatus @default(PENDING) // PENDING, PROCESSING, COMPLETED, FAILED
+  status       EventStatus @default(PENDING)
   progress     Float?      @default(0)
   errorData    Json?
   createdAt    DateTime    @default(now())
@@ -155,4 +159,27 @@ model Event {
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   File      File?     @relation(fields: [fileId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
+}
+
+//
+// Notifications
+//
+
+enum NotificationType {
+  INVITE
+  ROLE_CHANGED
+  REMOVED
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  workspaceId String?
+  type        NotificationType
+  message     String
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user      User       @relation(fields: [userId], references: [id])
+  workspace Workspace? @relation(fields: [workspaceId], references: [id])
 }

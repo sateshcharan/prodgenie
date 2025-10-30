@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Card,
@@ -10,13 +10,18 @@ import {
   toast,
 } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useModalStore, useUserStore } from '@prodgenie/libs/store';
+import {
+  useModalStore,
+  useUserStore,
+  useWorkspaceStore,
+} from '@prodgenie/libs/store';
 
 import { api } from '../../utils';
 import { EditableField } from '../EditableField';
 
 const AccountSettings = () => {
   const { user } = useUserStore();
+  const { activeWorkspaceRole } = useWorkspaceStore();
 
   // Keep original values + edited values
   const [originalValues] = useState({
@@ -108,25 +113,27 @@ const AccountSettings = () => {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="rounded-2xl border border-destructive/30 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Delete Account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently remove your account and all associated data. This
-                action cannot be undone.
-              </p>
+      {activeWorkspaceRole === 'OWNER' && (
+        <Card className="rounded-2xl border border-destructive/30 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="text-red-600">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Delete Account</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently remove your account and all associated data. This
+                  action cannot be undone.
+                </p>
+              </div>
+              <Button variant="destructive" onClick={handleUserDelete}>
+                Delete My Account
+              </Button>
             </div>
-            <Button variant="destructive" onClick={handleUserDelete}>
-              Delete My Account
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

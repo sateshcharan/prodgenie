@@ -296,6 +296,19 @@ export class WorkspaceService {
     });
   }
 
+  static acceptInvite = async (workspaceId: string, userId: string) => {
+    return prisma.workspaceMember.update({
+      where: { userId_workspaceId: { userId, workspaceId } },
+      data: { status: 'ACTIVE' }, // depends on your membership model
+    });
+  };
+
+  static rejectInvite = async (workspaceId: string, userId: string) => {
+    return prisma.workspaceMember.delete({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+  };
+
   //helper methods
   static async addUserToWorkspace(workspaceId: string, userId: string) {
     await prisma.workspaceMember.create({

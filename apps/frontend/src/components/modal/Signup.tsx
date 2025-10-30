@@ -210,9 +210,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle } from 'react-icons/fa';
 
-import { api } from '../../utils';
-import { useOAuth } from '../../hooks/useOAuth';
-
 import {
   Button,
   Card,
@@ -228,7 +225,14 @@ import { signupSchema } from '@prodgenie/libs/schema';
 import { useModalStore } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
+import { api } from '../../utils';
+import { useOAuth } from '../../hooks/useOAuth';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
 const Signup = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const { openModal, closeModal } = useModalStore();
   const { continueWithProvider } = useOAuth();
@@ -249,7 +253,6 @@ const Signup = () => {
         data
       );
 
-      console.log(res);
       if (!res.data.success) {
         toast.error(res.data.message || 'Signup failed');
         return;
@@ -303,14 +306,37 @@ const Signup = () => {
             </div>
 
             {/* Password */}
-            <div className="grid gap-2">
+            <div className="grid gap-2 ">
               <Label htmlFor="password">Password</Label>
-              <Input
+              {/* <Input
                 id="password"
                 type="password"
                 {...register('password')}
                 placeholder="********"
-              />
+              /> */}
+              <div className="relative">
+                <Input
+                  id={'password'}
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  placeholder="********"
+                  className="pr-10" // gives space for the eye icon
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 h-6 w-6 p-0"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
               <p className="text-sm text-red-500">
                 {errors?.password?.message as string}
               </p>

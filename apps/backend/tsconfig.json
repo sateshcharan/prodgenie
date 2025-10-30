@@ -7,6 +7,9 @@
       "path": "../../libs/server-services"
     },
     {
+      "path": "../../libs/shared-utils"
+    },
+    {
       "path": "../../libs/schema"
     },
     {

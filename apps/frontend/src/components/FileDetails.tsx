@@ -15,6 +15,24 @@ const FileDetails = () => {
   const [signedUrl, setSignedUrl] = useState(location.state?.signedUrl);
   const [tables, setTables] = useState(null);
 
+  // for signed url when not passed via location.state
+  useEffect(() => {
+    const fetchSignedUrl = async () => {
+      try {
+        const res = await api.get(`${apiRoutes.files.base}/getById/${fileId}`);
+        console.log(res);
+        setSignedUrl(res.data.data.path);
+      } catch (err) {
+        console.error('Failed to fetch signed URL', err);
+      }
+    };
+
+    // If not passed via location.state (e.g. direct URL visit)
+    if (!signedUrl && fileId) {
+      fetchSignedUrl();
+    }
+  }, [signedUrl, fileId]);
+
   useEffect(() => {
     if (fileType === 'drawing') {
       const parsePdfFromUrl = async (signedUrl: string, fileId: string) => {

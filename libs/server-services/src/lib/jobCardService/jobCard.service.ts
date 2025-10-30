@@ -47,23 +47,20 @@ export class JobCardService {
     }: jobCardRequest,
     jobId: string
   ) {
-    console.log(
-      bom,
-      jobCardForm,
-      user,
-      titleBlock,
-      signedUrl,
-      printingDetails,
-      activeWorkspace
-    );
-
     const totalSteps = 10;
     let currentStep = 0;
     const progress = (step: number) => Math.round((step / totalSteps) * 100);
+    const templates: string[] = [];
+    const {
+      name: workspaceName,
+      id: workspaceId,
+      credits: workspaceCredits,
+    } = activeWorkspace?.workspace || {};
 
     const next = async (status: EventStatus, message: string) => {
       currentStep++;
       await this.eventService.updateProgress(
+        workspaceId,
         jobId,
         status,
         progress(currentStep),
@@ -75,13 +72,6 @@ export class JobCardService {
     await next(EventStatus.PROCESSING, 'Initializing job card generation...');
 
     if (!bom.length) return console.warn('bom is empty');
-
-    const templates: string[] = [];
-    const {
-      name: workspaceName,
-      id: workspaceId,
-      credits: workspaceCredits,
-    } = activeWorkspace?.workspace || {};
 
     if (workspaceCredits < 10) {
       throw new Error('Not enough credits'); // check org credits
@@ -241,6 +231,7 @@ export class JobCardService {
 
     // STEP 10 - Done
     await this.eventService.updateProgress(
+      activeWorkspace.id,
       jobId,
       EventStatus.COMPLETED,
       100,

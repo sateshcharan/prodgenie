@@ -204,7 +204,6 @@ export const columns: ColumnDef<Event>[] = [
       );
     },
   },
-
   {
     accessorKey: 'errorData',
     header: 'Error Data',
@@ -268,8 +267,9 @@ const EventTable: React.FC<EventTableProps> = ({ events }) => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>({ errorData: false });
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({

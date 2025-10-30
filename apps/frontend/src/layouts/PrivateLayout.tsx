@@ -1,11 +1,17 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import {
+  useUserStore,
+  useWorkspaceStore,
+  useNotificationStore,
+} from '@prodgenie/libs/store';
 import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
 
 import { api } from '../utils';
+import { useSSE } from '../hooks/useSSE';
 import { PrivateHeader } from '../navigation';
 import ChatWidget from '../components/ChatWidget';
 import { AppSidebar, ModalManager } from '../components';
@@ -15,11 +21,42 @@ const PrivateLayout = () => {
   const {
     setWorkspaces,
     setActiveWorkspace,
+    setActiveWorkspaceRole,
     setWorkspaceUsers,
     activeWorkspace,
   } = useWorkspaceStore((state) => state);
 
   const { fileType } = useParams();
+
+  // const queryClient = useQueryClient();
+  // const workspaceId = activeWorkspace?.id;
+
+  // // 🔹 Handle SSE messages and update cache
+  // const onMessage = useCallback(
+  //   (msg) => {
+  //     console.log('[SSE] Message received:', msg); // ✅ log the payload
+
+  //     queryClient.setQueryData(['workspaceEvents', workspaceId], (old = []) => {
+  //       let updated = old;
+
+  //       if (msg.type === 'event_created') {
+  //         updated = [msg.payload, ...old];
+  //       } else if (
+  //         msg.type === 'event_update' ||
+  //         msg.type === 'event_progress'
+  //       ) {
+  //         updated = old.map((e) =>
+  //           e.id === msg.payload.Id ? { ...e, ...msg.payload } : e
+  //         );
+  //       }
+
+  //       return [...updated];
+  //     });
+  //   },
+  //   [queryClient, workspaceId]
+  // );
+
+  // useSSE(workspaceId, onMessage);
 
   // determine title for SiteHeader
   const getPageTitle = () => {
@@ -28,8 +65,8 @@ const PrivateLayout = () => {
     return 'Dashboard';
   };
 
-  // fetch current user
   useEffect(() => {
+    // fetch current user
     const fetchUserData = async () => {
       const { data } = await api.get(
         `${apiRoutes.users.base}${apiRoutes.users.getProfile}`
@@ -38,6 +75,9 @@ const PrivateLayout = () => {
       const workspaces = data.memberships.map((m) => m.workspace);
       setWorkspaces(workspaces);
       setActiveWorkspace(workspaces[0]);
+      setActiveWorkspaceRole(
+        data.memberships.find((m) => m.workspace.id === workspaces[0].id)?.role
+      );
     };
     fetchUserData();
   }, [setUser, setWorkspaces, setActiveWorkspace]);
@@ -54,6 +94,16 @@ const PrivateLayout = () => {
     };
     fetchWorkspaceUsers();
   }, [activeWorkspace, setWorkspaceUsers]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const { data } = await api.get(
+        `${apiRoutes.notification.base}${apiRoutes.notification.getUserNotifications}`
+      );
+      useNotificationStore.getState().setNotifications(data.data);
+    };
+    fetchNotifications();
+  }, []);
 
   return (
     <>

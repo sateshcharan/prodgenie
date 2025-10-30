@@ -26,6 +26,9 @@
       "path": "../../libs/server-services/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/shared-utils/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/schema/tsconfig.lib.json"
     },
     {

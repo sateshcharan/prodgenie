@@ -29,6 +29,7 @@ export const PaymentController = {
       name
     );
     res.json(response);
+    console.log(response);
   },
 
   async getPhonePeStatus(req: Request, res: Response) {

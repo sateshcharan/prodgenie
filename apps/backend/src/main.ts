@@ -20,6 +20,8 @@ import {
   webhookRoutes,
   projectWideRoutes,
   sseRoutes,
+  callbackRoutes,
+  notificationRoutes,
 } from './routes';
 import {
   // passport,
@@ -44,8 +46,8 @@ const corsOptions = {
 };
 
 // // Webhook & Callback
-app.use('/api/webhook', webhookRoutes);
-app.get(`/auth/callback`, asyncHandler(AuthController.oAuthCallback));
+app.use(apiRoutes.webhook.base, webhookRoutes);
+app.use(apiRoutes.callback.base, callbackRoutes);
 
 // Middlewares
 app.use(express.json());
@@ -108,17 +110,17 @@ app.use(
   sequenceRoutes
 );
 app.use(
+  apiRoutes.notification.base,
+  authenticateSupabaseJWT,
+  notificationRoutes
+);
+app.use(
   apiRoutes.projectWide.base,
   // authenticatePassportJWT,
   // authenticateSupabaseJWT,
   projectWideRoutes
 );
-app.use(
-  apiRoutes.sse.base,
-  // authenticatePassportJWT,
-  authenticateSupabaseJWT,
-  sseRoutes
-);
+app.use(apiRoutes.sse.base, sseRoutes);
 
 // Error Handler
 app.use(errorHandler);
