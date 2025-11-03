@@ -25,12 +25,12 @@ const UserNotifications = () => {
   const handleAccept = async (id: string, workspaceId: string) => {
     // TODO: api.post(`/workspace/${workspaceId}/accept-invite`)
     const data = await api.post(
-      `${apiRoutes.workspace.base}${apiRoutes.workspace.acceptInvite}`, {
-        workspaceId
+      `${apiRoutes.workspace.base}${apiRoutes.workspace.acceptInvite}`,
+      {
+        workspaceId,
       }
     );
-    console.log('Accept invite for workspace', workspaceId);
-    console.log(data);
+
     markAsRead(id);
   };
 

@@ -9,6 +9,7 @@ import {
   // authenticatePassportJWT,
   requireRole,
   asyncHandler,
+  validatePlan,
 } from '../middlewares';
 
 const router: Router = express.Router();
@@ -28,6 +29,7 @@ router.post(
 
 router.post(
   apiRoutes.workspace.inviteUserToWorkspace,
+  validatePlan,
   authenticateSupabaseJWT,
   requireRole(WorkspaceRole.ADMIN),
   asyncHandler(WorkspaceController.inviteUserToWorkspace)

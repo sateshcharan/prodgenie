@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CheckCheck } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 
@@ -65,6 +66,8 @@ const JobCard = ({
 }) => {
   const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
     useBomStore();
+
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('select');
   // const [isLoading, setIsLoading] = useState(true);
@@ -343,18 +346,15 @@ const JobCard = ({
         signedUrl,
       };
 
-      console.log(jobCardData);
-
       const jobCard = await generateJobCard(jobCardData);
 
-      //todo: in queue process the returned url will be empty
-      // need to check for the jobCardId's progress and update the url
+      // setJobCardUrl(jobCard.data.url); // only if valid url is returned
 
-      setJobCardUrl(jobCard.data.url);
       toast.success(
-        'Your Job Card is being generated. Your Queue position is 1. You can wait here or monitor the progress from the dashboard.'
+        'Your Job Card is being generated. You can wait here or monitor the progress from the dashboard.'
       );
-      setActiveTab('form');
+      // setActiveTab('form');
+      navigate('/dashboard');
     } catch (err) {
       console.error(err);
       toast.error('Failed to generate Job Card. Please try again.');

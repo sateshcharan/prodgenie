@@ -46,7 +46,11 @@ const Dashboard = () => {
         </div>
       )}
 
-      <EventTable key={workspaceId} events={workspaceEvents ?? []} />
+      <EventTable
+        key={workspaceId}
+        events={workspaceEvents ?? []}
+        onRefresh={refetch}
+      />
     </div>
   );
 };

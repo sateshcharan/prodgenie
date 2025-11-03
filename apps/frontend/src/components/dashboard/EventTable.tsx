@@ -7,6 +7,7 @@ import {
   XCircle,
   Loader2,
   FileText,
+  RotateCw,
 } from 'lucide-react';
 import {
   ColumnDef,
@@ -260,9 +261,10 @@ export const columns: ColumnDef<Event>[] = [
 
 interface EventTableProps {
   events: Event[];
+  onRefresh: () => void;
 }
 
-const EventTable: React.FC<EventTableProps> = ({ events }) => {
+const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -298,7 +300,7 @@ const EventTable: React.FC<EventTableProps> = ({ events }) => {
   return (
     <div className="w-full">
       {/* Toolbar */}
-      <div className="flex items-center ">
+      <div className="flex items-center gap-2 ">
         <Input
           placeholder="Filter Type..."
           value={(table.getColumn('type')?.getFilterValue() as string) ?? ''}
@@ -307,6 +309,19 @@ const EventTable: React.FC<EventTableProps> = ({ events }) => {
           }
           className="max-w-sm"
         />
+
+        {onRefresh && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onRefresh}
+            className="flex items-center gap-1"
+          >
+            <Loader2 className="h-4 w-4 animate-spin hidden" />{' '}
+            <RotateCw className="h-4 w-4" />
+          </Button>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

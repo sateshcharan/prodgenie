@@ -1,9 +1,5 @@
 import { useState } from 'react';
 
-import { api } from '../../utils';
-
-import { Button } from '@prodgenie/libs/ui/button';
-import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   Card,
   CardContent,
@@ -12,7 +8,11 @@ import {
   CardTitle,
   toast,
 } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
+
+import { api } from '../../utils';
 
 export default function DeleteWorkspace({
   workspaceId,

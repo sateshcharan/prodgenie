@@ -46,7 +46,7 @@ export class WorkspaceService {
       data: { isDeleted: true, deletedAt: new Date() },
     });
 
-    // delete all workspace files
+    // delete all workspace files and folders
     const { data: files } = await supabase.storage
       .from('workspace-files')
       .list(`${workspaceId}/`);
@@ -55,7 +55,7 @@ export class WorkspaceService {
       await supabase.storage.from('workspace-files').remove(paths);
     }
 
-    // delete all workspace activity
+    // delete all workspace events
     await prisma.event.updateMany({
       where: { workspaceId },
       data: { isDeleted: true, deletedAt: new Date() },
@@ -71,6 +71,9 @@ export class WorkspaceService {
         deletedAt: new Date(),
       },
     });
+
+    // delete user in supabase auth
+    await supabase.auth.admin.deleteUser(user.id);
   }
 
   static async inviteUserToWorkspace(
