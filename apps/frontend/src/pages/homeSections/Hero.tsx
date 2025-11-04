@@ -1,7 +1,8 @@
-import { Button } from '@prodgenie/libs/ui';
 import { ArrowRight, Play, Sparkles, Upload } from 'lucide-react';
 
-const Hero = ({ isVisible }) => {
+import { Button } from '@prodgenie/libs/ui';
+
+const Hero = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <section className="relative z-10 px-6 py-20">
       <div className="max-w-7xl mx-auto text-center">

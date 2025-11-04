@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { api } from '../../utils';
-import { PlanDropdown } from '../PlanDropdown';
+import { PlanDropdown } from '../';
 
 import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';

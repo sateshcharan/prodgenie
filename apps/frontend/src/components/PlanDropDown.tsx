@@ -17,11 +17,11 @@ type Plan = {
   description?: string;
 };
 
-export function PlanDropdown({
+const PlanDropdown = ({
   handleSelectedPlan,
 }: {
   handleSelectedPlan: (planId: string) => void;
-}) {
+}) => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
@@ -88,4 +88,6 @@ export function PlanDropdown({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
+
+export default PlanDropdown;

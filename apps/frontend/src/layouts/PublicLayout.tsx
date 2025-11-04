@@ -10,7 +10,7 @@ const PublicLayout = () => {
       <Outlet />
       <PublicFooter />
 
-      {/* public modals render here */}
+      {/* all public modals render here */}
       <ModalManager />
     </div>
   );

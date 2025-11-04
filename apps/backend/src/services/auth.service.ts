@@ -234,17 +234,21 @@ export class AuthService {
     // set cookie (same as email login)
     res.cookie('sb-access-token', session.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      // secure: process.env.NODE_ENV === 'production',
+      // sameSite: 'lax',
+      // maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      sameSite: 'none',
+      secure: true,
     });
 
     // optional: refresh token cookie
     res.cookie('sb-refresh-token', session.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
+      // secure: process.env.NODE_ENV === 'production',
+      // sameSite: 'lax',
+      // maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
+      sameSite: 'none',
+      secure: true,
     });
 
     // if (data.user) {

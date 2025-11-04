@@ -15,7 +15,7 @@ import {
   useWorkspaceStore,
   useWorkspaceModalStore,
 } from '@prodgenie/libs/store';
-import { PlanDropdown } from '../PlanDropdown';
+import { PlanDropdown } from '../';
 
 export function WorkspaceSettings() {
   const { activeWorkspace, setActiveWorkspace } = useWorkspaceStore();

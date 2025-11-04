@@ -56,4 +56,12 @@ EXPOSE 3000
 
 # Start Redis + Node.js backend + Python service
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]
-CMD ["sh", "-c", "node apps/backend/dist/main.js"]
+# CMD ["sh", "-c", "node apps/backend/dist/main.js"] 
+
+RUN pnpm add -g concurrently
+
+CMD ["concurrently", "-k", \
+    "node apps/backend/dist/main.js", \
+    "pnpm nx serve workers"]
+
+

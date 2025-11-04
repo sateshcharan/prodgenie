@@ -18,9 +18,8 @@ import { useModalStore } from '@prodgenie/libs/store';
 import { PrimaryNavigationMenu } from './';
 
 const PublicHeader = () => {
-  const navigate = useNavigate();
-
   const { openModal } = useModalStore();
+  const navigate = useNavigate();
 
   const handleLoginClick = () => {
     openModal('auth:login');

@@ -17,7 +17,13 @@ const NavButton = ({ to, label, highlight = false }) => (
   </NavLink>
 );
 
-const ComplianceBadge = ({ flag, country }) => (
+const ComplianceBadge = ({
+  flag,
+  country,
+}: {
+  flag: string;
+  country: string;
+}) => (
   <span className="inline-flex items-center gap-1">
     <span className="text-lg">{flag}</span>
     <span>{country}</span>

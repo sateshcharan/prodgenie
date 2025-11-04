@@ -7,10 +7,10 @@ import {
   Badge,
   Button,
 } from '@prodgenie/libs/ui';
-
-import { useNotificationStore } from '@prodgenie/libs/store';
-import { api } from '../utils';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { useNotificationStore } from '@prodgenie/libs/store';
+
+import { api } from '../utils';
 
 const typeClassMap: Record<string, string> = {
   INVITE: 'border-primary',
@@ -23,7 +23,6 @@ const UserNotifications = () => {
   const markAsRead = useNotificationStore((state) => state.markAsRead);
 
   const handleAccept = async (id: string, workspaceId: string) => {
-    // TODO: api.post(`/workspace/${workspaceId}/accept-invite`)
     const data = await api.post(
       `${apiRoutes.workspace.base}${apiRoutes.workspace.acceptInvite}`,
       {
@@ -35,7 +34,12 @@ const UserNotifications = () => {
   };
 
   const handleReject = async (id: string, workspaceId: string) => {
-    // TODO: api.post(`/workspace/${workspaceId}/reject-invite`)
+    const data = await api.post(
+      `${apiRoutes.workspace.base}${apiRoutes.workspace.rejectInvite}`,
+      {
+        workspaceId,
+      }
+    );
     console.log('Reject invite for workspace', workspaceId);
     markAsRead(id);
   };

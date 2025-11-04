@@ -16,7 +16,7 @@ import {
 import { apiRoutes } from '@prodgenie/libs/constant';
 
 import { api } from '../../utils';
-import { PlanDropdown } from '../PlanDropdown';
+import { PlanDropdown } from '../';
 
 export default function RemoveUserFromWorkspace({
   workspaceUserId,

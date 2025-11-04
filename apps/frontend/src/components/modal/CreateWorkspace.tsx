@@ -1,18 +1,18 @@
 import { useState } from 'react';
 
-import { Input } from '@prodgenie/libs/ui/input';
-import { Button } from '@prodgenie/libs/ui/button';
-import { apiRoutes } from '@prodgenie/libs/constant';
 import {
+  Input,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@prodgenie/libs/ui';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 import { api } from '../../utils';
-import { PlanDropdown } from '../PlanDropdown';
+import { PlanDropdown } from '../';
 
 export default function CreateWorkspace() {
   const [loading, setLoading] = useState(false);

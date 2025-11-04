@@ -1,10 +1,12 @@
 import {
+  Home,
+  Pricing,
+  Contact,
   PrivacyPolicy,
   RefundsCancellation,
   TermsConditions,
   CookiePolicy,
-} from '../pages/policySections';
-import { Home, Pricing, Contact } from '../pages';
+} from '../pages';
 import { PublicLayout, PolicyLayout } from '../layouts';
 
 export const publicRoutes = [

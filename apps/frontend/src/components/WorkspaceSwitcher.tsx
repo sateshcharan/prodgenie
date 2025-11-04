@@ -8,20 +8,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@prodgenie/libs/ui/dropdown-menu';
-import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@prodgenie/libs/ui/sidebar';
+  Button,
+} from '@prodgenie/libs/ui';
 import {
   useUserStore,
   useWorkspaceStore,
   useModalStore,
 } from '@prodgenie/libs/store';
 import { appSidebarItems } from '@prodgenie/libs/constant';
-import { Button } from '@prodgenie/libs/ui';
 
 export function WorkspaceSwitcher() {
   const { isMobile } = useSidebar();
