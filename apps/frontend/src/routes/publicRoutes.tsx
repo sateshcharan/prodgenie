@@ -16,6 +16,7 @@ export const publicRoutes = [
     children: [
       { index: true, element: <Home /> },
       { path: 'pricing', element: <Pricing /> },
+      { path: 'contact', element: <Contact /> },
       {
         path: 'policy',
         element: <PolicyLayout />,
@@ -26,8 +27,6 @@ export const publicRoutes = [
           { path: 'refunds', element: <RefundsCancellation /> },
         ],
       },
-
-      { path: 'contact', element: <Contact /> },
     ],
   },
 ];

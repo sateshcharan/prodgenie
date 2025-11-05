@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { NotificationService, WorkspaceService } from '../services';
 
 export class NotificationController {
@@ -16,29 +17,29 @@ export class NotificationController {
     return res.status(200).json({ success: true });
   };
 
-  static acceptInvite = async (req: Request, res: Response) => {
-    const user = req.user!;
-    const { workspaceId } = req.params;
+  // static acceptInvite = async (req: Request, res: Response) => {
+  //   const user = req.user!;
+  //   const { workspaceId } = req.params;
 
-    await WorkspaceService.acceptInvite(workspaceId, user.id);
-    await NotificationService.markWorkspaceInviteAsHandled(
-      workspaceId,
-      user.id
-    );
+  //   await WorkspaceService.acceptInvite(workspaceId, user.id);
+  //   await NotificationService.markWorkspaceInviteAsHandled(
+  //     workspaceId,
+  //     user.id
+  //   );
 
-    return res.status(200).json({ success: true, message: 'Invite accepted' });
-  };
+  //   return res.status(200).json({ success: true, message: 'Invite accepted' });
+  // };
 
-  static rejectInvite = async (req: Request, res: Response) => {
-    const user = req.user!;
-    const { workspaceId } = req.params;
+  // static rejectInvite = async (req: Request, res: Response) => {
+  //   const user = req.user!;
+  //   const { workspaceId } = req.params;
 
-    await WorkspaceService.rejectInvite(workspaceId, user.id);
-    await NotificationService.markWorkspaceInviteAsHandled(
-      workspaceId,
-      user.id
-    );
+  //   await WorkspaceService.rejectInvite(workspaceId, user.id);
+  //   await NotificationService.markWorkspaceInviteAsHandled(
+  //     workspaceId,
+  //     user.id
+  //   );
 
-    return res.status(200).json({ success: true, message: 'Invite rejected' });
-  };
+  //   return res.status(200).json({ success: true, message: 'Invite rejected' });
+  // };
 }

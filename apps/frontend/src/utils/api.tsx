@@ -4,9 +4,14 @@ import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
 import { toast } from 'sonner';
 
 const isDev = import.meta.env.DEV;
+const isPrev = import.meta.env.PREVIEW;
 
 const api = axios.create({
-  baseURL: isDev ? 'http://localhost:3000' : import.meta.env.VITE_API_URL,
+  baseURL: isDev
+    ? import.meta.env.VITE_API_URL_DEV
+    : isPrev
+    ? import.meta.env.VITE_API_URL_PREVIEW
+    : import.meta.env.VITE_API_URL,
   withCredentials: true, // 👈 important: send cookies
 });
 

@@ -27,8 +27,8 @@ export const apiRoutes = {
     base: '/api/notification',
     getUserNotifications: '/getUserNotifications',
     markAsRead: '/markAsRead',
-    acceptInvite: '/acceptInvite',
-    rejectInvite: '/rejectInvite',
+    // acceptInvite: '/acceptInvite',
+    // rejectInvite: '/rejectInvite',
   },
 
   callback: {

@@ -27,33 +27,27 @@ import {
   // passport,
   // authenticatePassportJWT,
   errorHandler,
-  asyncHandler,
   authenticateSupabaseJWT,
 } from './middlewares';
-import { AuthController } from './controllers';
 
 const app = express();
 const port = process.env.PORT || 3333;
 const corsOptions = {
   origin: [
-    'http://localhost:4200',
-    'http://localhost:4300',
-    'https://prodgenie.vercel.app',
+    'http://localhost:4200', // dev
+    'http://localhost:4300', // preview
+    'https://prodgenie.vercel.app', // prod
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'active-workspace-id'],
   credentials: true,
 };
 
-// // Webhook & Callback
-app.use(apiRoutes.webhook.base, webhookRoutes);
-app.use(apiRoutes.callback.base, callbackRoutes);
-
 // Middlewares
-app.use(express.json());
-// app.use(passport.initialize());
 app.use(cors(corsOptions));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use(express.json());
+app.use(cookieParser());
+// app.use(passport.initialize());
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET!,
@@ -62,7 +56,13 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 //     cookie: { secure: false }, // set to true if using HTTPS in production
 //   })
 // );
-app.use(cookieParser());
+
+// Static files
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+// // Webhook & Callback
+app.use(apiRoutes.webhook.base, webhookRoutes);
+app.use(apiRoutes.callback.base, callbackRoutes);
 
 // Routes
 app.use(apiRoutes.auth.base, authRoutes);

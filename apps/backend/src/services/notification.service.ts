@@ -15,13 +15,13 @@ export class NotificationService {
     });
   };
 
-  static markWorkspaceInviteAsHandled = async (
-    workspaceId: string,
-    userId: string
-  ) => {
-    return prisma.notification.updateMany({
-      where: { userId, workspaceId, type: 'INVITE' },
-      data: { read: true },
-    });
-  };
+  // static markWorkspaceInviteAsHandled = async (
+  //   workspaceId: string,
+  //   userId: string
+  // ) => {
+  //   return prisma.notification.updateMany({
+  //     where: { userId, workspaceId, type: 'INVITE' },
+  //     data: { read: true },
+  //   });
+  // };
 }

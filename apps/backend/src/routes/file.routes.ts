@@ -1,10 +1,10 @@
 import multer from 'multer';
 import express, { Router } from 'express';
 
+import { apiRoutes } from '@prodgenie/libs/constant';
+
 import { FileController } from '../controllers/index';
 import { validateFileType, asyncHandler } from '../middlewares/index';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
 
 const router: Router = express.Router({ mergeParams: true }); // to merge parent params
 const upload = multer();

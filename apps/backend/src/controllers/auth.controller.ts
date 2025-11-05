@@ -29,15 +29,19 @@ export class AuthController {
       // Set cookies (HttpOnly so frontend JS cannot access them)
       res.cookie('sb-access-token', session.access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 1000 * 60 * 60, // 1 hour
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'lax',
+        // maxAge: 1000 * 60 * 60, // 1 hour
+        sameSite: 'none',
+        secure: true,
       });
       res.cookie('sb-refresh-token', session.refresh_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'lax',
+        // maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'none',
+        secure: true,
       });
 
       res.status(200).json({ success: true });

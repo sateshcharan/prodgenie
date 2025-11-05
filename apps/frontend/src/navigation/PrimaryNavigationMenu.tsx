@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { cn } from '@prodgenie/libs/utils';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,6 +10,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '@prodgenie/libs/ui';
+import { cn } from '@prodgenie/libs/utils';
 
 const components: { title: string; href: string; description: string }[] = [
   {

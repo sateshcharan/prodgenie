@@ -1,3 +1,8 @@
+import {
+  createServerClient,
+  parseCookieHeader,
+  serializeCookieHeader,
+} from '@supabase/ssr';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -5,13 +10,9 @@ import jwt from 'jsonwebtoken';
 
 import { prisma } from '@prodgenie/libs/prisma';
 import { supabase } from '@prodgenie/libs/supabase';
-import {
-  createServerClient,
-  parseCookieHeader,
-  serializeCookieHeader,
-} from '@supabase/ssr';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { StringService } from '@prodgenie/libs/shared-utils';
+
 import { FolderService } from './folder.service.js';
 
 const folderService = new FolderService();
@@ -277,8 +278,11 @@ export class AuthService {
 
     res.cookie('sb-access-token', session.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      // sameSite: 'lax',
+      // secure: process.env.NODE_ENV === 'production',
+      // maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      sameSite: 'none',
+      secure: true,
     });
 
     res.redirect('http://localhost:3000/set-new-password');

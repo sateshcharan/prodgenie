@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
+import { ErrorPage } from './pages';
+import { PublicLayout } from './layouts';
 import { publicRoutes, privateRoutes } from './routes';
 
 const router: any = createBrowserRouter([
@@ -7,9 +9,9 @@ const router: any = createBrowserRouter([
   ...privateRoutes,
   {
     path: '*',
-    element: <>404</>,
+    element: <PublicLayout />,
+    children: [{ path: '*', element: <ErrorPage /> }],
   },
 ]);
 
 export default router;
-
