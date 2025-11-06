@@ -4,10 +4,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/frontend"
+      "path": "./apps/web"
     },
     {
-      "path": "./apps/backend"
+      "path": "./apps/api"
+    },
+    {
+      "path": "./apps/workers"
     },
     {
       "path": "./libs/ui"
@@ -35,9 +38,6 @@
     },
     {
       "path": "./libs/db"
-    },
-    {
-      "path": "./libs/workers"
     },
     {
       "path": "./libs/queues"

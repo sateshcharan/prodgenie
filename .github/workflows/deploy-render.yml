@@ -13,9 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
       - name: Trigger Render Deployment
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK"
+          curl -X POST "$RENDER_DEPLOY_HOOK_API"
         env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          RENDER_DEPLOY_HOOK_API: ${{ secrets.RENDER_DEPLOY_HOOK_API }}

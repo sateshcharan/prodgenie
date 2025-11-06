@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../libs/server-services"
+    },
+    {
+      "path": "../../libs/supabase"
+    },
+    {
+      "path": "../../libs/prisma"
+    },
+    {
+      "path": "../../libs/redis"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

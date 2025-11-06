@@ -50,9 +50,7 @@
       "@prodgenie/libs/ui": ["libs/ui/src"],
       "@prodgenie/libs/ui/*": ["libs/ui/src/*"],
       "@prodgenie/libs/utils": ["libs/utils/src"],
-      "@prodgenie/libs/utils/*": ["libs/utils/src/*"],
-      "@prodgenie/libs/worker": ["libs/worker/src/index.ts"],
-      "@prodgenie/libs/worker/*": ["libs/worker/src/*"]
+      "@prodgenie/libs/utils/*": ["libs/utils/src/*"]
     }
   }
 }

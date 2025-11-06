@@ -1,0 +1,36 @@
+{
+  "name": "@prodgenie/api",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "serve": {
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@prodgenie/api:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@prodgenie/api:build:development"
+          },
+          "production": {
+            "buildTarget": "@prodgenie/api:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.12"
+  }
+}

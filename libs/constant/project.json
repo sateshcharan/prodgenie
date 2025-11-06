@@ -1,14 +1,3 @@
 {
-  "name": "@prodgenie/constant",
-  "sourceRoot": "libs/constant/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "options": {
-        "tsConfig": "libs/constant/tsconfig.lib.json",
-        "outputPath": "dist/libs/constant"
-      }
-    }
-  }
+  "sourceRoot": "libs/constant/src"
 }
