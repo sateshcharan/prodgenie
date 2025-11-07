@@ -490,9 +490,9 @@ importers:
         specifier: ^1.4.12
         version: 1.4.13
 
-  apps/frontend: {}
+  apps/web: {}
 
-  apps/worker:
+  apps/workers:
     dependencies:
       tslib:
         specifier: ^2.3.0
