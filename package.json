@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "vercel-build": "pnpm dlx nx build frontend --configuration=production"
+    "vercel-build": "pnpm dlx nx build web --configuration=production"
   },
   "prisma": {
     "schema": "libs/db/prisma/schema.prisma"
