@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { prisma, WorkspacePlan } from '@prodgenie/libs/prisma';
+import { prisma, WorkspacePlan } from '@prodgenie/libs/db';
 import { WorkspaceRoleHierarchy } from '@prodgenie/libs/types';
 
 const PLAN_LIMITS: Record<WorkspacePlan, Record<string, number>> = {

@@ -24,9 +24,6 @@
       "path": "../db/tsconfig.lib.json"
     },
     {
-      "path": "../prisma/tsconfig.lib.json"
-    },
-    {
       "path": "../supabase/tsconfig.lib.json"
     }
   ]

@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 

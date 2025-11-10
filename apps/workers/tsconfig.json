@@ -10,13 +10,13 @@
       "path": "../../libs/supabase"
     },
     {
-      "path": "../../libs/prisma"
+      "path": "../../libs/db"
     },
     {
       "path": "../../libs/redis"
     },
     {
-      "path": "./tsconfig.lib.json"
+      "path": "./tsconfig.app.json"
     }
   ]
 }

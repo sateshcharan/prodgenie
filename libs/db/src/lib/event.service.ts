@@ -1,11 +1,11 @@
 import { Prisma } from '@prisma/client';
 
+import { prisma } from './prismaClient.js';
 import {
-  prisma,
   EventType,
   EventStatus,
   // Event,
-} from '@prodgenie/libs/prisma';
+} from './prismaTypes.js';
 // import { sseServer } from '@prodgenie/libs/sse';
 
 export class EventService {

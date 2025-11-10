@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { supabase } from '@prodgenie/libs/supabase';
 
 import jwt from 'jsonwebtoken';

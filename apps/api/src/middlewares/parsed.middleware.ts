@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 
 const validateParsed = async (
   req: Request,

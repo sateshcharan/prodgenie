@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { writeFile } from 'fs/promises';
 import { Request, Response } from 'express';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { fileProcessingQueue } from '@prodgenie/libs/queues';
 
 import { FileService, ThumbnailService } from '../services/index.js';

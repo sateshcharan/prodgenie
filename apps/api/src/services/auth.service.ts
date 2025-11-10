@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 // import { createClient } from '@supabase/supabase-js';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { supabase } from '@prodgenie/libs/supabase';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { StringService } from '@prodgenie/libs/shared-utils';

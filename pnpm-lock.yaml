@@ -492,11 +492,7 @@ importers:
 
   apps/web: {}
 
-  apps/workers:
-    dependencies:
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
+  apps/workers: {}
 
   libs/constant:
     dependencies:
@@ -506,24 +502,6 @@ importers:
 
   libs/db:
     dependencies:
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
-
-  libs/frontend-services:
-    dependencies:
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
-
-  libs/prisma:
-    dependencies:
-      '@prisma/client':
-        specifier: ^6.5.0
-        version: 6.13.0(prisma@6.13.0(typescript@5.7.3))(typescript@5.7.3)
-      prisma:
-        specifier: ^6.5.0
-        version: 6.13.0(typescript@5.7.3)
       tslib:
         specifier: ^2.3.0
         version: 2.8.1

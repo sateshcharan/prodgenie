@@ -5,12 +5,7 @@ import { Readable } from 'stream';
 import { Parser } from 'expr-eval';
 import { randomUUID } from 'crypto';
 
-import {
-  prisma,
-  //  EventType,
-  EventStatus,
-} from '@prodgenie/libs/prisma';
-import { EventService } from '@prodgenie/libs/db';
+import { EventService, EventStatus, prisma } from '@prodgenie/libs/db';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';

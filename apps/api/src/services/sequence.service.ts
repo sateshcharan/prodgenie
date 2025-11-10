@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma, FileType } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { FileType } from '@prodgenie/libs/prisma';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 
 import { FileService } from './file.service';

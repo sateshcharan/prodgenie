@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 
 import { FileType } from '@prisma/client';
 // import { EventStatus, prisma } from '@prodgenie/libs/prisma';
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 // import { EventService } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 

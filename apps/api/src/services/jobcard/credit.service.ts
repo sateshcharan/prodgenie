@@ -1,4 +1,4 @@
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { JobCardConfig } from './config';
 
 export class CreditService {

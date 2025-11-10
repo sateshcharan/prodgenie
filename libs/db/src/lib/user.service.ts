@@ -1,4 +1,4 @@
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from './prismaClient.js';
 // import { supabase } from '@prodgenie/libs/supabase';
 // import { WorkspaceRole } from '@prodgenie/libs/types';
 

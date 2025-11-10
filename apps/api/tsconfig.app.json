@@ -35,22 +35,19 @@
       "path": "../../libs/sse/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/types/tsconfig.lib.json"
+      "path": "../../libs/supabase/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/supabase/tsconfig.lib.json"
+      "path": "../../libs/types/tsconfig.lib.json"
     },
     {
       "path": "../../libs/constant/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/db/tsconfig.lib.json"
-    },
-    {
       "path": "../../libs/queues/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/prisma/tsconfig.lib.json"
+      "path": "../../libs/db/tsconfig.lib.json"
     }
   ]
 }

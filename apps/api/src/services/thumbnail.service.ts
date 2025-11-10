@@ -3,9 +3,9 @@ import fs from 'fs/promises';
 import puppeteer from 'puppeteer';
 import { fromBuffer } from 'pdf2pic';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { FileType } from '@prodgenie/libs/prisma';
+import { FileType } from '@prodgenie/libs/db';
 
 const storageFileService = new FileStorageService();
 

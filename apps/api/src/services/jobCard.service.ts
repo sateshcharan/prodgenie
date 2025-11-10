@@ -5,7 +5,7 @@ import { evaluate } from 'mathjs';
 import { Parser } from 'expr-eval';
 import { randomUUID } from 'crypto';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 // import { EventService } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { StringService } from '@prodgenie/libs/shared-utils';

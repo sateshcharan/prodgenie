@@ -16,9 +16,6 @@
       "path": "../db"
     },
     {
-      "path": "../prisma"
-    },
-    {
       "path": "../supabase"
     },
     {

@@ -24,9 +24,6 @@ import { fetchFilesByType, getThumbnail } from '../../utils/fileService';
 
 import { Button, Input, toast } from '@prodgenie/libs/ui';
 import { apiRoutes } from '@prodgenie/libs/constant';
-// import { DataMutationService } from '@prodgenie/libs/frontend-services';
-
-// const dataMutationService = new DataMutationService();
 
 type TemplateFile = {
   id: string;

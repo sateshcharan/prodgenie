@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PdfService } from '../services/index.js';
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 
 export class PdfController {
   static async extractPdfData(req: Request, res: Response) {

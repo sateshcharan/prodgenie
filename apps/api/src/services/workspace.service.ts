@@ -1,4 +1,4 @@
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 import { WorkspaceRole } from '@prodgenie/libs/types';
 import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
 

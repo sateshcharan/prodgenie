@@ -1,4 +1,4 @@
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 
 export class ProjectWideService {
   static async getPlans() {

@@ -16,22 +16,19 @@
       "path": "../../libs/sse"
     },
     {
-      "path": "../../libs/types"
+      "path": "../../libs/supabase"
     },
     {
-      "path": "../../libs/supabase"
+      "path": "../../libs/types"
     },
     {
       "path": "../../libs/constant"
     },
     {
-      "path": "../../libs/db"
-    },
-    {
       "path": "../../libs/queues"
     },
     {
-      "path": "../../libs/prisma"
+      "path": "../../libs/db"
     },
     {
       "path": "./tsconfig.app.json"

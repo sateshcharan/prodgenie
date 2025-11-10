@@ -3,7 +3,7 @@ import express from 'express';
 
 import { PaymentController } from '../controllers/payment.controller';
 
-import { prisma } from '@prodgenie/libs/prisma';
+import { prisma } from '@prodgenie/libs/db';
 
 const router: Router = Router();
 
