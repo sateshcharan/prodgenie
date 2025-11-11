@@ -31,20 +31,20 @@ import {
 } from './middlewares';
 
 const app = express();
-const port = process.env.PORT || 3333;
-const corsOptions = {
-  origin: [
-    'http://localhost:4200', // dev
-    'http://localhost:4300', // preview
-    'https://prodgenie.vercel.app', // prod
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'active-workspace-id'],
-  credentials: true,
-};
 
 // Middlewares
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:4300',
+      'https://prodgenie.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'active-workspace-id'],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 // app.use(passport.initialize());
@@ -126,6 +126,6 @@ app.use(apiRoutes.sse.base, sseRoutes);
 app.use(errorHandler);
 
 // Server
-app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Listening at http://localhost:${process.env.PORT}`);
 });

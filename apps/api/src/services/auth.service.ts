@@ -22,6 +22,8 @@ const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
 
+const isProd = process.env.NODE_ENV === 'production';
+
 if (!SECRET_KEY) {
   throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
 }
@@ -232,24 +234,18 @@ export class AuthService {
     const { session } = data;
     if (!session) return res.status(401).send('No session');
 
-    // set cookie (same as email login)
     res.cookie('sb-access-token', session.access_token, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'lax',
-      // maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-      sameSite: 'none',
-      secure: true,
+      secure: isProd ? true : false,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
     });
 
-    // optional: refresh token cookie
     res.cookie('sb-refresh-token', session.refresh_token, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'lax',
-      // maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
-      sameSite: 'none',
-      secure: true,
+      secure: isProd ? true : false,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
     });
 
     // if (data.user) {
@@ -278,11 +274,16 @@ export class AuthService {
 
     res.cookie('sb-access-token', session.access_token, {
       httpOnly: true,
-      // sameSite: 'lax',
-      // secure: process.env.NODE_ENV === 'production',
-      // maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-      sameSite: 'none',
-      secure: true,
+      secure: isProd ? true : false,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
+
+    res.cookie('sb-refresh-token', session.refresh_token, {
+      httpOnly: true,
+      secure: isProd ? true : false,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
     });
 
     res.redirect('http://localhost:3000/set-new-password');

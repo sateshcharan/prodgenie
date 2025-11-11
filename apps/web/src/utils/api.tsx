@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
-import { toast } from 'sonner';
 
 const isDev = import.meta.env.DEV;
 const isPrev = import.meta.env.PREVIEW;
@@ -10,18 +9,22 @@ const api = axios.create({
   baseURL: isDev
     ? import.meta.env.VITE_API_URL_DEV
     : isPrev
-    ? import.meta.env.VITE_API_URL_PREVIEW
-    : import.meta.env.VITE_API_URL,
-  withCredentials: true, // 👈 important: send cookies
+    ? import.meta.env.VITE_API_URL_PRE // 👈 for preview mode
+    : import.meta.env.VITE_API_URL_DEP,
+  withCredentials: true,
 });
+
+console.log(
+  '[API BASE URL]',
+  isDev,
+  isPrev,
+  import.meta.env.VITE_API_URL_DEV,
+  import.meta.env.VITE_API_URL_DEP
+);
+console.log('Final baseURL:', api.defaults.baseURL);
 
 // Add request interceptor
 api.interceptors.request.use((config) => {
-  // const token = localStorage.getItem('token');
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
-
   // Add workspace id
   const { activeWorkspace } = useWorkspaceStore.getState();
   if (activeWorkspace) {

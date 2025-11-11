@@ -1,7 +1,9 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
   Button,
@@ -15,13 +17,11 @@ import {
   toast,
 } from '@prodgenie/libs/ui';
 import { loginSchema } from '@prodgenie/libs/schema';
-import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
+import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
 
 import { api } from '../../utils';
 import { useOAuth } from '../../hooks/useOAuth';
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +47,8 @@ const Login = () => {
         `${apiRoutes.auth.base}${apiRoutes.auth.login.email}`,
         data
       );
+
+      console.log(res);
 
       if (res.status === 200) {
         toast.success('Login successful!');

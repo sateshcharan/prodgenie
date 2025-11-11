@@ -1,14 +1,16 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join, resolve } = require('path');
 
-const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
-const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
-const constantsLibPath = resolve(__dirname, '../../libs/constant/src');
-const typesLibPath = resolve(__dirname, '../../libs/types/src');
-const schemaLibPath = resolve(__dirname, '../../libs/schema/src');
 const dbLibPath = resolve(__dirname, '../../libs/db/src');
-const queuesLibPath = resolve(__dirname, '../../libs/queues/src');
+const sseLibPath = resolve(__dirname, '../../libs/sse/src');
+const typesLibPath = resolve(__dirname, '../../libs/types/src');
 const redisLibPath = resolve(__dirname, '../../libs/redis/src');
+const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
+const schemaLibPath = resolve(__dirname, '../../libs/schema/src');
+const queuesLibPath = resolve(__dirname, '../../libs/queues/src');
+const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
+const constantsLibPath = resolve(__dirname, '../../libs/constant/src');
+const sharedUtilsLibPath = resolve(__dirname, '../../libs/shared-utils/src');
 const serverServicesLibPath = resolve(
   __dirname,
   '../../libs/server-services/src'
@@ -17,8 +19,6 @@ const frontendServicesLibPath = resolve(
   __dirname,
   '../../libs/frontend-services/src'
 );
-const sharedUtilsLibPath = resolve(__dirname, '../../libs/shared-utils/src');
-const sseLibPath = resolve(__dirname, '../../libs/sse/src');
 
 module.exports = {
   externals: {
