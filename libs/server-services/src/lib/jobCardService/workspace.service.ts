@@ -138,7 +138,7 @@ export class WorkspaceService {
     // await EmailService.sendInvite(email, {
     //   workspaceId,
     //   role,
-    //   link: `${process.env.FRONTEND_URL}/invite/accept?workspaceId=${workspaceId}`,
+    //   link: `${process.env.WEB_URL}/invite/accept?workspaceId=${workspaceId}`,
     // });
 
     return workspaceMember;

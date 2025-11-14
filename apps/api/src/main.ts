@@ -31,6 +31,7 @@ import {
 } from './middlewares';
 
 const app = express();
+const PORT = 3000;
 
 // Middlewares
 app.use(
@@ -126,6 +127,6 @@ app.use(apiRoutes.sse.base, sseRoutes);
 app.use(errorHandler);
 
 // Server
-app.listen(process.env.PORT, () => {
-  console.log(`Listening at http://localhost:${process.env.PORT}`);
+app.listen(PORT, () => {
+  console.log(`Listening at http://localhost:${PORT}`);
 });

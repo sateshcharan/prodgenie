@@ -20,7 +20,6 @@ const stringService = new StringService();
 
 const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -145,7 +144,7 @@ export class AuthService {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider as 'google',
       options: {
-        redirectTo: `${process.env.BACKEND_URL}/api/callback/OAuth`,
+        redirectTo: `${process.env.API_URL}/api/callback/OAuth`,
       },
     });
 

@@ -99,7 +99,7 @@ export class WorkspaceService {
       try {
         const { data: invited, error } =
           await supabase.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.BACKEND_URL}/auth/callback`,
+            redirectTo: `${process.env.API_URL}/auth/callback`,
           });
 
         if (error) {
@@ -138,7 +138,7 @@ export class WorkspaceService {
     // await EmailService.sendInvite(email, {
     //   workspaceId,
     //   role,
-    //   link: `${process.env.FRONTEND_URL}/invite/accept?workspaceId=${workspaceId}`,
+    //   link: `${process.env.WEB_URL}/invite/accept?workspaceId=${workspaceId}`,
     // });
 
     return workspaceMember;

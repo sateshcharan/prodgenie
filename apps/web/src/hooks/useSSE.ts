@@ -11,7 +11,7 @@ export const useSSE = (workspaceId: string | null, onMessage: OnMessage) => {
     if (!workspaceId) return;
 
     const es = new EventSource(
-      `${import.meta.env.VITE_API_URL}${apiRoutes.sse.base}${
+      `${import.meta.env.API_URL}${apiRoutes.sse.base}${
         apiRoutes.sse.stream
       }?workspaceId=${workspaceId}`,
       { withCredentials: true }
