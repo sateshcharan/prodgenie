@@ -22,17 +22,20 @@ export default defineConfig(() => ({
       },
     },
   },
+
   preview: {
-    port: 4300,
+    port: 4201,
     host: 'localhost',
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:3000',
-    //     changeOrigin: true,
-    //     secure: false,
-    //   },
-    // },
+    // localhost proxy
+    proxy: {
+      '/api': {
+        target: process.env.API_URL,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
+
   plugins: [react()],
   optimizeDeps: {
     // include: ['pdfjs-dist/build/pdf.worker.min.js'],
