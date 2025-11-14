@@ -36,7 +36,7 @@ RUN pnpm install --frozen-lockfile
 # Ensure prisma schema is valid & Build backend
 # RUN pnpm exec prisma validate
 RUN pnpm exec prisma generate
-RUN pnpm nx build backend
+RUN pnpm nx build api && pnpm nx build workers
 
 # Install puppeteer
 # RUN npx puppeteer browsers install chrome
@@ -61,7 +61,7 @@ EXPOSE 3000
 RUN pnpm add -g concurrently
 
 CMD ["concurrently", "-k", \
-    "node apps/backend/dist/main.js", \
-    "pnpm nx serve workers"]
+    "node apps/api/dist/main.js", \
+    "node apps/workers/dist/main.js"]
 
 
