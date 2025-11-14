@@ -3,13 +3,10 @@ import axios from 'axios';
 import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 const isDev = import.meta.env.DEV;
-const isPrev = import.meta.env.PREVIEW;
 
 const api = axios.create({
   baseURL: isDev
     ? import.meta.env.VITE_API_URL_DEV
-    : isPrev
-    ? import.meta.env.VITE_API_URL_PRE // 👈 for preview mode
     : import.meta.env.VITE_API_URL_DEP,
   withCredentials: true,
 });
@@ -17,7 +14,6 @@ const api = axios.create({
 console.log(
   '[API BASE URL]',
   isDev,
-  isPrev,
   import.meta.env.VITE_API_URL_DEV,
   import.meta.env.VITE_API_URL_DEP
 );

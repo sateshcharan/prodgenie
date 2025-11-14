@@ -494,8 +494,6 @@ importers:
 
   apps/workers: {}
 
-  apps/workers-e2e: {}
-
   libs/constant:
     dependencies:
       tslib:

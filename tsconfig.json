@@ -50,9 +50,6 @@
     },
     {
       "path": "./libs/sse"
-    },
-    {
-      "path": "./apps/workers-e2e"
     }
   ]
 }

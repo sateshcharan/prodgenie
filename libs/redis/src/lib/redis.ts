@@ -1,24 +1,5 @@
-// import IORedis from 'ioredis';
-
-// export const connection = new IORedis({
-//   host: process.env.REDIS_HOST || 'localhost',
-//   port: 6379,
-//   maxRetriesPerRequest: null,
-// });
-
-// export const connection = {
-//   host: process.env.REDIS_URL || 'localhost',
-//   port: 6379,
-//   maxRetriesPerRequest: null,
-// };
-
 import IORedis from 'ioredis';
 
-export const connection = new IORedis(
-  process.env.REDIS_INTERNAL_URL ||
-    process.env.REDIS_EXTERNAL_URL ||
-    'redis://red-d22hp3adbo4c73f8ro00:6379',
-  {
-    maxRetriesPerRequest: null,
-  }
-);
+export const connection = new IORedis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: null,
+});
