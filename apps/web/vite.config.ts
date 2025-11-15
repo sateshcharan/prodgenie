@@ -12,7 +12,6 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
     historyApiFallback: true,
-
     // localhost proxy
     proxy: {
       '/api': {
@@ -26,10 +25,12 @@ export default defineConfig(() => ({
   preview: {
     port: 4201,
     host: 'localhost',
-    // localhost proxy
+    // production proxy
     proxy: {
       '/api': {
-        target: process.env.API_URL,
+        // target: 'http://localhost:3000',
+        // target: process.env.API_URL!,
+        target: 'https://api-production-3d39.up.railway.app',
         changeOrigin: true,
         secure: false,
       },

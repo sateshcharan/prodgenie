@@ -25,8 +25,8 @@ jobs:
       - name: Generate Vercel Build Output
         run: pnpm dlx vercel build --prod
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          API_URL: ${{ secrets.API_URL }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
 
       - name: Deploy to Vercel Production
         run: pnpm dlx vercel deploy --yes --prebuilt --target=production --token=${{ secrets.VERCEL_TOKEN }}

@@ -19,8 +19,8 @@ import { useAuthStore } from '@prodgenie/libs/store';
 // import { createClient } from '@supabase/supabase-js';
 
 // const supabase = createClient(
-//   import.meta.env.VITE_SUPABASE_URL!,
-//   import.meta.env.VITE_SUPABASE_ANON_KEY!
+//   import.meta.env.SUPABASE_URL!,
+//   import.meta.env.SUPABASE_ANON_KEY!
 // );
 
 type Field = {

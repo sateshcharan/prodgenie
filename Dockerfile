@@ -4,14 +4,14 @@ FROM node:20
 RUN apt-get update && apt-get install -y \
     # python3 python3-pip python3-venv \
     # redis-server \
-    ghostscript \
-    graphicsmagick \
     # imagemagick \ 
     # libglib2.0-0 \
     # libsm6 \
     # libxrender1 \
     # libxext6 \
     # fonts-dejavu-core \ 
+    ghostscript \
+    graphicsmagick \
     chromium \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Set working directory
+# Set working directory and copy files
 WORKDIR /app
 COPY . .
 
@@ -31,12 +31,14 @@ ENV PATH="${PNPM_HOME}:${PATH}"
 # Install pnpm and dependencies & clear pnpm store to avoid aritfacts
 RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN pnpm store prune && rm -rf ~/.pnpm-store
+
+# Install root dependencies
 RUN pnpm install --frozen-lockfile
 
 # Ensure prisma schema is valid & Build backend
 # RUN pnpm exec prisma validate
-RUN pnpm exec prisma generate
-RUN pnpm nx build api && pnpm nx build workers
+RUN pnpm prisma generate
+RUN pnpm nx build api
 
 # Install puppeteer
 # RUN npx puppeteer browsers install chrome
@@ -58,10 +60,11 @@ EXPOSE 3000
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]
 # CMD ["sh", "-c", "node apps/backend/dist/main.js"] 
 
-RUN pnpm add -g concurrently
+# RUN pnpm add -g concurrently
+# CMD ["concurrently", "-k", \
+#     "node apps/api/dist/main.js"]
 
-CMD ["concurrently", "-k", \
-    "node apps/api/dist/main.js", \
-    "node apps/workers/dist/main.js"]
+# Final command
+CMD ["node", "apps/api/dist/main.js"]
 
 

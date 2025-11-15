@@ -18,16 +18,12 @@ import { FolderService } from './folder.service.js';
 const folderService = new FolderService();
 const stringService = new StringService();
 
-const SECRET_KEY = process.env.JWT_SECRET_BCRYPT;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const SECRET_KEY = process.env.JWT_SECRET_BCRYPT || "Smar49atck@123";
 
 const isProd = process.env.NODE_ENV === 'production';
 
 if (!SECRET_KEY) {
   throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
-}
-if (!ADMIN_PASSWORD) {
-  throw new Error('ADMIN_PASSWORD is not defined in environment variables');
 }
 
 interface SignupOwnerPayload {

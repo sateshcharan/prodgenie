@@ -51,7 +51,7 @@ app.use(cookieParser());
 // app.use(passport.initialize());
 // app.use(
 //   session({
-//     secret: process.env.SESSION_SECRET!,
+//     secret: process.env.SESSION_SECRET! || "replacewithsecuresecret",
 //     resave: false,
 //     saveUninitialized: false,
 //     cookie: { secure: false }, // set to true if using HTTPS in production
