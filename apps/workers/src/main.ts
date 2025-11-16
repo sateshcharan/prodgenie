@@ -1,5 +1,7 @@
 import { Worker } from 'bullmq';
+
 import { connection } from '@prodgenie/libs/redis';
+
 import { processDrawingBom } from './processors/file-processor.js';
 import { processGenerateJobCard } from './processors/job-card-processor.js';
 

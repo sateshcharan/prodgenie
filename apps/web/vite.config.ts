@@ -23,14 +23,12 @@ export default defineConfig(() => ({
   },
 
   preview: {
-    port: 4201,
+    port: 4300,
     host: 'localhost',
     // production proxy
     proxy: {
       '/api': {
-        // target: 'http://localhost:3000',
-        // target: process.env.API_URL!,
-        target: 'https://api-production-3d39.up.railway.app',
+        target: process.env.API_URL,
         changeOrigin: true,
         secure: false,
       },
