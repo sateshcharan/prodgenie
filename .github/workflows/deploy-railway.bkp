@@ -1,9 +1,9 @@
-name: Deploy API to Railway
+name: Deploy Api, Workers to Railway
 
 on:
   push:
     branches:
-      - railway-api
+      - main
 
 jobs:
   deploy:
@@ -23,4 +23,10 @@ jobs:
         uses: railwayapp/action@v2
         with:
           service: api
+          token: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy Workers Service to Railway
+        uses: railwayapp/action@v2
+        with:
+          service: workers
           token: ${{ secrets.RAILWAY_TOKEN }}

@@ -1,0 +1,109 @@
+name: Nx Intelligent Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  determine-affected:
+    runs-on: ubuntu-latest
+    outputs:
+      affected_web: ${{ steps.affected.outputs.web }}
+      affected_api: ${{ steps.affected.outputs.api }}
+      affected_workers: ${{ steps.affected.outputs.workers }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Determine affected apps
+        id: affected
+        run: |
+          AFFECTED=$(pnpm nx print-affected --select=projects)
+
+          echo "Affected: $AFFECTED"
+
+          [[ "$AFFECTED" == *"web"* ]] && echo "web=true" || echo "web=false" >> $GITHUB_OUTPUT
+          [[ "$AFFECTED" == *"api"* ]] && echo "api=true" || echo "api=false" >> $GITHUB_OUTPUT
+          [[ "$AFFECTED" == *"workers"* ]] && echo "workers=true" || echo "workers=false" >> $GITHUB_OUTPUT
+
+  # -----------------------------------------------------
+  # WEB DEPLOY → VERCEL
+  # -----------------------------------------------------
+  deploy-web:
+    needs: determine-affected
+    if: needs.determine-affected.outputs.affected_web == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Pull Vercel Environment
+        run: pnpm dlx vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build web
+        run: pnpm dlx vercel build --prod
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+
+      - name: Deploy to Vercel
+        run: pnpm dlx vercel deploy --prebuilt --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+  # -----------------------------------------------------
+  # API DEPLOY → RAILWAY
+  # -----------------------------------------------------
+  deploy-api:
+    needs: determine-affected
+    if: needs.determine-affected.outputs.affected_api == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy API
+        uses: railwayapp/action@v2
+        with:
+          service: api
+          token: ${{ secrets.RAILWAY_TOKEN }}
+
+  # -----------------------------------------------------
+  # WORKERS DEPLOY → RAILWAY
+  # -----------------------------------------------------
+  deploy-workers:
+    needs: determine-affected
+    if: needs.determine-affected.outputs.affected_workers == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy Workers
+        uses: railwayapp/action@v2
+        with:
+          service: workers
+          token: ${{ secrets.RAILWAY_TOKEN }}

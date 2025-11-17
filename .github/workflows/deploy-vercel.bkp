@@ -3,7 +3,7 @@ name: Deploy Web Apps to Vercel
 on:
   push:
     branches:
-      - vercel-web
+      - main
 
 jobs:
   build:
