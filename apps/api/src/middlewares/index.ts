@@ -6,3 +6,4 @@ export * from './parsed.middleware.js';
 export * from './asyncHandler.middleware.js';
 export * from './user.middleware.js';
 export * from './plan.middleware.js';
+export * from './cache.middleware.js';

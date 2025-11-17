@@ -45,7 +45,6 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 test-output
 
-envBkp
 .env
 .prisma
 .vercel

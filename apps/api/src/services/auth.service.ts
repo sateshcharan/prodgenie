@@ -140,7 +140,7 @@ export class AuthService {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider as 'google',
       options: {
-        redirectTo: `${process.env.API_URL}/api/callback/OAuth`,
+        redirectTo: `${process.env.VITE_API_URL}/api/callback/OAuth`,
       },
     });
 

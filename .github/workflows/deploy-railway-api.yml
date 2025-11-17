@@ -1,0 +1,26 @@
+name: Deploy API to Railway
+
+on:
+  push:
+    branches:
+      - railway-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy API Service to Railway
+        uses: railwayapp/action@v2
+        with:
+          service: api
+          token: ${{ secrets.RAILWAY_TOKEN }}

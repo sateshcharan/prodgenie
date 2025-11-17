@@ -3,6 +3,8 @@ import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
+
 // import session from 'express-session';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
@@ -34,6 +36,7 @@ const app = express();
 const PORT = 3000;
 
 // Middlewares
+app.use(compression());
 app.use(
   cors({
     origin: [

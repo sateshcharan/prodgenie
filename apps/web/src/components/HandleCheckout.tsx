@@ -5,7 +5,7 @@ import { useUserStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
 
-const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 type CheckoutOptions = {
   gateway?: 'stripe' | 'phonepe';

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useLoadingStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 const api = axios.create({
-  baseURL: import.meta.env.API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 

@@ -1,0 +1,20 @@
+name: Deploy Workers to Render
+
+on:
+  push:
+    branches:
+      - render-workers
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Workers Deployment
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK_WORKERS"
+        env:
+          RENDER_DEPLOY_HOOK_WORKERS: ${{ secrets.RENDER_DEPLOY_HOOK_WORKERS }}

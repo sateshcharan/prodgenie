@@ -1,0 +1,26 @@
+name: Deploy Workers to Railway
+
+on:
+  push:
+    branches:
+      - railway-workers
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy Workers Service to Railway
+        uses: railwayapp/action@v2
+        with:
+          service: workers
+          token: ${{ secrets.RAILWAY_TOKEN }}

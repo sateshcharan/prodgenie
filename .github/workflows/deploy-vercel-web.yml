@@ -1,9 +1,9 @@
-name: Deploy Frontend to Vercel
+name: Deploy Web Apps to Vercel
 
 on:
   push:
     branches:
-      - main
+      - vercel-web
 
 jobs:
   build:
@@ -25,8 +25,8 @@ jobs:
       - name: Generate Vercel Build Output
         run: pnpm dlx vercel build --prod
         env:
-          API_URL: ${{ secrets.API_URL }}
-          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
 
       - name: Deploy to Vercel Production
         run: pnpm dlx vercel deploy --yes --prebuilt --target=production --token=${{ secrets.VERCEL_TOKEN }}
