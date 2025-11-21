@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogOverlay,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/dialog';
 import { cn } from '@prodgenie/libs/utils';
 import { useModalStore } from '@prodgenie/libs/store';
 

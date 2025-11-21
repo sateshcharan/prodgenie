@@ -6,10 +6,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/dropdown-menu';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 type Plan = {
   id: string;

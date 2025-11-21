@@ -4,14 +4,14 @@ import { useState } from 'react';
 import api from '../../utils/api';
 
 import {
-  ScrollArea,
-  Button,
   CardDescription,
   CardHeader,
   CardContent,
   CardTitle,
   Card,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 import { useModalStore } from '@prodgenie/libs/store';
 import { useAddDialogStore } from '@prodgenie/libs/store';
 import { useWorkspaceStore } from '@prodgenie/libs/store';

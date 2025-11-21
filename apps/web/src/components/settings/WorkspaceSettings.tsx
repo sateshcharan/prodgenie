@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';
@@ -15,7 +15,7 @@ import {
   useWorkspaceStore,
   useWorkspaceModalStore,
 } from '@prodgenie/libs/store';
-import { PlanDropdown } from '../';
+import PlanDropdown from '../PlanDropDown';
 
 export function WorkspaceSettings() {
   const { activeWorkspace, setActiveWorkspace } = useWorkspaceStore();

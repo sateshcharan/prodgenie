@@ -3,6 +3,7 @@ export { router as sseRoutes } from './sse.routes.js';
 export { router as authRoutes } from './auth.routes.js';
 export { router as fileRoutes } from './file.routes.js';
 export { router as userRoutes } from './user.routes.js';
+export { router as batchedRoutes } from './batched.routes.js';
 export { router as jobCardRoutes } from './jobCard.routes.js';
 export { router as paymentRoutes } from './payment.routes.js';
 export { router as webhookRoutes } from './webhook.routes.js';

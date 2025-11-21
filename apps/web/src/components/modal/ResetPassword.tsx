@@ -2,21 +2,21 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Label } from '@prodgenie/libs/ui/label';
+import { toast } from 'sonner';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email'),

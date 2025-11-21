@@ -9,7 +9,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/navigation-menu';
 import { cn } from '@prodgenie/libs/utils';
 
 const components: { title: string; href: string; description: string }[] = [

@@ -128,7 +128,7 @@ export class FileService {
     const data = await Promise.all(
       files.map(async (file) => ({
         ...file,
-        path: await fileStorageService.getSignedUrl(file.path),
+        path: await fileStorageService.getCachedSignedUrl(file.path),
       }))
     );
 
@@ -141,7 +141,7 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getSignedUrl(file.path);
+    const signedUrl = await fileStorageService.getCachedSignedUrl(file.path);
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
@@ -151,7 +151,7 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getSignedUrl(file.path);
+    const signedUrl = await fileStorageService.getCachedSignedUrl(file.path);
     return { data: { ...file, signedUrl }, error: null };
   }
 
@@ -210,9 +210,9 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    // const signedUrl = await fileStorageService.getSignedUrl(file.thumbnail);
+    // const signedUrl = await fileStorageService.getCachedSignedUrl(file.thumbnail);
     const signedUrl = file.thumbnail
-      ? await fileStorageService.getSignedUrl(file.thumbnail)
+      ? await fileStorageService.getCachedSignedUrl(file.thumbnail)
       : null;
     return { data: { ...file, path: signedUrl }, error: null };
   }

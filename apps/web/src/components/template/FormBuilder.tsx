@@ -11,22 +11,22 @@ import { Trash, Plus, X, Check, RefreshCcw } from 'lucide-react';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 import {
-  Input,
-  Button,
   Select,
   SelectItem,
   SelectTrigger,
   SelectContent,
-  Label,
   SelectValue,
-  Separator,
-  ScrollArea,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/select';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Label } from '@prodgenie/libs/ui/label';
+import { Separator } from '@prodgenie/libs/ui/separator';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { formBuilderSchema } from '@prodgenie/libs/schema';
 import { StringService } from '@prodgenie/libs/shared-utils';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 import PreviewForm from './PreviewForm';
 
 const stringService = new StringService();

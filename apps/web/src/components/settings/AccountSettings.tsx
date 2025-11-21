@@ -5,10 +5,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Button,
-  Input,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
+import { toast } from 'sonner';
+import { Input } from '@prodgenie/libs/ui/input';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   useModalStore,
@@ -16,7 +16,7 @@ import {
   useWorkspaceStore,
 } from '@prodgenie/libs/store';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 import { EditableField } from '../EditableField';
 
 const AccountSettings = () => {

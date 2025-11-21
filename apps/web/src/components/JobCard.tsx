@@ -5,32 +5,32 @@ import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 
+import { Button } from '@prodgenie/libs/ui/button';
+import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
+import { Separator } from '@prodgenie/libs/ui/separator';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@prodgenie/libs/ui/card';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+} from '@prodgenie/libs/ui/tabs';
+import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
   Form,
-  Button,
-  Card,
-  CardContent,
-  toast,
-  Separator,
-  ScrollArea,
-  ScrollBar,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/form';
 import { BomItem } from '@prodgenie/libs/types';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
 import { apiRoutes, jobCardFields, COLORS } from '@prodgenie/libs/constant';
 
-import { api } from '../utils';
+import api from '../utils/api';
 import BomTable from './BomTable';
 import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
@@ -153,7 +153,6 @@ const JobCard = ({
         toast.error('Failed to fetch job card number.');
       }
     };
-
     fetchJobCardNo();
   }, []);
 

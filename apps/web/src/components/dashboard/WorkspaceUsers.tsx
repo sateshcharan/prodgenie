@@ -1,14 +1,9 @@
 import { Handshake, Trash, LogOut } from 'lucide-react';
 
-import {
-  Button,
-  Card,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  ScrollArea,
-  ScrollBar,
-} from '@prodgenie/libs/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@prodgenie/libs/ui/avatar';
+import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
+import { Card } from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
 import {
   useWorkspaceStore,
   useUserStore,

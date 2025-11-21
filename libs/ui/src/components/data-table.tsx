@@ -54,28 +54,27 @@ import {
 } from '@tanstack/react-table';
 
 import { useIsMobile } from '../hooks/use-mobile';
+
+import { Badge } from '../badge';
+import { Button } from '../button';
+import { Checkbox } from '../checkbox';
+import { Input } from '../input';
+import { Label } from '../label';
+import { Separator } from '../separator';
 import {
-  Badge,
-  Button,
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  Checkbox,
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Separator,
+} from '../select';
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../chart';
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -84,17 +83,24 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+} from '../sheet';
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../';
+} from '../table';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs';
 
 export const schema = z.object({
   id: z.number(),

@@ -19,10 +19,13 @@ import { Save, Trash, FolderSync } from 'lucide-react';
 import { isEqual } from 'lodash-es';
 
 import FormulaBuilder from './FormulaBuilder';
-import { api, ExcelHTMLViewer } from '../../utils';
+import api from '../../utils/api';
+import { ExcelHTMLViewer } from '../../utils/ExcelViewer';
 import { fetchFilesByType, getThumbnail } from '../../utils/fileService';
 
-import { Button, Input, toast } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { toast } from 'sonner';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
 type TemplateFile = {

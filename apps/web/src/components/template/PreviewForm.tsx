@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 import { Controller, FormProvider } from 'react-hook-form';
 
 import {
-  Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/select';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Label } from '@prodgenie/libs/ui/label';
 
 const PreviewForm = ({
   sections,

@@ -23,8 +23,6 @@ import {
 } from '@tanstack/react-table';
 
 import {
-  Badge,
-  Button,
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -32,15 +30,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Input,
-  Progress,
+} from '@prodgenie/libs/ui/dropdown-menu';
+import { Badge } from '@prodgenie/libs/ui/badge';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Progress } from '@radix-ui/react-progress';
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/table';
+import { useWorkspaceStore } from '@prodgenie/libs/store';
 
 // ✅ Type from your Prisma schema
 export type Event = {
@@ -260,8 +263,8 @@ export const columns: ColumnDef<Event>[] = [
 ];
 
 interface EventTableProps {
-  events: Event[];
-  onRefresh: () => void;
+  events?: Event[];
+  onRefresh?: () => void;
 }
 
 const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
@@ -269,13 +272,14 @@ const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const { workspaceEvents, fetchWorkspaceEvents } = useWorkspaceStore();
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ errorData: false });
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data: events,
+    data: workspaceEvents,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

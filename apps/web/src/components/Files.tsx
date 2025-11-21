@@ -3,8 +3,9 @@ import { FolderSync, Plus, Upload } from 'lucide-react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
 import { fetchFilesByType } from '../utils/fileService';
-import { api } from '../utils';
-import { SearchBanner, FileCard } from '../components';
+import api from '../utils/api';
+import SearchBanner from './SearchBanner';
+import FileCard from './FileCard';
 
 import { CardItem } from '@prodgenie/libs/types';
 import { apiRoutes, FileType } from '@prodgenie/libs/constant';
@@ -14,7 +15,10 @@ import {
   useWorkspaceStore,
   useModalStore,
 } from '@prodgenie/libs/store';
-import { Button, Card, CardContent, banner, toast } from '@prodgenie/libs/ui';
+import { Card, CardContent } from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
+import { toast } from 'sonner';
+import banner from '../assets/banner.png';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -172,7 +176,6 @@ const Files = () => {
               onClick={handleCardClick}
             />
           ))}
-
           {/* Add File Card */}
           <Card className="shadow-lg rounded-xl flex flex-col cursor-pointer bg-background min-h-[250px]">
             {fileType === 'template' ||

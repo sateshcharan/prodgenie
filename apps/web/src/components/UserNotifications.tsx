@@ -3,14 +3,15 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  ScrollArea,
-  Badge,
-  Button,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
+import { Badge } from '@prodgenie/libs/ui/badge';
+import { Button } from '@prodgenie/libs/ui/button';
+
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useNotificationStore } from '@prodgenie/libs/store';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 const typeClassMap: Record<string, string> = {
   INVITE: 'border-primary',

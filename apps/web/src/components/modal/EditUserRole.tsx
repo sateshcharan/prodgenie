@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 import {
   Select,
@@ -15,7 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   useModalStore,

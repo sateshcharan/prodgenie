@@ -1,18 +1,20 @@
 import { CreditCard, FileText, Users, Wallet } from 'lucide-react';
 
 import {
-  Separator,
-  Progress,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   Tabs,
   TabsList,
   TabsTrigger,
   TabsContent,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/tabs';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Separator } from '@prodgenie/libs/ui/separator';
+import { Progress } from '@prodgenie/libs/ui/progress';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@prodgenie/libs/ui/card';
 import {
   useWorkspaceStore,
   useUserStore,

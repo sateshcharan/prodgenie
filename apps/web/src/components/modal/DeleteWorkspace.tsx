@@ -6,13 +6,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { toast } from 'sonner';
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 export default function DeleteWorkspace({
   workspaceId,

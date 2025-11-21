@@ -8,13 +8,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-  Button,
-  Input,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import {Toast as toast} from '@prodgenie/libs/ui/components/toast';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 interface ReplacePasswordForm {
   newPassword: string;

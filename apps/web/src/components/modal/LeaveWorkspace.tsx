@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
@@ -10,8 +10,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { toast } from 'sonner';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 export default function LeaveWorkspace() {

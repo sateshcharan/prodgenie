@@ -10,9 +10,10 @@ import {
   TableCell,
 } from '@prodgenie/libs/ui/table';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { Button, Input, toast } from '@prodgenie/libs/ui';
-
-import { api } from '../../utils';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { toast } from 'sonner'
+import api from '../../utils/api';
 
 type ColumnType = 'text' | 'number';
 

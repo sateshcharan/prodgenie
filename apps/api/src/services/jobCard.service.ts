@@ -89,7 +89,7 @@ export class JobCardService {
       ); // sequence formulas
 
       for (const templateSection of sequence.sections) {
-        const sectionUrl = await this.fileStorageService.getSignedUrl(
+        const sectionUrl = await this.fileStorageService.getCachedSignedUrl(
           `${workspaceName}/${templateSection.path}`
         ); // template htm file in storage
 
@@ -362,7 +362,7 @@ export class JobCardService {
       user,
       activeWorkspace
     );
-    return await this.fileStorageService.getSignedUrl(jobCard[0].path);
+    return await this.fileStorageService.getCachedSignedUrl(jobCard[0].path);
   }
 
   async getJobCardNumber(workspace: {

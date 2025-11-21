@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/accordion';
 
 const faqs = [
   {

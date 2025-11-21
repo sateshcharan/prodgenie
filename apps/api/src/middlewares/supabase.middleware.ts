@@ -24,6 +24,13 @@ const authenticateSupabaseJWT = async (
 
     // user and workspace data
     const activeWorkspaceId = req.headers['active-workspace-id'] as string;
+
+    // 🔥 NEW — Read workspaceId from query OR params, not header
+    // const activeWorkspaceId =
+    //   (req.query.workspaceId as string) ||
+    //   (req.params.workspaceId as string) ||
+    //   null;
+
     req.activeWorkspaceId = activeWorkspaceId;
 
     const {

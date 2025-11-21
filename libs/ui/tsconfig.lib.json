@@ -32,8 +32,10 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "**/*.ts, '**/*.tsx"
-, "src/components/DialogEditFile.backup"  ],
+    "**/*.ts, '**/*.tsx",
+    "src/components/DialogEditFile.backup",
+    "../../apps/web/src/assets/socialIcons.jsx"
+  ],
   "references": [
     {
       "path": "../constant/tsconfig.lib.json"

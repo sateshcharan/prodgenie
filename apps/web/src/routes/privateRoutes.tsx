@@ -1,22 +1,21 @@
 import { RouteObject } from 'react-router-dom';
 
-import {
-  fileDetailsLoader,
-  fileDatasLoader,
-  fileBuilderLoader,
-  settingsLoader,
-} from '../loaders';
-import {
-  Files,
-  FileDetails,
-  FileBuilder,
-  FormulaBuilder,
-  Settings,
-  UserNotifications,
-} from '../components';
-import { Dashboard } from '../pages';
+import { fileDetailsLoader } from '../loaders/fileDetailsLoader';
+import { fileDatasLoader } from '../loaders/filesDataLoader';
+import { fileBuilderLoader } from '../loaders/fileBuilderLoader';
+import { settingsLoader } from '../loaders/settingsLoader';
+
+import Files from '../components/Files';
+import FileDetails from '../components/FileDetails';
+import FileBuilder from '../components/FileBuilder';
+import FormulaBuilder from '../components/sequence/FormulaBuilder';
+import Settings from '../components/settings/Settings';
+import UserNotifications from '../components/UserNotifications';
+
+import Dashboard from '../pages/Dashboard';
+
 import PrivateRoute from './PrivateRoute';
-import { PrivateLayout } from '../layouts';
+import PrivateLayout from '../layouts/PrivateLayout';
 
 const PrivateRoutes: RouteObject[] = [
   {

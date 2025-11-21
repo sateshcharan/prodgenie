@@ -5,22 +5,22 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Label } from '@prodgenie/libs/ui/label';
+import { toast } from 'sonner';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
 import { loginSchema } from '@prodgenie/libs/schema';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 import { useOAuth } from '../../hooks/useOAuth';
 
 const Login = () => {
@@ -47,8 +47,6 @@ const Login = () => {
         `${apiRoutes.auth.base}${apiRoutes.auth.login.email}`,
         data
       );
-
-      console.log(res);
 
       if (res.status === 200) {
         toast.success('Login successful!');

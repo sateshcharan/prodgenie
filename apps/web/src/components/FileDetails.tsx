@@ -4,7 +4,8 @@ import { useLocation, useLoaderData } from 'react-router-dom';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
 import JobCard from './JobCard';
-import { api, ExcelHTMLViewer } from '../utils';
+import api from '../utils/api';
+import { ExcelHTMLViewer } from '../utils/ExcelViewer';
 import { FileDetailsLoaderTypes } from '../loaders/fileDetailsLoader';
 
 const FileDetails = () => {

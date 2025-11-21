@@ -24,6 +24,7 @@ import {
   sseRoutes,
   callbackRoutes,
   notificationRoutes,
+  batchedRoutes,
 } from './routes';
 import {
   // passport,
@@ -46,6 +47,7 @@ app.use(
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'active-workspace-id'],
+    maxAge: 86400, // caches static assests
     credentials: true,
   })
 );
@@ -124,6 +126,7 @@ app.use(
   // authenticateSupabaseJWT,
   projectWideRoutes
 );
+app.use(apiRoutes.batched.base, authenticateSupabaseJWT, batchedRoutes);
 app.use(apiRoutes.sse.base, sseRoutes);
 
 // Error Handler

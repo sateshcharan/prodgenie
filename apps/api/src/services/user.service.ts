@@ -1,4 +1,4 @@
-import { prisma } from './prismaClient.js';
+import { prisma } from '@prodgenie/libs/db';
 // import { supabase } from '@prodgenie/libs/supabase';
 // import { WorkspaceRole } from '@prodgenie/libs/types';
 
@@ -41,7 +41,7 @@ export class UserService {
     });
   }
 
-  static async updateProfile(userId: string, updates: Record<string, any>) {
+  async updateProfile(userId: string, updates: Record<string, any>) {
     return await prisma.user.update({
       where: { id: userId },
       data: updates,

@@ -1,6 +1,7 @@
 import { Pencil, Check, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Button, Input } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
 
 interface EditableFieldProps {
   label: string;

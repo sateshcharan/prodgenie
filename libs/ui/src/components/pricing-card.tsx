@@ -5,8 +5,8 @@ import {
   CardFooter,
   CardTitle,
   CardDescription,
-  Button,
-} from '../';
+} from '../card';
+import { Button } from '../button';
 
 type PricingCardProps = {
   title: string;

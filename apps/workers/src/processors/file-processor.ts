@@ -27,7 +27,7 @@ export const processDrawingBom = async (job: Job) => {
     select: { path: true },
   });
 
-  const fileSignedUrl = await fileStorageService.getSignedUrl(
+  const fileSignedUrl = await fileStorageService.getCachedSignedUrl(
     filePath?.path || ''
   );
 

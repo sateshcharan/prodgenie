@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
+} from '@prodgenie/libs/ui/dropdown-menu';
+import { useSidebar } from '@prodgenie/libs/ui/sidebar';
+import { Button } from '@prodgenie/libs/ui/button';
+import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
-  Button,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/sidebar';
 import {
   useUserStore,
   useWorkspaceStore,

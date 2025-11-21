@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { api } from '../../utils';
-import { PlanDropdown } from '../';
+import api from '../../utils/api';
+import PlanDropdown from '../PlanDropDown';
 
 import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';
@@ -12,7 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
 import {
   useModalStore,
   useUserStore,

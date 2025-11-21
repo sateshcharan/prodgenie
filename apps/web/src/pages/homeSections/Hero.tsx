@@ -1,6 +1,6 @@
 import { ArrowRight, Play, Sparkles, Upload } from 'lucide-react';
 
-import { Button } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
 
 const Hero = ({ isVisible }: { isVisible: boolean }) => {
   return (

@@ -4,9 +4,10 @@ import { Pencil, Check, Plus } from 'lucide-react';
 
 import { useBomStore } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { Button, ScrollBar, ScrollArea } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import {  ScrollBar, ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 interface BomItem {
   slNo: string;

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { api } from '../../utils';
-import { Button } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+
+import api from '../../utils/api';
 
 const PricingSlider = () => {
   const [plans, setPlans] = useState<

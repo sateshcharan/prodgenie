@@ -7,12 +7,14 @@ export const PaymentController = {
   async createStripeSession(req: Request, res: Response) {
     const orgId = req.user?.org?.id;
     const { email, priceId } = req.body;
+
     const session = await StripeService.createCheckoutSession(
       email,
       orgId,
       priceId
     );
-    res.json(session);
+    // res.json(session);
+    return res.status(200).json(session);
   },
 
   async handleStripeWebhook(req: Request, res: Response) {
@@ -22,6 +24,7 @@ export const PaymentController = {
   // === PhonePe ===
   async createPhonePePayment(req: Request, res: Response) {
     const { orderId, amount, mobile, name } = req.body;
+
     const response = await PhonePeService.createPayment(
       orderId,
       amount,
@@ -29,11 +32,11 @@ export const PaymentController = {
       name
     );
     res.json(response);
-    console.log(response);
   },
 
   async getPhonePeStatus(req: Request, res: Response) {
     const { orderId } = req.params;
+
     const response = await PhonePeService.verifyPayment(orderId);
     res.json(response);
   },

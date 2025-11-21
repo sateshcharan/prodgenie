@@ -123,7 +123,7 @@
 
 // MaterialBuilder.tsx
 import axios from 'axios';
-import { api } from '../../utils';
+import api from '../../utils/api';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import TableBuilder from './TableBuilder';
 import { toast } from 'sonner';

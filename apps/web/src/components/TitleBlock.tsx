@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Pencil, Check, Plus } from 'lucide-react';
 
-import { Button, Input } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 interface TitleBlockProps {
   titleBlock?: Record<string, string | number> | null;

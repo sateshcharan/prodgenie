@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, Twitter, Linkedin, Youtube } from 'lucide-react';
 
-import { Button, Input, logo, Separator } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Separator } from '@prodgenie/libs/ui/separator';
+import { Input } from '@prodgenie/libs/ui/input';
+import logo from '../assets/logo.png';
 
 const FOOTER_SECTIONS = [
   {

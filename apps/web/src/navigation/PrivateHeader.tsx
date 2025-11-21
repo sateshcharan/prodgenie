@@ -8,14 +8,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Button,
-} from '@prodgenie/libs/ui';
-import { ModeToggle } from '@prodgenie/libs/ui';
-import logo from '@prodgenie/libs/ui/assets/logo.png';
+} from '@prodgenie/libs/ui/select';
+import { Button } from '@prodgenie/libs/ui/button';
+import { ModeToggle } from '@prodgenie/libs/ui/components/mode-toggle';
+import logo from '../assets/logo.png';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 const Header = () => {
   const navigate = useNavigate();

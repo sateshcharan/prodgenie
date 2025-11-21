@@ -1,18 +1,18 @@
 import { useState } from 'react';
 
+import { Button } from '@prodgenie/libs/ui/button';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { toast } from 'sonner';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 export default function DeletePreset({
   presets,

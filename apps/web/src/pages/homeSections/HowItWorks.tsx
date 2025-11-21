@@ -1,16 +1,18 @@
+import { useNavigate } from 'react-router-dom';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  Button,
-} from '@prodgenie/libs/ui';
-import { useNavigate } from 'react-router-dom';
+} from '@prodgenie/libs/ui/accordion';
 
-import integrations from '@prodgenie/libs/ui/assets/integrations.webp';
-import selectProjectType from '@prodgenie/libs/ui/assets/selectProjectType.webp';
-import supportedDocumentFormats from '@prodgenie/libs/ui/assets/supportedDocumentFormats.webp';
-import aiParsingEngine from '@prodgenie/libs/ui/assets/aiParsingEngine.mp4';
+import { Button } from '@prodgenie/libs/ui/button';
+
+import integrations from '../../assets/integrations.webp';
+import selectProjectType from '../../assets/selectProjectType.webp';
+import supportedDocumentFormats from '../../assets/supportedDocumentFormats.webp';
+import aiParsingEngine from '../../assets/aiParsingEngine.mp4';
 import { ChevronRight } from 'lucide-react';
 
 const HowItWorks = () => {

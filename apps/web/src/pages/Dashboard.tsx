@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { ChartAreaInteractive } from '@prodgenie/libs/ui';
+import { ChartAreaInteractive } from '@prodgenie/libs/ui/components/chart-area-interactive';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
-import { SectionCards, WorkspaceUsers, EventTable } from '../components';
+
+import EventTable from '../components/dashboard/EventTable';
+import SectionCards from '../components/dashboard/SectionCards';
+import WorkspaceUsers from '../components/dashboard/WorkspaceUsers';
 
 const Dashboard = () => {
   const user = useUserStore((state) => state.user);
@@ -16,23 +19,23 @@ const Dashboard = () => {
     (m) => m.workspace.id === workspaceId
   )?.role;
 
-  // polling evetns via react-query
-  const {
-    data: workspaceEvents = [],
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['workspaceEvents', workspaceId],
-    queryFn: async () => {
-      const { data } = await api.get(
-        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`
-      );
-      return data.data;
-    },
-    enabled: !!workspaceId, // only start when workspaceId is loaded
-    // refetchInterval: 30000, // polling every 5s
-    // refetchIntervalInBackground: false, // don't poll when tab is hidden
-  });
+  // // polling evetns via react-query
+  // const {
+  //   data: workspaceEvents = [],
+  //   isLoading,
+  //   refetch,
+  // } = useQuery({
+  //   queryKey: ['workspaceEvents', workspaceId],
+  //   queryFn: async () => {
+  //     const { data } = await api.get(
+  //       `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`
+  //     );
+  //     return data.data;
+  //   },
+  //   enabled: !!workspaceId, // only start when workspaceId is loaded
+  //   // refetchInterval: 30000, // polling every 5s
+  //   // refetchIntervalInBackground: false, // don't poll when tab is hidden
+  // });
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
@@ -48,8 +51,8 @@ const Dashboard = () => {
 
       <EventTable
         key={workspaceId}
-        events={workspaceEvents ?? []}
-        onRefresh={refetch}
+        // events={workspaceEvents ?? []}
+        // onRefresh={refetch}
       />
     </div>
   );

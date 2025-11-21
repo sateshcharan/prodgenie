@@ -6,16 +6,9 @@ import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
 // import { api } from '../utils';
 import SuggestionInput from '../SuggestionInput';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
-import {
-  Button,
-  Input,
-  Card,
-  CardContent,
-  toast,
-  FormField,
-} from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Card, CardContent } from '@prodgenie/libs/ui/card';
 
 type FormulaConfig = {
   key: string | null;

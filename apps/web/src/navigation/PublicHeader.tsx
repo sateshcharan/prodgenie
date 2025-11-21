@@ -8,14 +8,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Button,
-  ModeToggle,
-  logo,
-  Separator,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/select';
+import logo from '../assets/logo.png';
+import { ModeToggle } from '@prodgenie/libs/ui/components/mode-toggle';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Separator } from '@prodgenie/libs/ui/separator';
 import { useModalStore } from '@prodgenie/libs/store';
 
-import { PrimaryNavigationMenu } from './';
+import PrimaryNavigationMenu from './PrimaryNavigationMenu';
 
 const PublicHeader = () => {
   const { openModal } = useModalStore();

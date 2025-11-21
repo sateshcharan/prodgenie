@@ -472,16 +472,14 @@ import {
   preDefinedKeywords,
   preDefinedOperators,
 } from '@prodgenie/libs/constant';
-import {
-  Button,
-  FileDropzone,
-  Input,
-  ScrollArea,
-  toast,
-} from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { toast } from 'sonner';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
+import { FileDropzone } from '@prodgenie/libs/ui/components/FileDropzone';
 import { StringService } from '@prodgenie/libs/shared-utils';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 import FormBuilder from './FormBuilder';
 import SuggestionInput from '../SuggestionInput';
 

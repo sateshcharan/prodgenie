@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { FolderService } from '../services/index.js';
 import { WorkspaceService } from '../services/index.js';
 
-const workspaceService = new WorkspaceService();
 
 export class WorkspaceController {
   static createWorkspace = async (req: Request, res: Response) => {
@@ -15,7 +14,6 @@ export class WorkspaceController {
       planId,
       user
     );
-
     return res.status(200).json({ success: true, data: 'Workspace created' });
   };
 
@@ -43,7 +41,6 @@ export class WorkspaceController {
 
     await WorkspaceService.acceptInvite(workspaceId, user.id);
     // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
-
     return res.status(200).json({ success: true, message: 'Invite accepted' });
   };
 
@@ -53,7 +50,6 @@ export class WorkspaceController {
 
     await WorkspaceService.rejectInvite(workspaceId, user.id);
     // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
-
     return res.status(200).json({ success: true, message: 'Invite rejected' });
   };
 
@@ -64,7 +60,6 @@ export class WorkspaceController {
       workspaceId,
       userId
     );
-
     return res.status(200).json({ success: true, data: removedUser });
   };
 
@@ -79,6 +74,7 @@ export class WorkspaceController {
 
   static getWorkspaceEvents = async (req: Request, res: Response) => {
     const workspaceId = req.activeWorkspaceId;
+
     const events = await WorkspaceService.getWorkspaceEvents(workspaceId);
     return res.status(200).json({ success: true, data: events });
   };
@@ -93,6 +89,7 @@ export class WorkspaceController {
 
   static checkWorkspaceExists = async (req: Request, res: Response) => {
     const { workspaceName } = req.query;
+
     const exists = await WorkspaceService.checkWorkspaceExists(
       workspaceName as string
     );
@@ -101,6 +98,7 @@ export class WorkspaceController {
 
   static updateUserRoleInWorkspace = async (req: Request, res: Response) => {
     const { workspaceId, userId, role } = req.body;
+
     const updatedUser = await WorkspaceService.updateUserRole(
       workspaceId,
       userId,
@@ -112,16 +110,11 @@ export class WorkspaceController {
   static getWorkspaceConfig = async (req: Request, res: Response) => {
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const config = await workspaceService.getWorkspaceConfig(
+    const config = await WorkspaceService.getWorkspaceConfig(
       activeWorkspaceId as string,
       req.params.configName
     );
-    if (!config) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Config not found' });
-    }
-
+    if (!config) throw new Error('Config not found');
     return res.status(200).json({ success: true, data: config });
   };
 
@@ -129,39 +122,23 @@ export class WorkspaceController {
     const activeWorkspaceId = req.activeWorkspaceId!;
     const configName = req.params.configName;
 
-    try {
-      const config = await WorkspaceService.setWorkspaceConfig(
-        activeWorkspaceId,
-        configName,
-        req.body
-      );
-
-      return res.status(200).json({ success: true, data: config });
-    } catch (err) {
-      console.error('Failed to update config', err);
-      return res
-        .status(500)
-        .json({ success: false, message: 'Failed to update config' });
-    }
+    const config = await WorkspaceService.setWorkspaceConfig(
+      activeWorkspaceId,
+      configName,
+      req.body
+    );
+    return res.status(200).json({ success: true, data: config });
   };
 
   static updateWorkspaceConfig = async (req: Request, res: Response) => {
     const activeWorkspaceId = req.activeWorkspaceId!;
     const configName = req.params.configName;
 
-    try {
-      const config = await WorkspaceService.updateWorkspaceConfig(
-        activeWorkspaceId,
-        configName,
-        req.body
-      );
-
-      return res.status(200).json({ success: true, data: config });
-    } catch (err) {
-      console.error('Failed to update config', err);
-      return res
-        .status(500)
-        .json({ success: false, message: 'Failed to update config' });
-    }
+    const config = await WorkspaceService.updateWorkspaceConfig(
+      activeWorkspaceId,
+      configName,
+      req.body
+    );
+    return res.status(200).json({ success: true, data: config });
   };
 }

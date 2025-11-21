@@ -6,8 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Button,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
 import {
   useModalStore,
   useUserStore,
@@ -15,8 +15,8 @@ import {
 } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { api } from '../../utils';
-import { PlanDropdown } from '../';
+import api from '../../utils/api';
+import PlanDropdown from '../PlanDropDown';
 
 export default function RemoveUserFromWorkspace({
   workspaceUserId,

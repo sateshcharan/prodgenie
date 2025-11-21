@@ -1,4 +1,5 @@
 export const apiRoutes = {
+  batched: { base: '/api/batched', init: '/init' },
   auth: {
     base: '/api/auth',
     signup: {

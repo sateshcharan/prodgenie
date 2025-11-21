@@ -1,20 +1,14 @@
 import { useEffect, useState } from 'react';
 import { X, Download, Pencil, Copy, Briefcase, Calculator } from 'lucide-react';
 
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  Button,
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from '@prodgenie/libs/ui';
+import { Avatar, AvatarImage, AvatarFallback } from '@prodgenie/libs/ui/avatar';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Card, CardHeader, CardContent } from '@prodgenie/libs/ui/card';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { useWorkspaceStore } from '@prodgenie/libs/store';
 
 import PdfThumbnail from './PdfThumbnail';
-import { ExcelHTMLViewer } from '../utils';
+import { ExcelHTMLViewer } from '../utils/ExcelViewer';
 import { getThumbnail } from '../utils/fileService';
 import { EditableTitle } from './EditableTitle';
 

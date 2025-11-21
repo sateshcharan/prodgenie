@@ -12,6 +12,7 @@ import { JobCardItem } from '@prodgenie/libs/types';
 import { PuppeteerService } from '@prodgenie/libs/server-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 import { StringService } from '@prodgenie/libs/shared-utils';
+import { prisma } from '@prodgenie/libs/db';
 
 interface ParsedPdf {
   bom: JobCardItem[];
@@ -434,5 +435,22 @@ export class PdfService {
     }
 
     return outputPath;
+  }
+
+  static async extractAndSavePdfData(
+    signedUrl: string,
+    user: any,
+    fileId: string
+  ) {
+    // extract actual table data
+    const tables = await this.extractPdfData(signedUrl, user);
+
+    // store extracted tables into database
+    await prisma.file.update({
+      where: { id: fileId },
+      data: { data: tables },
+    });
+
+    return tables;
   }
 }

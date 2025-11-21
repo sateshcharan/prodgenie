@@ -60,10 +60,10 @@ export class JobCardController {
   static async getJobCardNumber(req: Request, res: Response) {
     const user = req.user;
     const activeWorkspaceId = req.activeWorkspaceId!;
-
     const activeWorkspace = user.memberships.find(
       (m) => m.workspace.id === activeWorkspaceId
     );
+    
     const { data } = await jobCardService.getJobCardNumber(activeWorkspace);
     res.status(200).json({ success: true, data: data });
   }

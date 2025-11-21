@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { cn } from '@prodgenie/libs/utils';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useAuthStore } from '@prodgenie/libs/store';
-import { Button, PricingCard as PricingCardUI } from '@prodgenie/libs/ui';
+import {  PricingCard as PricingCardUI } from '@prodgenie/libs/ui/components/pricing-card';
+import { Button } from '@prodgenie/libs/ui/button';
 
-import { api } from '../utils';
+import api from '../utils/api';
 import handleCheckout from './HandleCheckout';
 
 const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {

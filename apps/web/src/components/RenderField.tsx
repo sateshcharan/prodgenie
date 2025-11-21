@@ -1,12 +1,12 @@
 import {
-  Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Checkbox,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/select';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Checkbox } from '@prodgenie/libs/ui/checkbox';
 
 const RenderField = ({ fieldConfig, rhfField }: any) => {
   switch (fieldConfig.type) {

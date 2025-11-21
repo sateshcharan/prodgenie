@@ -2,16 +2,18 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { forwardRef, useEffect, useState, useRef, useMemo } from 'react';
 
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Command,
   CommandGroup,
   CommandInput,
   CommandItem,
-  Button,
-  ScrollArea,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@prodgenie/libs/ui/popover';
+import { Button } from '@prodgenie/libs/ui/button';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 import {
   // apiRoutes,
   // jobCardFields,

@@ -36,7 +36,8 @@
     "src/**/*.tsx",
     "../ui/src/components/FolderDropZone.tsx",
     "src/components/CreateWorkspaceModal.backup",
-    "src/components/modal/FileDropZone.tsx"
+    "src/components/modal/FileDropZone.tsx",
+    "../../libs/ui/src/assets/socialIcons.jsx"
   ],
   "references": [
     {

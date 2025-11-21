@@ -11,6 +11,7 @@ export * from './thumbnail.service.js';
 export * from './sequence.service.js';
 export * from './projectWide.service.js';
 export * from './notification.service.js';
+export * from './user.service.js';
 
 // payment
 export * from './payment/stripe.service.js';

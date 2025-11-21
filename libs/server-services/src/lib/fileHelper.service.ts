@@ -14,7 +14,7 @@ export class FileHelperService {
 
   async fetchJsonFromSignedUrl(path: string): Promise<any> {
     if (!path) throw new Error('Path not provided');
-    const url = await this.fileStorageService.getSignedUrl(path);
+    const url = await this.fileStorageService.getCachedSignedUrl(path);
     const { data } = await axios.get(url);
     return data;
   }

@@ -2,18 +2,18 @@ import { Request, Response } from 'express';
 
 import { UserService } from '@prodgenie/libs/db';
 
-const userService = new UserService();
-
 export class UserController {
   static async createUser(req: Request, res: Response) {
-    const user = await userService.createUser(req.body);
+    const user = await UserService.createUser(req.body);
     res.status(201).json(user);
   }
 
   static async deleteUser(req: Request, res: Response) {
     const userId = req?.user?.id;
-    const user = await userService.deleteUser(userId);
-    res.json({ message: 'User deleted', user });
+
+    const user = await UserService.deleteUser(userId);
+    // res.json({ message: 'User deleted', user });
+    res.json({ message: 'User deleted' });
   }
 
   static async getProfile(req: Request, res: Response) {
@@ -27,12 +27,9 @@ export class UserController {
     // }
 
     const userId = req?.user?.id;
+    if (!userId) throw new Error('User not found');
 
-    const user = await userService.getProfile(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const user = await UserService.getProfile(userId);
     res.json(user);
   }
 
@@ -40,7 +37,7 @@ export class UserController {
     const userId = req?.user?.id;
     const { data } = req.body;
 
-    const user = await userService.updateProfile(userId, data);
+    const user = await UserService.updateProfile(userId, data);
     res.json(user);
   }
 }

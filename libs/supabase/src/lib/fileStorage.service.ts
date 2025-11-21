@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
+import { connection as redis } from '@prodgenie/libs/redis';
+
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -61,6 +63,26 @@ export class FileStorageService {
       console.error('Get signed URL failed:', err.code || '', err.message);
       throw err;
     }
+  }
+
+  async getCachedSignedUrl(filePath: string) {
+    if (!filePath) throw new Error('File path missing');
+
+    const cacheKey = `signedurl:${filePath}`;
+
+    // 1. Check cache
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // 2. Not found → generate a new one
+    const freshUrl = await this.getSignedUrl(filePath);
+
+    // 3. Cache it for 55 minutes (url lives for 60 minutes)
+    await redis.set(cacheKey, freshUrl, 'EX', 55 * 60);
+
+    return freshUrl;
   }
 
   async deleteFile(

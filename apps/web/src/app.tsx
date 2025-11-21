@@ -1,8 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-import { ErrorPage } from './pages';
-import { PublicLayout } from './layouts';
-import { publicRoutes, privateRoutes } from './routes';
+import ErrorPage from './pages/ErrorPage';
+
+import PublicLayout from './layouts/PublicLayout';
+
+import { publicRoutes } from './routes/publicRoutes';
+import { privateRoutes } from './routes/privateRoutes';
 
 const router: any = createBrowserRouter([
   ...publicRoutes,

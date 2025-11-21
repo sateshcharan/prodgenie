@@ -5,13 +5,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-  Button,
-  Input,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Input } from '@prodgenie/libs/ui/input';
+import { toast } from 'sonner';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 export default function DuplicateFile({
   title,

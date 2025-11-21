@@ -5,6 +5,7 @@ import { NotificationService, WorkspaceService } from '../services';
 export class NotificationController {
   static getUserNotifications = async (req: Request, res: Response) => {
     const user = req.user!;
+
     const notifications = await NotificationService.getUserNotifications(
       user.id
     );
@@ -13,6 +14,7 @@ export class NotificationController {
 
   static markAsRead = async (req: Request, res: Response) => {
     const { id } = req.params;
+
     await NotificationService.markAsRead(id);
     return res.status(200).json({ success: true });
   };

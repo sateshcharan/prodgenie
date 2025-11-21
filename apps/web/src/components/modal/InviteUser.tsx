@@ -6,8 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { toast } from 'sonner';
 import {
   Select,
   SelectTrigger,
@@ -21,7 +21,7 @@ import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { WorkspaceRole } from '@prodgenie/libs/types';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
 export default function InviteUser() {
   const [email, setEmail] = useState('');

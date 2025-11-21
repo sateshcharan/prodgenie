@@ -2,16 +2,16 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Button } from '../button';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
-} from '../';
+} from '../card';
+import { Input } from '../input';
+import { Label } from '../label';
 
 import { cn } from '@prodgenie/libs/utils';
 import { useAuthStore } from '@prodgenie/libs/store';

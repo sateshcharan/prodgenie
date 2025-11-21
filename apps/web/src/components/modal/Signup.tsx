@@ -210,22 +210,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle } from 'react-icons/fa';
 
+import { Button } from '@prodgenie/libs/ui/button';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
-  toast,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/card';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Label } from '@prodgenie/libs/ui/label';
+import { toast } from 'sonner';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { useModalStore } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 import { useOAuth } from '../../hooks/useOAuth';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';

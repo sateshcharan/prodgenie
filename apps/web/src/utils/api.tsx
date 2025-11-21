@@ -13,12 +13,15 @@ api.interceptors.request.use((config) => {
   const { activeWorkspace } = useWorkspaceStore.getState();
   if (activeWorkspace) {
     config.headers['active-workspace-id'] = activeWorkspace.id;
+
+    // append query param instead of header
+    // config.params = {
+    //   ...(config.params || {}),
+    //   workspaceId: activeWorkspace.id,
+    // };
   }
 
-  // Trigger loading state
-  const { startLoading } = useLoadingStore.getState();
-  startLoading();
-
+  useLoadingStore.getState().startLoading(); // Trigger loading state
   return config;
 });
 
@@ -35,7 +38,7 @@ api.interceptors.response.use(
 
     if (err.response?.status === 401) {
       // localStorage.removeItem('token');
-      // window.location.href = '/';
+      window.location.href = '/';
     }
 
     return Promise.reject(err);

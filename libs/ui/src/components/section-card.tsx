@@ -5,8 +5,8 @@ import {
   CardTitle,
   CardDescription,
   CardFooter,
-  Badge,
-} from '../';
+} from '../card';
+import { Badge } from '../badge';
 import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 
 type SectionCardProps = {

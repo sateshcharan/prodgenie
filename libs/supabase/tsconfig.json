@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../redis"
+    },
+    {
       "path": "./tsconfig.lib.json"
     }
   ]

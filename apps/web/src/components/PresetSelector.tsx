@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { BetweenHorizonalEnd, Plus, Trash } from 'lucide-react';
 
+import { Button } from '@prodgenie/libs/ui/button';
 import {
-  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Input,
-} from '@prodgenie/libs/ui';
+} from '@prodgenie/libs/ui/select';
+import { Input } from '@prodgenie/libs/ui/input';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, usePresetStore } from '@prodgenie/libs/store';
 
-import { api } from '../utils';
+import api from '../utils/api';
 
 interface Preset {
   id: string;

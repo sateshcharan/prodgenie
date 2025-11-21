@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Button,
-} from '../';
+} from '../table';
+import { Button } from '../button';
 
 type History = {
   id: string;

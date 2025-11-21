@@ -1,10 +1,10 @@
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { api } from '../../utils';
+import api from '../../utils/api';
 
-import { Button } from '@prodgenie/libs/ui';
-import { SectionCard } from '@prodgenie/libs/ui';
+import { Button } from '@prodgenie/libs/ui/button';
+import { SectionCard } from '@prodgenie/libs/ui/components/section-card';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 const SectionCards = () => {
@@ -13,14 +13,15 @@ const SectionCards = () => {
 
   const { openModal } = useModalStore();
 
-  useEffect(() => {
-    const workspaceJobCard = async () => {
-      const { data } = await api.get(`/api/files/jobCard/list`);
-      data.data && setJobCardCount(data.data.length);
-    };
+  //update logic for total job cards including deleted ones for each workspace
+  // useEffect(() => {
+  //   const workspaceJobCard = async () => {
+  //     const { data } = await api.get(`/api/files/jobCard/list`);
+  //     data.data && setJobCardCount(data.data.length);
+  //   };
 
-    workspaceJobCard();
-  }, [activeWorkspace?.id]);
+  //   workspaceJobCard();
+  // }, [activeWorkspace?.id]);
 
   const handleChangePlan = () => {
     openModal('workspace:pricing');

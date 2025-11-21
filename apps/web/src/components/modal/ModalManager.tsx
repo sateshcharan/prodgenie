@@ -1,24 +1,22 @@
-import {
-  Login,
-  Signup,
-  RemoveUserFromWorkspace,
-  CreateWorkspace,
-  DeleteWorkspace,
-  EditUserRole,
-  InviteUser,
-  DeleteUser,
-  ResetPassword,
-  PricingCard,
-  LeaveWorkspace,
-  ReplacePassword,
-  Auth,
-  Modal,
-  FileDropZone,
-  DuplicateFile,
-  DeletePreset,
-} from '..';
+import Login from './Login';
+import Signup from './Signup';
+import RemoveUserFromWorkspace from './RemoveUserFromWorkspace';
+import CreateWorkspace from './CreateWorkspace';
+import DeleteWorkspace from './DeleteWorkspace';
+import EditUserRole from './EditUserRole';
+import InviteUser from './InviteUser';
+import DeletePreset from './DeletePreset';
+import DuplicateFile from './DuplicateFile';
+import FileDropZone from './FileDropZone';
+import Modal from './Modal';
+import Auth from './Auth';
+import ReplacePassword from './ReplacePassword';
+import DeleteUser from './DeleteUser';
+import ResetPassword from './ResetPassword';
+import PricingCard from '../PricingCard';
+import LeaveWorkspace from './LeaveWorkspace';
 
-import { authDialogImage } from '@prodgenie/libs/ui';
+import authDialogImage from '../../assets/authDialogImage.webp';
 import { useModalStore } from '@prodgenie/libs/store';
 
 const ModalManager = () => {

@@ -216,7 +216,7 @@ export class WorkspaceService {
     });
     if (!config) return null;
 
-    // const signedUrl = await fileStorageService.getSignedUrl(config?.path);
+    // const signedUrl = await fileStorageService.getCachedSignedUrl(config?.path);
     // config.path = signedUrl;
 
     return config;

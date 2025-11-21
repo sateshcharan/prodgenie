@@ -10,3 +10,5 @@ export * from './sequence.controller.js';
 // export * from './webhook.controller.js';
 export * from './projectWide.controller.js';
 export * from './notification.controller.js';
+export * from './batched.controller.js';
+export * from './user.controller.js'

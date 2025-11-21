@@ -8,7 +8,7 @@ import {
 } from '@prodgenie/libs/constant';
 import { useUserStore } from '@prodgenie/libs/store';
 
-import { api } from '../utils';
+import api from '../utils/api';
 import { getFileData } from '../utils/fileService';
 
 let _cachedSuggestions: string[] | null = null;

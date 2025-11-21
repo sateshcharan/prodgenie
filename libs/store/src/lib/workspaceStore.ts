@@ -36,13 +36,16 @@ interface WorkspaceStore {
   workspaceUsers: User[];
   activeWorkspace: Workspace | null;
   activeWorkspaceRole: string | null;
+  workspaceEvents: any[];
 
   setWorkspaces: (workspaces: Workspace[]) => void;
   setWorkspaceUsers: (users: User[]) => void;
   setActiveWorkspace: (workspace: Workspace | null) => void;
   setActiveWorkspaceRole: (role: string | null) => void;
+  setWorkspaceEvents: (events: any[]) => void;
 
   fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
+  fetchWorkspaceEvents: (workspaceId: string) => Promise<void>;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
@@ -50,13 +53,15 @@ export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
   workspaceUsers: [],
   activeWorkspace: null,
   activeWorkspaceRole: null,
+  workspaceEvents: [],
 
   setWorkspaces: (workspaces) => set({ workspaces }),
   setWorkspaceUsers: (workspaceUsers) => set({ workspaceUsers }),
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setActiveWorkspaceRole: (activeWorkspaceRole) => set({ activeWorkspaceRole }),
+  setWorkspaceEvents: (workspaceEvents) => set({ workspaceEvents }),
 
-  fetchWorkspaceUsers: async (workspaceId) => {
+  fetchWorkspaceUsers: async (workspaceId: string) => {
     try {
       const { data } = await axios.get(
         `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
@@ -66,6 +71,18 @@ export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
     } catch (err) {
       console.error(err);
       set({ workspaceUsers: [] });
+    }
+  },
+  fetchWorkspaceEvents: async (workspaceId: string) => {
+    try {
+      const { data } = await axios.get(
+        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`,
+        { params: { workspaceId } }
+      );
+      set({ workspaceEvents: data.data });
+    } catch (err) {
+      console.error(err);
+      set({ workspaceEvents: [] });
     }
   },
 }));

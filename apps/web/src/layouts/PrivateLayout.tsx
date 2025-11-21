@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 import {
@@ -8,13 +9,18 @@ import {
   useWorkspaceStore,
   useNotificationStore,
 } from '@prodgenie/libs/store';
-import { SidebarInset, SidebarProvider, SiteHeader } from '@prodgenie/libs/ui';
+import { SidebarInset, SidebarProvider } from '@prodgenie/libs/ui/sidebar';
+import { SiteHeader } from '@prodgenie/libs/ui/components/site-header';
 
-import { api } from '../utils';
+import api from '../utils/api';
+
 import { useSSE } from '../hooks/useSSE';
-import { PrivateHeader } from '../navigation';
+
+import PrivateHeader from '../navigation/PrivateHeader';
+
 import ChatWidget from '../components/ChatWidget';
-import { AppSidebar, ModalManager } from '../components';
+import AppSidebar from '../components/AppSidebar';
+import ModalManager from '../components/modal/ModalManager';
 
 const PrivateLayout = () => {
   const setUser = useUserStore((state) => state.setUser);
@@ -24,9 +30,16 @@ const PrivateLayout = () => {
     setActiveWorkspaceRole,
     setWorkspaceUsers,
     activeWorkspace,
+    setWorkspaceEvents,
   } = useWorkspaceStore((state) => state);
 
   const { fileType } = useParams();
+
+  // setWorkspaces(data.workspaces);
+  // setActiveWorkspace(data.activeWorkspace);
+  // setActiveWorkspaceRole(data.activeWorkspaceRole);
+  // setWorkspaceUsers(data.workspaceUsers);
+  // setUser(data.user);
 
   // const queryClient = useQueryClient();
   // const workspaceId = activeWorkspace?.id;
@@ -65,45 +78,80 @@ const PrivateLayout = () => {
     return 'Dashboard';
   };
 
+  //batched init
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['dashboard-init'],
+    queryFn: () =>
+      api
+        .get(`${apiRoutes.batched.base}${apiRoutes.batched.init}`)
+        .then((r) => r.data),
+  });
+
   useEffect(() => {
-    // fetch current user
-    const fetchUserData = async () => {
-      const { data } = await api.get(
-        `${apiRoutes.users.base}${apiRoutes.users.getProfile}`
-      );
-      setUser(data);
-      const workspaces = data.memberships.map((m) => m.workspace);
+    if (data) {
+      setUser(data.user);
+
+      //set workspaces
+      const workspaces = data.user.memberships.map((m) => m.workspace);
       setWorkspaces(workspaces);
+
+      // set active workspace
       setActiveWorkspace(workspaces[0]);
       setActiveWorkspaceRole(
-        data.memberships.find((m) => m.workspace.id === workspaces[0].id)?.role
+        data.user.memberships.find((m) => m.workspace.id === workspaces[0].id)
+          ?.role
       );
-    };
-    fetchUserData();
-  }, [setUser, setWorkspaces, setActiveWorkspace]);
+      setWorkspaceUsers(data.workspaceUsers);
 
-  // fetch workspace users
-  useEffect(() => {
-    if (!activeWorkspace) return;
-    const fetchWorkspaceUsers = async () => {
-      const { data: workspaceUsers } = await api.get(
-        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
-        { params: { workspaceId: activeWorkspace.id } }
-      );
-      setWorkspaceUsers(workspaceUsers.data);
-    };
-    fetchWorkspaceUsers();
-  }, [activeWorkspace, setWorkspaceUsers]);
+      setWorkspaceEvents(data.workspaceEvents);
+    }
+  }, [
+    setUser,
+    setWorkspaces,
+    setActiveWorkspace,
+    setActiveWorkspaceRole,
+    data,
+  ]);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      const { data } = await api.get(
-        `${apiRoutes.notification.base}${apiRoutes.notification.getUserNotifications}`
-      );
-      useNotificationStore.getState().setNotifications(data.data);
-    };
-    fetchNotifications();
-  }, []);
+  // useEffect(() => {
+  //   // fetch current user
+  //   const fetchUserData = async () => {
+  //     const { data } = await api.get(
+  //       `${apiRoutes.users.base}${apiRoutes.users.getProfile}`
+  //     );
+  //     setUser(data);
+  //     const workspaces = data.memberships.map((m) => m.workspace);
+  //     setWorkspaces(workspaces);
+  //     setActiveWorkspace(workspaces[0]);
+  //     setActiveWorkspaceRole(
+  //       data.memberships.find((m) => m.workspace.id === workspaces[0].id)?.role
+  //     );
+  //   };
+  //   fetchUserData();
+  // }, [setUser, setWorkspaces, setActiveWorkspace]);
+  //
+  // // fetch workspace users
+  // useEffect(() => {
+  //   if (!activeWorkspace) return;
+  //   const fetchWorkspaceUsers = async () => {
+  //     const { data: workspaceUsers } = await api.get(
+  //       `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
+  //       { params: { workspaceId: activeWorkspace.id } }
+  //     );
+  //     setWorkspaceUsers(workspaceUsers.data);
+  //   };
+  //   fetchWorkspaceUsers();
+  // }, [activeWorkspace, setWorkspaceUsers]);
+
+  // useEffect(() => {
+  //   const fetchNotifications = async () => {
+  //     const { data } = await api.get(
+  //       `${apiRoutes.notification.base}${apiRoutes.notification.getUserNotifications}`
+  //     );
+  //     useNotificationStore.getState().setNotifications(data.data);
+  //   };
+  //   fetchNotifications();
+  // }, []);
 
   return (
     <>
