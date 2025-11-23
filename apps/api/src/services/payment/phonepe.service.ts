@@ -10,9 +10,9 @@ import { randomUUID } from 'crypto';
 const clientId = process.env.PHONEPE_CLIENT_ID!;
 const clientSecret = process.env.PHONEPE_CLIENT_SECRET!;
 const clientVersion = 1;
-const env = process.env.PHONEPE_ENV === 'PROD' ? Env.PRODUCTION : Env.SANDBOX;
-const redirectUrl = process.env.PHONEPE_REDIRECT_URL;
-const callbackUrl = process.env.PHONEPE_CALLBACK_URL;
+const env = Env.SANDBOX; // Env.PRODUCTION
+const redirectUrl = process.env.PHONEPE_REDIRECT_URL!;
+const callbackUrl = process.env.PHONEPE_CALLBACK_URL!;
 
 // Initialize PhonePe client
 const client = StandardCheckoutClient.getInstance(
@@ -41,7 +41,6 @@ export const PhonePeService = {
         .build();
 
       const response = await client.pay(request);
-      // console.log('PhonePe Payment Response:', response);
 
       return {
         success: true,

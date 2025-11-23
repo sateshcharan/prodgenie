@@ -1,58 +1,67 @@
-const RefundsCancellation = () => {
+const RefundCancellationPolicy = () => {
   return (
-    <>
-      <p>
-        Upon completing a Transaction, you are entering into a legally binding
-        and enforceable agreement with us to purchase the product and/or
-        service. After this point, the User may cancel the Transaction only if
-        it has been specifically provided for on the Platform. In such cases,
-        the cancellation will be subject to the terms mentioned on the Platform.
-      </p>
+    <div className="prose prose-sm sm:prose-base mx-auto py-6">
+      <h1 className="text-2xl font-bold text-center mb-6">
+        Refund and Cancellation Policy
+      </h1>
 
-      <p>
-        We shall retain full discretion in approving any cancellation requests,
-        and we may ask for additional details before approving any such
-        requests.
-      </p>
-
-      <p>
-        Once you have received the product and/or service, the only event where
-        you can request a replacement, return, or refund is if the product
-        and/or service does not match the description as mentioned on the
+      <p className="my-4">
+        This Refund and Cancellation Policy explains how you may cancel an order
+        or request a refund for any product or service purchased through the
         Platform.
       </p>
 
-      <p>
-        Any request for a refund must be submitted within three (3) days from
-        the date of the Transaction, or within such number of days prescribed on
-        the Platform, which shall in no event be less than three (3) days.
-      </p>
+      <strong>
+        <p className="my-4">Please review the terms below carefully:</p>
+      </strong>
 
-      <p>
-        A User may submit a claim for a refund for a purchase made by raising a
-        ticket{' '}
-        <a href="#" className="text-blue-600 underline hover:text-blue-800">
-          here
-        </a>{' '}
-        or contacting us at{' '}
-        <a
-          href="mailto:seller+2da7c33ce67e46db8911fc241dc8e2a4@instamojo.com"
-          className="text-blue-600 underline hover:text-blue-800"
-        >
-          seller+2da7c33ce67e46db8911fc241dc8e2a4@instamojo.com
-        </a>
-        , providing a clear and specific reason for the refund request,
-        including the exact terms that have been violated, along with any proof,
-        if required.
-      </p>
+      <ul className="list-disc ml-6 space-y-4 marker:text-gray-500">
+        <li className="pl-2">
+          <strong> Order Cancellation Window:</strong> Cancellations will only
+          be accepted if you submit a request within <strong>3 days</strong> of
+          placing the order. However, cancellation may not be possible if the
+          seller/merchant has already been notified and the shipping process has
+          begun, or if the product is already out for delivery. In such cases,
+          you may choose to reject the delivery at your doorstep.
+        </li>
 
-      <p>
-        Whether a refund will be provided shall be determined by us at our sole
-        discretion, and we may ask for additional details before approving any
-        requests.
-      </p>
-    </>
+        <li className="pl-2">
+          <strong> Non-Cancellable Perishable Items:</strong> Metzap does not
+          accept cancellations for perishable goods such as flowers, food items,
+          or similar products. Refunds or replacements may still be considered
+          if you can establish that the delivered product was of poor quality.
+        </li>
+
+        <li className="pl-2">
+          <strong> Damaged or Defective Products:</strong> If you receive a
+          damaged or defective item, you must report it to our customer service
+          team within <strong>3 days</strong> of receiving the product. The
+          seller/merchant listed on the Platform will inspect the issue before
+          approving any refund or replacement.
+        </li>
+
+        <li className="pl-2">
+          <strong> Product Not as Described:</strong> If the product you receive
+          differs from what was shown on the Platform or does not meet your
+          expectations, you must notify our customer service within
+          <strong> 3 days</strong> of receipt. Upon review, the customer service
+          team will determine the appropriate resolution.
+        </li>
+
+        <li className="pl-2">
+          <strong> Warranty-Related Complaints:</strong> Products covered by a
+          manufacturer warranty must be handled directly with the manufacturer.
+          Please refer to their warranty terms for assistance.
+        </li>
+
+        <li className="pl-2">
+          <strong> Refund Processing Time:</strong> If a refund is approved by
+          Metzap, the amount will be processed within <strong>7 days </strong>
+          from the date of approval.
+        </li>
+      </ul>
+    </div>
   );
 };
 
-export default RefundsCancellation;
+export default RefundCancellationPolicy;

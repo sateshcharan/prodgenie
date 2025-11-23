@@ -1,9 +1,9 @@
 import express, { Router } from 'express';
 
-import { validateFileType, asyncHandler } from '../middlewares/index';
-import { SequenceController } from '../controllers/index';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { SequenceController } from '../controllers/index';
+import { validateFileType, asyncHandler } from '../middlewares/index';
 
 const router: Router = express.Router({ mergeParams: true }); // to merge parent params
 

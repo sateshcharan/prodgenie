@@ -1,5 +1,10 @@
 export const apiRoutes = {
-  batched: { base: '/api/batched', init: '/init' },
+  batched: {
+    base: '/api/batched',
+    init: '/init',
+    workspaceChange: '/workspaceChange',
+  },
+
   auth: {
     base: '/api/auth',
     signup: {
@@ -14,6 +19,11 @@ export const apiRoutes = {
     resetPassword: '/resetPassword',
     resetPasswordCallback: '/resetPasswordCallback',
     updatePassword: '/updatePassword',
+  },
+
+  subscribe: {
+    base: '/api/subscribe',
+    newsletter: '/newsletter',
   },
 
   users: {
@@ -108,6 +118,9 @@ export const apiRoutes = {
   payment: {
     base: '/api/payment',
     stripeSession: '/stripe/session',
+    stripeWebhook: '/stripe/webhook',
+    phonepeCreatePayment: '/phonepe/createPayment',
+    phonepeStatus: (orderId: string) => `/phonepe/status/${orderId}`,
   },
 
   projectWide: {

@@ -2,10 +2,18 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 
 import api from './api';
 
-export const fetchFilesByType = async (fileType: string) => {
+export const fetchFilesByType = async (
+  fileType: string,
+  options?: { minimal?: boolean }
+) => {
+  const minimal = options?.minimal;
+
+  const query = minimal !== undefined ? `?minimal=${minimal}` : '';
+
   const {
     data: { files },
-  } = await api.get(`${apiRoutes.files.base}/${fileType}/list?minimal=true`);
+  } = await api.get(`${apiRoutes.files.base}/${fileType}/list${query}`);
+
   return files || [];
 };
 

@@ -1,11 +1,13 @@
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { FolderSync, Plus, Upload } from 'lucide-react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
-import { fetchFilesByType } from '../utils/fileService';
 import api from '../utils/api';
-import SearchBanner from './SearchBanner';
+import { fetchFilesByType } from '../utils/fileService';
+import banner from '../assets/banner.png';
 import FileCard from './FileCard';
+import SearchBanner from './SearchBanner';
 
 import { CardItem } from '@prodgenie/libs/types';
 import { apiRoutes, FileType } from '@prodgenie/libs/constant';
@@ -17,8 +19,6 @@ import {
 } from '@prodgenie/libs/store';
 import { Card, CardContent } from '@prodgenie/libs/ui/card';
 import { Button } from '@prodgenie/libs/ui/button';
-import { toast } from 'sonner';
-import banner from '../assets/banner.png';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -33,7 +33,9 @@ const Files = () => {
     if (!fileType || !Object.values(FileType).includes(fileType as FileType))
       return;
     try {
-      const files = await fetchFilesByType(fileType);
+      const files = await fetchFilesByType(fileType, {
+        minimal: true,
+      });
       setCardData(files);
     } catch (err: any) {
       if (err.response?.status === 401) navigate('/');

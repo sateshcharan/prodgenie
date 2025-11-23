@@ -3,10 +3,11 @@ import { NavLink, Outlet } from 'react-router-dom';
 const NavButton = ({ to, label, highlight = false }) => (
   <NavLink
     to={to}
+    end
     className={({ isActive }) =>
       `border border-collapse p-2 lg:p-4 transition-colors ${
         isActive
-          ? 'bg-blue-200 border-blue-400 text-blue-800 ' // active tab
+          ? 'bg-blue-200 border-blue-400 text-blue-800'
           : highlight
           ? 'bg-blue-50 border-blue-300 hover:bg-white'
           : 'bg-gray-100 border-gray-300 hover:bg-white'
@@ -32,10 +33,10 @@ const ComplianceBadge = ({
 
 const PublicLayout = () => {
   const navItems = [
-    { to: '/policy', label: 'Terms & Conditions', highlight: true },
-    { to: '/policy/refunds', label: 'Refund / Cancellation', highlight: false },
+    { to: '/policy', label: 'Terms & Conditions', highlight: false },
+    { to: '/policy/refunds', label: 'Refund & Cancellation', highlight: false },
     { to: '/policy/privacy', label: 'Privacy Policy', highlight: false },
-    { to: '/policy/cookies', label: 'Cookies', highlight: false },
+    // { to: '/policy/cookies', label: 'Cookies', highlight: false },
   ];
 
   const complianceItems = [
@@ -71,7 +72,7 @@ const PublicLayout = () => {
         </div>
 
         {/* Navigation Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:sticky lg:top-20 lg:mb-4">
+        <div className="grid grid-cols-3 lg:grid-cols-3 gap-0 lg:sticky lg:top-20 lg:mb-4">
           {navItems.map((item) => (
             <NavButton
               key={item.to}

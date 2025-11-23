@@ -1,11 +1,9 @@
 import { loadStripe } from '@stripe/stripe-js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useUserStore } from '@prodgenie/libs/store';
+import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 type CheckoutOptions = {
   gateway?: 'stripe' | 'phonepe';
@@ -23,12 +21,16 @@ const handleCheckout = async ({
   amount,
 }: CheckoutOptions) => {
   const { user } = useUserStore.getState();
+  const { activeWorkspace } = useWorkspaceStore.getState();
+
   const email = user?.email;
-  const workspaceId = user?.workspace?.id;
+  const workspaceId = activeWorkspace?.id;
 
   try {
     // Stripe checkout
     if (gateway === 'stripe') {
+      if (!planId) throw new Error('planId required for Stripe checkout');
+
       const res = await api.post(
         `${apiRoutes.payment.base}${apiRoutes.payment.stripeSession}`,
         {
@@ -37,32 +39,41 @@ const handleCheckout = async ({
           email,
           workspaceId,
           type,
-          priceId: 'price_1Rkfw8SBCozNQTHIyI4Yk52I',
+          priceId: import.meta.env.VITE_STRIPE_PRICE_ID!,
         }
       );
 
-      const stripe = await stripePromise;
+      const stripe = await loadStripe(
+        import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+      );
+
       await stripe?.redirectToCheckout({ sessionId: res.data.id });
       return;
     }
 
     // PhonePe checkout
     if (gateway === 'phonepe') {
+      if (type === 'credits' && !amount)
+        throw new Error('amount required for credits purchase');
+
       const orderId = `ORD-${Date.now()}`;
       const mobile = '9999999999';
       const name = user?.name || 'Guest User';
 
-      const res = await api.post(`${apiRoutes.payment.base}/phonepe/payment`, {
-        orderId,
-        planId,
-        billingCycle,
-        type,
-        amount,
-        mobile,
-        name,
-        workspaceId,
-        email,
-      });
+      const res = await api.post(
+        `${apiRoutes.payment.base}${apiRoutes.payment.phonepeCreatePayment}`,
+        {
+          orderId,
+          planId,
+          billingCycle,
+          type,
+          amount,
+          mobile,
+          name,
+          workspaceId,
+          email,
+        }
+      );
 
       const redirectUrl =
         res.data?.redirectUrl ||

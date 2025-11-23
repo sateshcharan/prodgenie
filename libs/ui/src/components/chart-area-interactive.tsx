@@ -131,7 +131,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartAreaInteractive() {
+const ChartAreaInteractive = () => {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState('7d');
 
@@ -284,4 +284,6 @@ export function ChartAreaInteractive() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export default ChartAreaInteractive;

@@ -17,37 +17,6 @@ import Dashboard from '../pages/Dashboard';
 import PrivateRoute from './PrivateRoute';
 import PrivateLayout from '../layouts/PrivateLayout';
 
-const PrivateRoutes: RouteObject[] = [
-  {
-    index: true,
-    element: <Dashboard />,
-  },
-  {
-    path: ':fileType',
-    element: <Files />,
-    loader: fileDatasLoader,
-  },
-  {
-    path: ':fileType/:fileId',
-    element: <FileDetails />,
-    loader: fileDetailsLoader,
-  },
-  {
-    path: ':fileType/builder',
-    element: <FileBuilder />,
-    loader: fileBuilderLoader,
-  },
-  {
-    path: 'settings/:tab',
-    element: <Settings />,
-    loader: settingsLoader,
-  },
-  {
-    path: 'notifications',
-    element: <UserNotifications />,
-  },
-];
-
 export const privateRoutes = [
   {
     path: 'dashboard',
@@ -56,6 +25,35 @@ export const privateRoutes = [
       <PrivateLayout />
       // </PrivateRoute>
     ),
-    children: PrivateRoutes,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
+      {
+        path: ':fileType',
+        element: <Files />,
+        loader: fileDatasLoader,
+      },
+      {
+        path: ':fileType/:fileId',
+        element: <FileDetails />,
+        loader: fileDetailsLoader,
+      },
+      {
+        path: ':fileType/builder',
+        element: <FileBuilder />,
+        loader: fileBuilderLoader,
+      },
+      {
+        path: 'settings/:tab',
+        element: <Settings />,
+        loader: settingsLoader,
+      },
+      {
+        path: 'notifications',
+        element: <UserNotifications />,
+      },
+    ],
   },
 ];

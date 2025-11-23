@@ -5,6 +5,14 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig(() => ({
+  define: {
+    'process.env.VITE_SUPABASE_URL': JSON.stringify(
+      process.env.VITE_SUPABASE_URL
+    ),
+    'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(
+      process.env.VITE_SUPABASE_ANON_KEY
+    ),
+  },
   base: '/',
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/web',

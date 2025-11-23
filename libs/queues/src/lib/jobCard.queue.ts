@@ -1,8 +1,8 @@
 import { Queue } from 'bullmq';
 
-import { connection } from '@prodgenie/libs/redis';
+import { redis } from '@prodgenie/libs/redis';
 
-export const jobCardQueue = new Queue('generateJobCard', { connection });
+export const jobCardQueue = new Queue('generateJobCard', { connection: redis });
 
 (async () => {
   // Remove all jobs from the queue (waiting, delayed, active, failed, completed)

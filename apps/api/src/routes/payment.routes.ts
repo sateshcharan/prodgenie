@@ -18,7 +18,10 @@ router.post(
 );
 
 // PhonePe
-router.post('/phonepe/payment', PaymentController.createPhonePePayment);
+router.post(
+  apiRoutes.payment.phonepeCreatePayment,
+  PaymentController.createPhonePePayment
+);
 router.get('/phonepe/status/:orderId', PaymentController.getPhonePeStatus);
 
 export { router };

@@ -1,6 +1,16 @@
 import { ChevronsUpDown, Plus, Trash } from 'lucide-react';
 
 import {
+  useUserStore,
+  useWorkspaceStore,
+  useModalStore,
+} from '@prodgenie/libs/store';
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@prodgenie/libs/ui/sidebar';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -9,27 +19,24 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@prodgenie/libs/ui/dropdown-menu';
-import { useSidebar } from '@prodgenie/libs/ui/sidebar';
 import { Button } from '@prodgenie/libs/ui/button';
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@prodgenie/libs/ui/sidebar';
-import {
-  useUserStore,
-  useWorkspaceStore,
-  useModalStore,
-} from '@prodgenie/libs/store';
-import { appSidebarItems } from '@prodgenie/libs/constant';
+import { useSidebar } from '@prodgenie/libs/ui/sidebar';
+import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
+
+import api from '../utils/api';
 
 export function WorkspaceSwitcher() {
   const { isMobile } = useSidebar();
   const { user } = useUserStore((state) => state);
-  const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspaceStore(
-    (state) => state
-  );
-  const { openModal } = useModalStore((state) => state);
+  const {
+    workspaces,
+    activeWorkspace,
+    setActiveWorkspace,
+    setWorkspaceUsers,
+    setWorkspaceEvents,
+    initRealtime,
+  } = useWorkspaceStore((state) => state);
+  const { openModal, closeModal } = useModalStore((state) => state);
 
   const userRoleinActiveWorkspace = user?.memberships.find(
     (m) => m.workspaceId === activeWorkspace.id
@@ -42,12 +49,32 @@ export function WorkspaceSwitcher() {
 
   const ActiveLogo = activeWorkspace.logo || logoFallback;
 
+  const handleSwitchWorkspace = async (workspaceId: string) => {
+    const currentMembership = user?.memberships.find(
+      (m) => m.workspaceId === workspaceId
+    );
+    setActiveWorkspace(currentMembership.workspace);
+    const {
+      data: { workspaceUsers, workspaceEvents },
+    } = await api.get(
+      `${apiRoutes.batched.base}${apiRoutes.batched.workspaceChange}`,
+      {
+        params: { workspaceId },
+      }
+    );
+    setWorkspaceUsers(workspaceUsers);
+    setWorkspaceEvents(workspaceEvents);
+    initRealtime(workspaceId);
+  };
+
   const handleDeleteWorkspace = (workspaceId: string) => {
     openModal('workspace:delete', { workspaceId });
+    closeModal();
   };
 
   const handleCreateWorkspace = (workspaceName: string) => {
     openModal('workspace:create');
+    closeModal();
   };
 
   return (
@@ -87,6 +114,7 @@ export function WorkspaceSwitcher() {
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Workspaces
             </DropdownMenuLabel>
+
             {workspaces.map((workspace, index) => {
               const WorkspaceLogo =
                 workspace.logo ||
@@ -97,7 +125,7 @@ export function WorkspaceSwitcher() {
               return (
                 <DropdownMenuItem
                   key={workspace.id}
-                  onClick={() => setActiveWorkspace(workspace)}
+                  onClick={() => handleSwitchWorkspace(workspace.id)}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 items-center justify-center rounded-md border">
@@ -105,17 +133,13 @@ export function WorkspaceSwitcher() {
                   </div>
                   {workspace.name}
 
-                  {/* Only show delete if it's not the active workspace */}
                   {workspace.id !== activeWorkspace.id && (
                     <DropdownMenuShortcut>
                       <Button
                         variant="secondary"
                         size="icon"
                         className="size-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteWorkspace(workspace.id);
-                        }}
+                        onClick={() => handleDeleteWorkspace(workspace.id)}
                       >
                         <Trash className="h-3 w-3" />
                       </Button>
@@ -124,14 +148,10 @@ export function WorkspaceSwitcher() {
                 </DropdownMenuItem>
               );
             })}
-
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-2" />
             <DropdownMenuItem
               className="gap-2 p-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCreateWorkspace('');
-              }}
+              onClick={() => handleCreateWorkspace(workspaces.id)}
             >
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <Plus className="size-4" />

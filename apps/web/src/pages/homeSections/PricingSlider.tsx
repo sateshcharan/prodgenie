@@ -1,8 +1,8 @@
 import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { apiRoutes } from '@prodgenie/libs/constant';
 import { Button } from '@prodgenie/libs/ui/button';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 import api from '../../utils/api';
 
@@ -13,6 +13,8 @@ const PricingSlider = () => {
   const [interval, setInterval] = useState<'month' | 'year'>('year');
   const [pages, setPages] = useState(20);
   const isYearly = interval === 'year';
+
+  const YEARLY_DISCOUNT = 0.25; // 25% off = 3 months free
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -132,23 +134,46 @@ const PricingSlider = () => {
       {/* Plan Card */}
       {selectedPlan && (
         <div className="flex flex-col md:flex-row justify-center items-center gap-0 mt-10">
-          <div className="relative flex flex-col justify-between items-center border-2 border-border rounded-2xl shadow-sm p-8 w-full md:w-[375px] bg-background h-[400px]">
+          <div className="relative flex flex-col justify-center items-center border-2 border-border rounded-2xl shadow-sm p-8 w-full md:w-[375px] bg-background h-[400px]">
             <h2 className="absolute -top-4 bg-background px-4 font-extrabold text-foreground capitalize">
               {selectedPlan.title} Plan
             </h2>
 
             <div className="mt-6">
-              <div className="text-6xl font-bold text-foreground">
-                {`$${selectedPlan.price}`}
-              </div>
+              {isYearly ? (
+                <>
+                  {/* Original Yearly Price (slashed) */}
+                  <div className="text-3xl font-semibold text-muted-foreground line-through">
+                    ₹{(selectedPlan?.price * 12).toLocaleString('en-IN')}
+                  </div>
+
+                  {/* Discounted Price */}
+                  <div className="text-8xl font-bold text-foreground -mt-2">
+                    ₹
+                    {Math.round(
+                      selectedPlan?.price * 12 * (1 - YEARLY_DISCOUNT)
+                    ).toLocaleString('en-IN')}
+                  </div>
+
+                  <p className="text-green-600 font-semibold mt-2">
+                    Save {YEARLY_DISCOUNT * 100}% — 3 months free
+                  </p>
+                </>
+              ) : (
+                <>
+                  {/* Monthly Price */}
+                  <div className="text-8xl font-bold text-foreground">
+                    ₹{selectedPlan.price.toLocaleString('en-IN')}
+                  </div>
+                </>
+              )}
+
               <p className="text-muted-foreground mt-2">
-                {selectedPlan.price === 0
-                  ? ''
-                  : `per ${isYearly ? 'year' : 'month'}`}
+                per {isYearly ? 'year' : 'month'}
               </p>
             </div>
 
-            <Button className="mt-6 bg-primary text-primary-foreground px-6 py-2 rounded-full hover:scale-105 transition">
+            <Button className="mt-4 bg-primary text-primary-foreground px-6  rounded-full hover:scale-105 transition">
               Get started
             </Button>
 

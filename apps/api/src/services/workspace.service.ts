@@ -160,7 +160,11 @@ export class WorkspaceService {
   }
 
   static async getWorkspaceUser(workspaceId: string) {
-    if (!workspaceId) return [];
+    // safe guard
+    if (!workspaceId) {
+      throw new Error('workspaceId is required.');
+    }
+
     const users = await prisma.workspaceMember.findMany({
       where: {
         workspaceId,
@@ -172,6 +176,11 @@ export class WorkspaceService {
   }
 
   static async getWorkspaceEvents(workspaceId: string) {
+    // safe guard
+    if (!workspaceId) {
+      throw new Error('workspaceId is required.');
+    }
+
     const events = await prisma.event.findMany({
       where: {
         workspaceId,

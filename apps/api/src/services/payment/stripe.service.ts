@@ -5,17 +5,23 @@ import { prisma } from '@prodgenie/libs/db';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 export const StripeService = {
-  async createCheckoutSession(email: string, orgId: string, priceId: string) {
+  async createCheckoutSession(
+    email: string,
+    workspaceId: string,
+    planId: string
+  ) {
+    const priceId = process.env.STRIPE_PRICE_ID; // fix this referece update price id's against planId in db
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
       billing_address_collection: 'required',
       mode: 'subscription',
-      success_url: `${process.env.PAYMENT_SUCCESS_URL}`,
-      cancel_url: `${process.env.PAYMENT_CANCEL_URL}`,
+      success_url: `${process.env.STRIPE_SUCCESS_URL}`,
+      cancel_url: `${process.env.STRIPE_CANCEL_URL}`,
       metadata: {
-        orgId,
+        workspaceId,
       },
     });
     return { id: session.id };
@@ -30,11 +36,11 @@ export const StripeService = {
     );
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      const orgId = session.metadata?.orgId;
+      const workspaceId = session.metadata?.workspaceId;
 
-      if (orgId) {
-        await prisma.org.update({
-          where: { id: orgId },
+      if (workspaceId) {
+        await prisma.workspace.update({
+          where: { id: workspaceId },
           data: { credits: { increment: 1000 } },
         });
       }

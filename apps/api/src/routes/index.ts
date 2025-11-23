@@ -7,6 +7,7 @@ export { router as batchedRoutes } from './batched.routes.js';
 export { router as jobCardRoutes } from './jobCard.routes.js';
 export { router as paymentRoutes } from './payment.routes.js';
 export { router as webhookRoutes } from './webhook.routes.js';
+export { router as subscribeRoutes } from './subscribe.routes.js';
 export { router as callbackRoutes } from './callback.routes.js';
 export { router as sequenceRoutes } from './sequence.routes.js';
 export { router as thumbnailRoutes } from './thumbnail.routes.js';

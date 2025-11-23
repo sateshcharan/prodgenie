@@ -1,23 +1,20 @@
 import { useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Outlet, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
 
-import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   useUserStore,
   useWorkspaceStore,
   useNotificationStore,
 } from '@prodgenie/libs/store';
-import { SidebarInset, SidebarProvider } from '@prodgenie/libs/ui/sidebar';
+import { apiRoutes } from '@prodgenie/libs/constant';
 import { SiteHeader } from '@prodgenie/libs/ui/components/site-header';
+import { SidebarInset, SidebarProvider } from '@prodgenie/libs/ui/sidebar';
 
 import api from '../utils/api';
-
 import { useSSE } from '../hooks/useSSE';
-
 import PrivateHeader from '../navigation/PrivateHeader';
-
 import ChatWidget from '../components/ChatWidget';
 import AppSidebar from '../components/AppSidebar';
 import ModalManager from '../components/modal/ModalManager';
@@ -29,8 +26,9 @@ const PrivateLayout = () => {
     setActiveWorkspace,
     setActiveWorkspaceRole,
     setWorkspaceUsers,
-    activeWorkspace,
     setWorkspaceEvents,
+    fetchWorkspaceUsers,
+    fetchWorkspaceEvents,
   } = useWorkspaceStore((state) => state);
 
   const { fileType } = useParams();
@@ -85,31 +83,41 @@ const PrivateLayout = () => {
       api
         .get(`${apiRoutes.batched.base}${apiRoutes.batched.init}`)
         .then((r) => r.data),
+    enabled: true,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (data) {
-      setUser(data.user);
-
-      //set workspaces
       const workspaces = data.user.memberships.map((m) => m.workspace);
-      setWorkspaces(workspaces);
-
-      // set active workspace
-      setActiveWorkspace(workspaces[0]);
-      setActiveWorkspaceRole(
-        data.user.memberships.find((m) => m.workspace.id === workspaces[0].id)
-          ?.role
+      const activeWorkspaceId = data.user.activeWorkspaceId;
+      const activeWorkspace = workspaces.find(
+        (w) => w.id === activeWorkspaceId
       );
-      setWorkspaceUsers(data.workspaceUsers);
+      const activeWorkspaceRole = data.user.memberships.find(
+        (m) => m.workspace.id === workspaces[0].id
+      )?.role;
 
+      setUser(data.user);
+      setWorkspaceUsers(data.workspaceUsers);
       setWorkspaceEvents(data.workspaceEvents);
+      setWorkspaces(workspaces);
+      setActiveWorkspace(activeWorkspace);
+      setActiveWorkspaceRole(activeWorkspaceRole);
+      fetchWorkspaceUsers(activeWorkspaceId);
+      fetchWorkspaceEvents(activeWorkspaceId);
     }
   }, [
     setUser,
     setWorkspaces,
     setActiveWorkspace,
     setActiveWorkspaceRole,
+    setWorkspaceUsers,
+    setWorkspaceEvents,
+    fetchWorkspaceUsers,
+    fetchWorkspaceEvents,
     data,
   ]);
 

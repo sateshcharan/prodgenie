@@ -17,6 +17,8 @@ model User {
   name     String?
   provider String  @default("email")
 
+  activeWorkspaceId String?
+
   createdAt DateTime  @default(now())
   deletedAt DateTime?
   isDeleted Boolean   @default(false)

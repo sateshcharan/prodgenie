@@ -1,10 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, Twitter, Linkedin, Youtube } from 'lucide-react';
 
+import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';
 import { Separator } from '@prodgenie/libs/ui/separator';
-import { Input } from '@prodgenie/libs/ui/input';
+
 import logo from '../assets/logo.png';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import axios from 'axios';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 const FOOTER_SECTIONS = [
   {
@@ -55,6 +60,30 @@ const SOCIAL_LINKS = [
 
 const PublicFooter = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const subscribe = async () => {
+    if (!email) {
+      return toast.error('Please enter a valid email.');
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await axios.post(
+        `${apiRoutes.subscribe.base}${apiRoutes.subscribe.newsletter}`,
+        { email } // <-- CORRECT
+      );
+
+      toast.success('Thanks for subscribing!');
+      setEmail('');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <footer className="bg-foreground border-t border-border">
@@ -77,9 +106,19 @@ const PublicFooter = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Input type="email" placeholder="Your email" className="w-full" />
-            <Button variant="outline" className="w-full sm:w-auto">
-              Subscribe
+            <Input
+              type="email"
+              placeholder="Your email"
+              className="w-full"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={subscribe}
+            >
+              {loading ? 'Subscribing...' : 'Subscribe'}
             </Button>
           </div>
         </div>

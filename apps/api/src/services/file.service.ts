@@ -202,8 +202,6 @@ export class FileService {
   ) {
     const { minimal = false, skip = 0, limit = 20 } = options || {};
 
-    const isPaginated = typeof skip === 'number' && typeof limit === 'number';
-
     const selectMinimal = {
       id: true,
       name: true,
@@ -250,11 +248,22 @@ export class FileService {
 
     // 3️⃣ Enrich: signed URLs + optional extraData
     const enriched = await Promise.all(
-      files.map(async (file, i) => ({
-        ...file,
-        path: await fileStorageService.getCachedSignedUrl(file.path),
-        ...(fileType === 'config' ? { data: extraData[i] } : {}), // Only add "data" for config files
-      }))
+      files.map(async (file, i) => {
+        const thumbnailUrl = file.thumbnail
+          ? await fileStorageService.getCachedSignedUrl(file.thumbnail)
+          : null;
+
+        const pathUrl = file.path
+          ? await fileStorageService.getCachedSignedUrl(file.path)
+          : null;
+
+        return {
+          ...file,
+          thumbnail: thumbnailUrl,
+          path: pathUrl,
+          ...(fileType === 'config' ? { data: extraData[i] } : {}),
+        };
+      })
     );
 
     // 4️⃣ Pagination info
@@ -331,7 +340,9 @@ export class FileService {
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getCachedSignedUrl(file.thumbnail);
+    const signedUrl = await fileStorageService.getCachedSignedUrl(
+      file.thumbnail
+    );
     return { data: { ...file, path: signedUrl }, error: null };
   }
 

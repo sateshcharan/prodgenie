@@ -32,6 +32,7 @@ const FormulaBuilder = forwardRef(
       // depField: [],
     };
 
+
     const {
       control,
       handleSubmit,
@@ -63,8 +64,10 @@ const FormulaBuilder = forwardRef(
     const id = searchParams.get('id');
 
     const jobCardFormSuggestions: string[] = fileData.flatMap((file: any) => {
-      const sections = file.data.jobCardForm.sections || [];
+      // const sections = file.data.jobCardForm.sections || []; // this needs to be fixed
+      const sections = file.data?.jobCardForm?.sections || [];
       const templateName = file.name.split('.')[0];
+
       return sections.flatMap((section: any) =>
         section.fields.map((field: any) => {
           const fieldKey = field.name?.split('.')[1] || field.name;
@@ -113,6 +116,8 @@ const FormulaBuilder = forwardRef(
             // common: { ...merged.common, ...sequenceFormulas.common },
             // depField: { ...merged.depField, ...sequenceFormulas.depField },
           };
+
+          console.log('hydrated', hydrated);
 
           reset({
             products: [

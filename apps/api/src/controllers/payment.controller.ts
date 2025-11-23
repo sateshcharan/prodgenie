@@ -5,15 +5,14 @@ import { StripeService, PhonePeService } from '../services';
 export const PaymentController = {
   // === Stripe ===
   async createStripeSession(req: Request, res: Response) {
-    const orgId = req.user?.org?.id;
-    const { email, priceId } = req.body;
+    const workspaceId = req.activeWorkspaceId!;
+    const { email, planId } = req.body;
 
     const session = await StripeService.createCheckoutSession(
       email,
-      orgId,
-      priceId
+      workspaceId,
+      planId
     );
-    // res.json(session);
     return res.status(200).json(session);
   },
 

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { ChartAreaInteractive } from '@prodgenie/libs/ui/components/chart-area-interactive';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import ChartAreaInteractive from '@prodgenie/libs/ui/components/chart-area-interactive';
 
 import api from '../utils/api';
 

@@ -41,19 +41,19 @@ const FileCard = ({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const { activeWorkspace } = useWorkspaceStore();
 
-  useEffect(() => {
-    const loadThumbnail = async () => {
-      if (card.thumbnail) {
-        try {
-          const signedUrl = await getThumbnail(card.id);
-          setThumbnailUrl(signedUrl);
-        } catch (error) {
-          console.error('Failed to load thumbnail:', error);
-        }
-      }
-    };
-    loadThumbnail();
-  }, [card.thumbnail, activeWorkspace?.id]);
+  // useEffect(() => {
+  //   const loadThumbnail = async () => {
+  //     if (card.thumbnail) {
+  //       try {
+  //         const signedUrl = await getThumbnail(card.id);
+  //         setThumbnailUrl(signedUrl);
+  //       } catch (error) {
+  //         console.error('Failed to load thumbnail:', error);
+  //       }
+  //     }
+  //   };
+  //   loadThumbnail();
+  // }, [card.thumbnail, activeWorkspace?.id]);
 
   return (
     <Card key={card.id} className="shadow-lg rounded-xl p-2 overflow-hidden">
@@ -107,9 +107,9 @@ const FileCard = ({
           <AvatarFallback className="rounded-lg">
             {card?.name?.slice(0, 2).toUpperCase()}
           </AvatarFallback> */}
-          {thumbnailUrl ? (
+          {card.thumbnail ? (
             <img
-              src={thumbnailUrl}
+              src={card.thumbnail}
               alt="Thumbnail"
               className="rounded h-full object-contain"
             />

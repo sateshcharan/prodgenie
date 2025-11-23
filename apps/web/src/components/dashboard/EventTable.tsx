@@ -272,7 +272,7 @@ const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const { workspaceEvents, fetchWorkspaceEvents } = useWorkspaceStore();
+  const { workspaceEvents } = useWorkspaceStore();
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ errorData: false });
@@ -336,17 +336,17 @@ const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        {onRefresh && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onRefresh}
-            className="flex items-center gap-1"
-          >
-            <Loader2 className="h-4 w-4 animate-spin hidden" />{' '}
-            <RotateCw className="h-4 w-4" />
-          </Button>
-        )}
+        {/* {onRefresh && ( */}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onRefresh}
+          className="flex items-center gap-1"
+        >
+          {/* <Loader2 className="h-4 w-4 animate-spin hidden" /> */}
+          <RotateCw className="h-4 w-4" />
+        </Button>
+        {/* )} */}
       </div>
 
       {/* Pagination */}

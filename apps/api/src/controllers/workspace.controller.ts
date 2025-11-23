@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { FolderService } from '../services/index.js';
 import { WorkspaceService } from '../services/index.js';
 
-
 export class WorkspaceController {
   static createWorkspace = async (req: Request, res: Response) => {
     const { workspaceName, planId } = req.body;
@@ -73,7 +72,7 @@ export class WorkspaceController {
   };
 
   static getWorkspaceEvents = async (req: Request, res: Response) => {
-    const workspaceId = req.activeWorkspaceId;
+    const { workspaceId } = req.query;
 
     const events = await WorkspaceService.getWorkspaceEvents(workspaceId);
     return res.status(200).json({ success: true, data: events });

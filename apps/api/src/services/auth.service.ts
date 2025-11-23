@@ -18,7 +18,7 @@ import { FolderService } from './folder.service.js';
 const folderService = new FolderService();
 const stringService = new StringService();
 
-const SECRET_KEY = process.env.JWT_SECRET_BCRYPT || "Smar49atck@123";
+const SECRET_KEY = process.env.JWT_SECRET_BCRYPT || 'Smar49atck@123';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -111,7 +111,15 @@ export class AuthService {
     });
 
     if (error) {
-      throw new Error(error.message || 'Invalid email or password');
+      const err: any = new Error(error.message || 'Invalid email or password');
+      err.code = 'INVALID_CREDENTIALS';
+      throw err;
+    }
+
+    if (!data.session) {
+      const err: any = new Error('No session returned from Supabase');
+      err.code = 'INVALID_CREDENTIALS';
+      throw err;
     }
 
     // supabase auth session

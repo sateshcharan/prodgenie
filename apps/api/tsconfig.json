@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/redis"
+    },
+    {
       "path": "../../libs/server-services"
     },
     {

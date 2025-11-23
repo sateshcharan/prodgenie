@@ -11,6 +11,9 @@ import { FileStorageService } from '@prodgenie/libs/supabase';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
+import { EventService } from '@prodgenie/libs/db';
+import { jobCardQueue } from '@prodgenie/libs/queues';
+import { EventStatus, EventType } from '@prisma/client';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -185,6 +188,42 @@ export class JobCardService {
     await fs.rm('./tmp', { recursive: true });
 
     return jobCardUrl;
+  }
+
+  async enqueueJobCardGeneration(input: {
+    user: any;
+    workspaceId: string;
+    bom: any;
+    titleBlock: any;
+    printingDetails: any;
+    jobCardForm: any;
+    signedUrl: string;
+  }) {
+    const { user, workspaceId } = input;
+    const jobId = randomUUID();
+
+    const activeWorkspace = user.memberships.find(
+      (m) => m.workspace.id === workspaceId
+    );
+
+    await EventService.record({
+      id: jobId,
+      userId: user.id,
+      workspaceId,
+      type: EventType.JOBCARD_GENERATION,
+      status: EventStatus.PENDING,
+    });
+
+    await jobCardQueue.add('generateJobCard', {
+      jobId,
+      jobCardGenerationData: { ...input, activeWorkspace },
+    });
+
+    return {
+      success: true,
+      jobId,
+      message: 'Job started. You can monitor it in the dashboard.',
+    };
   }
 
   private async fetchWorkspaceConfig(

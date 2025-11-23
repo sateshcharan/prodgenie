@@ -59,7 +59,7 @@ const authenticateSupabaseJWT = async (
     next();
   } catch (err) {
     console.error('Supabase auth error:', err);
-    res.status(500).send('Authentication failed');
+    res.status(401).send('Authentication failed');
   }
 };
 

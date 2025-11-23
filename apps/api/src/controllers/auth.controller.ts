@@ -21,29 +21,39 @@ export class AuthController {
   }
 
   static async loginEmail(req: Request, res: Response) {
-    //supabase cookie login
-    const { email, password } = req.body;
-    const session = await AuthService.loginEmail(email, password);
+    try {
+      //supabase cookie login
+      const { email, password } = req.body;
+      const session = await AuthService.loginEmail(email, password);
 
-    // Set cookies (HttpOnly so frontend JS cannot access them)
-    res.cookie('sb-access-token', session.access_token, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'lax',
-      // maxAge: 1000 * 60 * 60, // 1 hour
-      sameSite: 'none',
-      secure: true,
-    });
-    res.cookie('sb-refresh-token', session.refresh_token, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'lax',
-      // maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'none',
-      secure: true,
-    });
+      // Set cookies (HttpOnly so frontend JS cannot access them)
+      res.cookie('sb-access-token', session.access_token, {
+        httpOnly: true,
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'lax',
+        // maxAge: 1000 * 60 * 60, // 1 hour
+        sameSite: 'none',
+        secure: true,
+      });
+      res.cookie('sb-refresh-token', session.refresh_token, {
+        httpOnly: true,
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'lax',
+        // maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'none',
+        secure: true,
+      });
 
-    res.status(200).json({ success: true });
+      res.status(200).json({ success: true });
+    } catch (err: any) {
+      console.error('Login failed:', err.message);
+
+      if (err.code === 'INVALID_CREDENTIALS') {
+        return res.status(401).json({ success: false, message: err.message });
+      }
+
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
   }
 
   static async continueWithProvider(req: Request, res: Response) {

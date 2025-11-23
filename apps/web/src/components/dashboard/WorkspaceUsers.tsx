@@ -12,7 +12,7 @@ import {
 import { ROLE_PRIORITY } from '@prodgenie/libs/constant';
 
 const WorkspaceUsers = () => {
-  const { workspaceUsers, activeWorkspace, activeWorkspaceRole } =
+  const { workspaceUsers, activeWorkspace, activeWorkspaceRole, fetchWorkspaceUsers } =
     useWorkspaceStore((state) => state);
   const { user } = useUserStore((state) => state);
   const { openModal } = useModalStore((state) => state);
@@ -25,7 +25,7 @@ const WorkspaceUsers = () => {
 
   const handleChangeUserRole = (workspaceUserId: string) => {
     openModal('workspace:editUserRole', { workspaceUserId });
-    // fetchWorkspaceUsers(activeWorkspace?.id );
+    fetchWorkspaceUsers(activeWorkspace?.id );
   };
 
   const handleInviteUserToWorkspace = () => {

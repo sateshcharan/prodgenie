@@ -36,6 +36,7 @@ import TitleBlock from './TitleBlock';
 import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import PresetSelector from './PresetSelector';
+import { wakeWorkers } from '../utils/wakeup';
 
 const stringService = new StringService();
 
@@ -336,6 +337,8 @@ const JobCard = ({
 
   const onSubmit = async (values: jobCardFormValues) => {
     try {
+      await wakeWorkers(); // Wake up workers before generating job card
+
       const jobCardData = {
         bom: bom?.filter((item) => selectedItems.includes(item.slNo)),
         titleBlock,

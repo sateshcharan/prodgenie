@@ -25,6 +25,7 @@ import {
   callbackRoutes,
   notificationRoutes,
   batchedRoutes,
+  subscribeRoutes,
 } from './routes';
 import {
   // passport,
@@ -128,6 +129,7 @@ app.use(
 );
 app.use(apiRoutes.batched.base, authenticateSupabaseJWT, batchedRoutes);
 app.use(apiRoutes.sse.base, sseRoutes);
+app.use(apiRoutes.subscribe.base, subscribeRoutes);
 
 // Error Handler
 app.use(errorHandler);

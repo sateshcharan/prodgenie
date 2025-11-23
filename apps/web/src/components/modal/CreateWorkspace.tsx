@@ -22,9 +22,11 @@ export default function CreateWorkspace() {
   const createWorkspace = async () => {
     if (!workspaceName.trim() || !selectedPlanId) return;
 
+    console.log('create workspace clicked');
+
     try {
       setLoading(true);
-      const { data } = await api.post(
+      const res = await api.post(
         `${apiRoutes.workspace.base}${apiRoutes.workspace.createWorkspace}`,
         {
           workspaceName,

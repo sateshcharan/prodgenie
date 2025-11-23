@@ -16,8 +16,9 @@ import ResetPassword from './ResetPassword';
 import PricingCard from '../PricingCard';
 import LeaveWorkspace from './LeaveWorkspace';
 
-import authDialogImage from '../../assets/authDialogImage.webp';
 import { useModalStore } from '@prodgenie/libs/store';
+
+import authDialogImage from '../../assets/authDialogImage.webp';
 
 const ModalManager = () => {
   const { modalType, modalProps, isOpen, closeModal } = useModalStore();

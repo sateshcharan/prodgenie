@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
@@ -36,13 +36,33 @@ const Login = () => {
     handleSubmit,
     formState: { errors },
     getValues,
+    setValue,
   } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(loginSchema),
   });
 
+  useEffect(() => {
+    const saved = localStorage.getItem('rememberMeData');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.keys(parsed).forEach((key) => {
+        const value = parsed[key];
+        setValue(key as any, value);
+      });
+    }
+  }, [setValue]);
+
   const handleEmailLogin = async (data: any) => {
     try {
+      const { rememberMe, ...creds } = data;
+
+      if (rememberMe) {
+        localStorage.setItem('rememberMeData', JSON.stringify(creds));
+      } else {
+        localStorage.removeItem('rememberMeData');
+      }
+
       const res = await api.post(
         `${apiRoutes.auth.base}${apiRoutes.auth.login.email}`,
         data
@@ -115,6 +135,17 @@ const Login = () => {
                 )}
               </div>
             ))}
+
+            <div className="flex justify-end items-center space-x-2">
+              <Input
+                id="rememberMe"
+                type="checkbox"
+                defaultChecked
+                {...register('rememberMe')}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="rememberMe">Remember me</Label>
+            </div>
 
             <Button type="submit" className="w-full mt-2">
               Login
