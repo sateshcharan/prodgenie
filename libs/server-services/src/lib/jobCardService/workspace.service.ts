@@ -1,5 +1,5 @@
 import { prisma } from '@prodgenie/libs/db';
-import { WorkspaceRole } from '@prodgenie/libs/types';
+import { workspaceRole } from '@prodgenie/libs/types';
 // import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
 import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
@@ -34,7 +34,7 @@ export class WorkspaceService {
       data: {
         userId: user.id,
         workspaceId: workspaceDb.id,
-        role: 'OWNER',
+        role: 'owner',
       },
     });
 
@@ -79,7 +79,7 @@ export class WorkspaceService {
   static async inviteUserToWorkspace(
     workspaceId: string,
     email: string,
-    role: WorkspaceRole
+    role: workspaceRole
   ) {
     // 1. Check if user already exists
     let user = await prisma.user.findUnique({
@@ -124,13 +124,13 @@ export class WorkspaceService {
         role,
         isDeleted: false,
         deletedAt: null,
-        status: 'PENDING',
+        status: 'pending',
       },
       create: {
         userId: user.id,
         workspaceId,
         role,
-        status: 'PENDING',
+        status: 'pending',
       },
     });
 
@@ -296,7 +296,7 @@ export class WorkspaceService {
   static async updateUserRole(
     workspaceId: string,
     userId: string,
-    role: WorkspaceRole
+    role: workspaceRole
   ) {
     await prisma.workspaceMember.update({
       where: {
@@ -315,7 +315,7 @@ export class WorkspaceService {
       data: {
         workspaceId,
         userId,
-        role: 'MEMBER',
+        role: 'member',
       },
     });
   }

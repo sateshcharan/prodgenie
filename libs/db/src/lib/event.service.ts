@@ -2,14 +2,14 @@ import { Prisma } from '@prisma/client';
 
 import { prisma } from './prismaClient.js';
 import {
-  EventType,
-  EventStatus,
+  eventType,
+  eventStatus,
   // Event,
 } from './prismaTypes.js';
 // import { sseServer } from '@prodgenie/libs/sse';
 
 export class EventService {
-  static async record(params: Prisma.EventUncheckedCreateInput) {
+  static async record(params: Prisma.eventUncheckedCreateInput) {
     return prisma.$transaction(async (tx) => {
       const workspace = await tx.workspace.findUnique({
         where: { id: params.workspaceId },
@@ -85,7 +85,7 @@ export class EventService {
   async updateProgress(
     workspaceId: string,
     jobId: string,
-    status: EventStatus,
+    status: eventStatus,
     progress: number,
     message?: string
     // workspaceId: string,
@@ -115,7 +115,7 @@ export class EventService {
 
   static async getRecentByType(
     workspaceId: string,
-    type: EventType,
+    type: eventType,
     limit = 10
   ) {
     return prisma.event.findMany({

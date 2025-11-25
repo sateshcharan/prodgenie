@@ -67,23 +67,23 @@ model workspace {
 //
 
 enum workspaceRole {
-  OWNER
-  ADMIN
-  MEMBER
+  owner
+  admin
+  member
 }
 
 enum workspaceMemberStatus {
-  PENDING
-  ACTIVE
-  REMOVED
+  pending
+  active
+  removed
 }
 
 model workspaceMember {
   id          String                @id @default(uuid())
   userId      String
   workspaceId String
-  role        workspaceRole         @default(MEMBER)
-  status      workspaceMemberStatus @default(PENDING)
+  role        workspaceRole         @default(member)
+  status      workspaceMemberStatus @default(pending)
   joinedAt    DateTime              @default(now())
   deletedAt   DateTime?
   isDeleted   Boolean               @default(false)
@@ -130,18 +130,18 @@ model file {
 //
 
 enum eventType {
-  DRAWING_DATA_EXTRACTION
-  JOBCARD_GENERATION
-  PLAN_CHANGE
-  MANUAL_TOPUP
-  SUBSCRIPTION
+  drawing_data_extraction
+  jobcard_generation
+  plan_change
+  manual_topup
+  subscription
 }
 
 enum eventStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
+  pending
+  processing
+  completed
+  failed
 }
 
 model event {
@@ -151,7 +151,7 @@ model event {
   type         eventType
   creditChange Float?      @default(0)
   balanceAfter Float?
-  status       eventStatus @default(PENDING)
+  status       eventStatus @default(pending)
   progress     Float?      @default(0)
   errorData    Json?
   createdAt    DateTime    @default(now())
@@ -168,9 +168,9 @@ model event {
 //
 
 enum notificationType {
-  INVITE
-  ROLE_CHANGED
-  REMOVED
+  invite
+  role_changed
+  removed
 }
 
 model notification {

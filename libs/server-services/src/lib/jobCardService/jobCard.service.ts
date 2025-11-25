@@ -5,10 +5,10 @@ import { Readable } from 'stream';
 import { Parser } from 'expr-eval';
 import { randomUUID } from 'crypto';
 
-import { EventService, EventStatus, prisma } from '@prodgenie/libs/db';
+import { EventService, eventStatus, prisma } from '@prodgenie/libs/db';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
+import { jobCardRequest, BomItem, fileType } from '@prodgenie/libs/types';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -52,7 +52,7 @@ export class JobCardService {
       credits: workspaceCredits,
     } = activeWorkspace?.workspace || {};
 
-    const next = async (status: EventStatus, message: string) => {
+    const next = async (status: eventStatus, message: string) => {
       currentStep++;
       await this.eventService.updateProgress(
         workspaceId,
@@ -64,7 +64,7 @@ export class JobCardService {
     };
 
     // STEP 1 - Start
-    await next(EventStatus.PROCESSING, 'Initializing job card generation...');
+    await next(eventStatus.processing, 'Initializing job card generation...');
 
     if (!bom.length) return console.warn('bom is empty');
 
@@ -73,7 +73,7 @@ export class JobCardService {
     }
 
     // STEP 2 - Fetch workspace data
-    await next(EventStatus.PROCESSING, 'Loading workspace configurations...');
+    await next(eventStatus.processing, 'Loading workspace configurations...');
 
     console.log(`Generating job card : ${jobCardForm.global.jobCardNumber} `);
 
@@ -85,14 +85,14 @@ export class JobCardService {
     );
 
     // STEP 3 - Download drawing
-    await next(EventStatus.PROCESSING, 'Downloading source drawing...');
+    await next(eventStatus.processing, 'Downloading source drawing...');
     // const drawingFile = await this.fileHelperService.downloadToTemp(
     await this.fileHelperService.downloadToTemp(signedUrl, 'drawing.pdf');
 
     // for (const bomItem of bom) {
     for (const [index, bomItem] of bom.entries()) {
       await next(
-        EventStatus.PROCESSING,
+        eventStatus.processing,
         `Processing BOM item ${index + 1}/${bom.length}: ${bomItem.description}`
       );
 
@@ -194,11 +194,11 @@ export class JobCardService {
     }
 
     // STEP 5 - Merge and generate final PDF
-    await next(EventStatus.PROCESSING, 'Combining templates into final PDF...');
+    await next(eventStatus.processing, 'Combining templates into final PDF...');
     const finalDoc = await this.templateService.combineTemplates(templates);
 
     // STEP 6 - PDF generation
-    await next(EventStatus.PROCESSING, 'Rendering PDF...');
+    await next(eventStatus.processing, 'Rendering PDF...');
     const outputPath = await this.pdfService.generatePDF(
       finalDoc,
       jobCardForm.global.jobCardNumber
@@ -206,7 +206,7 @@ export class JobCardService {
     console.log(`Job card saved to ${outputPath}`);
 
     // STEP 7 - Upload file
-    await next(EventStatus.PROCESSING, 'Uploading generated job card...');
+    await next(eventStatus.processing, 'Uploading generated job card...');
     const { jobCardUrl, jobCardId } = await this.uploadJobCard(
       outputPath,
       user,
@@ -214,21 +214,21 @@ export class JobCardService {
     );
 
     // STEP 8 - Deduct credits
-    await next(EventStatus.PROCESSING, 'Deducting workspace credits...');
+    await next(eventStatus.processing, 'Deducting workspace credits...');
     await prisma.workspace.update({
       where: { id: workspaceId },
       data: { credits: { decrement: 10 } },
     });
 
     // STEP 9 - Cleanup
-    await next(EventStatus.PROCESSING, 'Cleaning up temporary files...');
+    await next(eventStatus.processing, 'Cleaning up temporary files...');
     await fs.rm('./tmp', { recursive: true });
 
     // STEP 10 - Done
     await this.eventService.updateProgress(
       activeWorkspace.id,
       jobId,
-      EventStatus.COMPLETED,
+      eventStatus.completed,
       100,
       'Job card generation complete'
     );
@@ -256,7 +256,7 @@ export class JobCardService {
 
   private async fetchAllWorkspaceTables(workspaceId: string) {
     const tableFiles = await prisma.file.findMany({
-      where: { workspaceId, type: { in: ['table'] as FileType[] } },
+      where: { workspaceId, type: { in: ['table'] as fileType[] } },
       select: { name: true, type: true, path: true },
     });
 
@@ -416,7 +416,9 @@ export class JobCardService {
       activeWorkspace
     );
     return {
-      jobCardUrl: await this.fileStorageService.getCachedSignedUrl(jobCard[0].path),
+      jobCardUrl: await this.fileStorageService.getCachedSignedUrl(
+        jobCard[0].path
+      ),
       jobCardId,
     };
   }

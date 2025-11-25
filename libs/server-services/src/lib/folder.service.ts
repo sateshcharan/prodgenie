@@ -1,7 +1,7 @@
 import { prisma } from '@prodgenie/libs/db';
 import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
-import { FileType } from '@prisma/client';
+import { fileType } from '@prisma/client';
 
 export class FolderService {
   private readonly bucketName: string = process.env.BUCKET ?? '';
@@ -23,8 +23,8 @@ export class FolderService {
     }
 
     const paths: string[] = [];
-    for (const fileType of Object.values(FileType)) {
-      paths.push(`${workspaceName}/${fileType}/.init`);
+    for (const file of Object.values(fileType)) {
+      paths.push(`${workspaceName}/${file}/.init`);
     }
 
     //other than filetype

@@ -19,7 +19,7 @@ import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { WorkspaceRole } from '@prodgenie/libs/types';
+import { workspaceRole } from '@prodgenie/libs/types';
 
 import api from '../../utils/api';
 
@@ -87,7 +87,7 @@ export default function InviteUser() {
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(WorkspaceRole).map((role) => (
+              {Object.values(workspaceRole).map((role) => (
                 <SelectItem key={role} value={role}>
                   {role}
                 </SelectItem>

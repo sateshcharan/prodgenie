@@ -1,11 +1,11 @@
 import {
-  WorkspaceRole,
-  FileType,
-  EventType,
-  EventStatus,
-  Event,
+  workspaceRole,
+  fileType,
+  eventType,
+  eventStatus,
+  event,
 } from '@prisma/client';
 
-export { WorkspaceRole, FileType, EventType, EventStatus };
+export { workspaceRole, fileType, eventType, eventStatus };
 
-export type { Event };
+export type { event };

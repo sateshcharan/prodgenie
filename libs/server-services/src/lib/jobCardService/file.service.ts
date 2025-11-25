@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 // import { json } from 'stream/consumers';
 
-import { FileType } from '@prisma/client';
+import { fileType } from '@prisma/client';
 // import { EventStatus, prisma } from '@prodgenie/libs/prisma';
 import { prisma } from '@prodgenie/libs/db';
 // import { EventService } from '@prodgenie/libs/db';
@@ -43,7 +43,7 @@ export class FileService {
             path: uploadPath,
             uploadedBy: userId,
             workspaceId,
-            type: fileType as FileType,
+            type: fileType as fileType,
           },
         });
 
@@ -120,7 +120,7 @@ export class FileService {
 
   async listFiles(fileType: string, activeWorkspaceId: string) {
     const files = await prisma.file.findMany({
-      where: { workspaceId: activeWorkspaceId, type: fileType as FileType },
+      where: { workspaceId: activeWorkspaceId, type: fileType as fileType },
     });
 
     if (!files.length) return { data: null, error: 'No files found' };

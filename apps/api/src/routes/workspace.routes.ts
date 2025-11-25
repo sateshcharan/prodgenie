@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { WorkspaceRole } from '@prodgenie/libs/types';
+import { workspaceRole } from '@prodgenie/libs/types';
 
 import { WorkspaceController } from '../controllers';
 import {
@@ -23,7 +23,7 @@ router.post(
 router.post(
   apiRoutes.workspace.deleteWorkspace,
   authenticateSupabaseJWT,
-  requireRole(WorkspaceRole.OWNER),
+  requireRole(workspaceRole.owner),
   asyncHandler(WorkspaceController.deleteWorkspace)
 );
 
@@ -31,7 +31,7 @@ router.post(
   apiRoutes.workspace.inviteUserToWorkspace,
   validatePlan,
   authenticateSupabaseJWT,
-  requireRole(WorkspaceRole.ADMIN),
+  requireRole(workspaceRole.admin),
   asyncHandler(WorkspaceController.inviteUserToWorkspace)
 );
 
@@ -50,7 +50,7 @@ router.post(
 router.post(
   apiRoutes.workspace.removeUserFromWorkspace,
   authenticateSupabaseJWT,
-  requireRole(WorkspaceRole.ADMIN),
+  requireRole(workspaceRole.admin),
   asyncHandler(WorkspaceController.removeUserFromWorkspace)
 );
 

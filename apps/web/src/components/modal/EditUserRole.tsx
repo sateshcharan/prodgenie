@@ -23,7 +23,7 @@ import {
   useWorkspaceStore,
 } from '@prodgenie/libs/store';
 import { Button } from '@prodgenie/libs/ui/button';
-import { WorkspaceRole } from '@prodgenie/libs/types';
+import { workspaceRole } from '@prodgenie/libs/types';
 
 export default function EditUserRole({
   workspaceUserId,
@@ -40,7 +40,7 @@ export default function EditUserRole({
   )?.role;
 
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<WorkspaceRole>(currentRole!);
+  const [role, setRole] = useState<workspaceRole>(currentRole!);
 
   const workspaceUserName = workspaceUsers.find(
     (w) => w?.user?.id === workspaceUserId
@@ -84,13 +84,13 @@ export default function EditUserRole({
           <label className="text-sm font-medium">Role</label>
           <Select
             value={role}
-            onValueChange={(val: WorkspaceRole) => setRole(val)}
+            onValueChange={(val: workspaceRole) => setRole(val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(WorkspaceRole).map((roleOption) => (
+              {Object.values(workspaceRole).map((roleOption) => (
                 <SelectItem key={roleOption} value={roleOption}>
                   {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
                 </SelectItem>

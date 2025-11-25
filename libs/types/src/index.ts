@@ -4,13 +4,13 @@ import * as schema from '@prodgenie/libs/schema';
 
 // prisma types
 
-export const WorkspaceRole = {
-  OWNER: 'OWNER',
-  ADMIN: 'ADMIN',
-  MEMBER: 'MEMBER',
+export const workspaceRole = {
+  owner: 'owner',
+  admin: 'admin',
+  member: 'member',
 } as const;
 
-export const FileType = {
+export const fileType = {
   drawing: 'drawing',
   template: 'template',
   sequence: 'sequence',
@@ -19,30 +19,30 @@ export const FileType = {
   table: 'table',
 } as const;
 
-export const EventType = {
-  userInvited: 'USER_INVITED',
-  userJoined: 'USER_JOINED',
-  fileUploaded: 'FILE_UPLOADED',
-  jobCreated: 'JOB_CREATED',
-  jobProcessing: 'JOB_PROCESSING',
-  jobCompleted: 'JOB_COMPLETED',
-  jobFailed: 'JOB_FAILED',
-  planChanged: 'PLAN_CHANGED',
-  manualTopup: 'MANUAL_TOPUP',
-  description: 'SUBSCRIPTION',
+export const eventType = {
+  userInvited: 'user_invited',
+  userJoined: 'user_joined',
+  fileUploaded: 'file_uploaded',
+  jobCreated: 'job_created',
+  jobProcessing: 'job_processing',
+  jobCompleted: 'job_completed',
+  jobFailed: 'job_failed',
+  planChanged: 'plan_changed',
+  manualTopup: 'manual_topup',
+  description: 'subscription',
 };
 
-export type EventType = (typeof EventType)[keyof typeof EventType];
+export type eventType = (typeof eventType)[keyof typeof eventType];
 
-export type WorkspaceRole = (typeof WorkspaceRole)[keyof typeof WorkspaceRole];
+export type workspaceRole = (typeof workspaceRole)[keyof typeof workspaceRole];
 
-export const WorkspaceRoleHierarchy: Record<WorkspaceRole, number> = {
-  [WorkspaceRole.OWNER]: 2,
-  [WorkspaceRole.ADMIN]: 1,
-  [WorkspaceRole.MEMBER]: 0,
+export const workspaceRoleHierarchy: Record<workspaceRole, number> = {
+  [workspaceRole.owner]: 2,
+  [workspaceRole.admin]: 1,
+  [workspaceRole.member]: 0,
 };
 
-export type FileType = (typeof FileType)[keyof typeof FileType];
+export type fileType = (typeof fileType)[keyof typeof fileType];
 
 // zod types
 export type loginSchema = schema.loginSchema;
