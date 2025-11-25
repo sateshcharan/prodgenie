@@ -1,6 +1,6 @@
 import { prisma } from '@prodgenie/libs/db';
 import { WorkspaceRole } from '@prodgenie/libs/types';
-import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 import { FolderService } from './folder.service';
 
@@ -39,7 +39,7 @@ export class WorkspaceService {
     return workspaceDb;
   }
 
-  static async deleteWorkspace(workspaceId: string) {
+  static async deleteWorkspace(workspaceId: string, user: any) {
     // delete all workspace members
     await prisma.workspaceMember.updateMany({
       where: { workspaceId },
@@ -47,18 +47,16 @@ export class WorkspaceService {
     });
 
     // delete all workspace files and folders
-    const { data: files } = await supabase.storage
-      .from('workspace-files')
-      .list(`${workspaceId}/`);
+    const { data: files } = await fileStorageService.listFiles(workspaceId);
     if (files) {
       const paths = files.map((f) => `${workspaceId}/${f.name}`);
-      await supabase.storage.from('workspace-files').remove(paths);
+      await fileStorageService.deleteFile(paths);
     }
 
     // delete all workspace events
-    await prisma.event.updateMany({
+    await prisma.event.deleteMany({
       where: { workspaceId },
-      data: { isDeleted: true, deletedAt: new Date() },
+      // data: { isDeleted: true, deletedAt: new Date() },
     });
 
     // delete workspace
@@ -72,8 +70,8 @@ export class WorkspaceService {
       },
     });
 
-    // delete user in supabase auth
-    await supabase.auth.admin.deleteUser(user.id);
+    // delete user in supabase auth // why ?
+    // await supabase.auth.admin.deleteUser(user.id);
   }
 
   static async inviteUserToWorkspace(

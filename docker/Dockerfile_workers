@@ -54,7 +54,7 @@ RUN pnpm nx build workers
 
 
 # Expose backend port
-# EXPOSE 3000
+EXPOSE 3005
 
 # Start Redis + Node.js backend + Python service
 # CMD ["sh", "-c", "redis-server & concurrently --raw 'node apps/backend/dist/main.js' '/opt/venv/bin/python3 apps/pdf-parser/main.py'"]

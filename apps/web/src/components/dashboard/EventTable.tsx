@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   ChevronDown,
   MoreHorizontal,
@@ -21,6 +20,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -336,17 +336,17 @@ const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        {/* {onRefresh && ( */}
+        {/* {onRefresh && ( 
         <Button
           variant="secondary"
           size="sm"
           onClick={onRefresh}
           className="flex items-center gap-1"
         >
-          {/* <Loader2 className="h-4 w-4 animate-spin hidden" /> */}
+           <Loader2 className="h-4 w-4 animate-spin hidden" /> 
           <RotateCw className="h-4 w-4" />
         </Button>
-        {/* )} */}
+         )} */}
       </div>
 
       {/* Pagination */}

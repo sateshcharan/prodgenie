@@ -34,7 +34,7 @@ export default function DeleteWorkspace({
     try {
       setLoading(true);
       const { data } = await api.post(
-        `${apiRoutes.workspace.base}/${apiRoutes.workspace.deleteWorkspace}`,
+        `${apiRoutes.workspace.base}${apiRoutes.workspace.deleteWorkspace}`,
         {
           workspaceId,
         }
@@ -51,6 +51,7 @@ export default function DeleteWorkspace({
       }
     } finally {
       setLoading(false);
+      closeModal();
     }
   };
 

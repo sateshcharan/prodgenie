@@ -1,11 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 
 import { cache } from '@prodgenie/libs/redis';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// const supabaseAdmin = createClient(
+//   process.env.SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// );
+
+import { supabaseAdmin } from './supabase.js';
 
 export class FileStorageService {
   private readonly bucketName: string;
@@ -25,7 +27,7 @@ export class FileStorageService {
     }
 
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .upload(uploadPath, file.buffer, {
           upsert: true,
@@ -47,7 +49,7 @@ export class FileStorageService {
   async getSignedUrl(filePath: string): Promise<string> {
     if (!filePath) throw new Error('File path not provided');
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .createSignedUrl(filePath, 60 * 60);
 
@@ -77,11 +79,11 @@ export class FileStorageService {
 
   async deleteFile(
     filePath: string,
-    fileType: string,
-    user: any
+    fileType?: string,
+    user?: any
   ): Promise<any> {
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .remove([filePath]);
 
@@ -97,12 +99,30 @@ export class FileStorageService {
     }
   }
 
+  async listFiles(WorkspaceId: string): Promise<any> {
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from(this.bucketName)
+        .list(`${WorkspaceId}/`);
+
+      if (error) {
+        console.error('Supabase list error:', error.message);
+        throw new Error(`List failed: ${error.message}`);
+      }
+
+      return data;
+    } catch (err: any) {
+      console.error('List operation failed:', err.code || '', err.message);
+      throw err;
+    }
+  }
+
   async renameFile(
     oldPath: string,
     newPath: string
   ): Promise<{ data: any; error: any }> {
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .move(oldPath, newPath);
 
@@ -148,7 +168,7 @@ export class FileStorageService {
     newPath: string
   ): Promise<{ data: any; error: any }> {
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .copy(oldPath, newPath);
 

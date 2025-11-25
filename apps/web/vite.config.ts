@@ -12,6 +12,7 @@ export default defineConfig(() => ({
     'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(
       process.env.VITE_SUPABASE_ANON_KEY
     ),
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
   },
   base: '/',
   root: __dirname,
@@ -55,17 +56,14 @@ export default defineConfig(() => ({
 
   resolve: {
     alias: {
-      '@prodgenie/libs/ui': path.resolve(__dirname, '../../libs/ui/src'),
-      '@prodgenie/libs/utils': path.resolve(__dirname, '../../libs/utils/src'),
-      '@prodgenie/libs/constant': path.resolve(
-        __dirname,
-        '../../libs/constant/src'
-      ),
       '@prodgenie/libs/schema': path.resolve(
         __dirname,
         '../../libs/schema/src'
       ),
-      '@prodgenie/libs/store': path.resolve(__dirname, '../../libs/store/src'),
+      '@prodgenie/libs/constant': path.resolve(
+        __dirname,
+        '../../libs/constant/src'
+      ),
       '@prodgenie/libs/frontend-services': path.resolve(
         __dirname,
         '../../libs/frontend-services/src'
@@ -75,6 +73,9 @@ export default defineConfig(() => ({
         __dirname,
         '../../libs/shared-utils/src'
       ),
+      '@prodgenie/libs/ui': path.resolve(__dirname, '../../libs/ui/src'),
+      '@prodgenie/libs/utils': path.resolve(__dirname, '../../libs/utils/src'),
+      '@prodgenie/libs/store': path.resolve(__dirname, '../../libs/store/src'),
     },
   },
   build: {

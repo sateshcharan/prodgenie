@@ -1,7 +1,7 @@
 import { prisma } from '@prodgenie/libs/db';
 import { WorkspaceRole } from '@prodgenie/libs/types';
 // import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
-import { supabase } from '@prodgenie/libs/supabase';
+import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
 import { FolderService } from '../folder.service.js';
 
@@ -49,12 +49,12 @@ export class WorkspaceService {
     });
 
     // delete all workspace files
-    const { data: files } = await supabase.storage
+    const { data: files } = await supabaseAdmin.storage
       .from('workspace-files')
       .list(`${workspaceId}/`);
     if (files) {
       const paths = files.map((f) => `${workspaceId}/${f.name}`);
-      await supabase.storage.from('workspace-files').remove(paths);
+      await supabaseAdmin.storage.from('workspace-files').remove(paths);
     }
 
     // delete all workspace activity
@@ -98,7 +98,7 @@ export class WorkspaceService {
       // Also create in Supabase Auth (optional but recommended)
       try {
         const { data: invited, error } =
-          await supabase.auth.admin.inviteUserByEmail(email, {
+          await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
             redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
           });
 

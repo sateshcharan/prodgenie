@@ -1,5 +1,5 @@
 import { prisma } from '@prodgenie/libs/db';
-import { supabase } from '@prodgenie/libs/supabase';
+import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
 import { FileType } from '@prisma/client';
 
@@ -31,7 +31,7 @@ export class FolderService {
     paths.push(`${workspaceName}/thumbnail/.init`);
 
     for (const path of paths) {
-      const { error } = await supabase.storage
+      const { error } = await supabaseAdmin.storage
         .from(this.bucketName)
         .upload(path, '', {
           upsert: false,

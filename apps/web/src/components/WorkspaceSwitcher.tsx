@@ -34,7 +34,6 @@ export function WorkspaceSwitcher() {
     setActiveWorkspace,
     setWorkspaceUsers,
     setWorkspaceEvents,
-    initRealtime,
   } = useWorkspaceStore((state) => state);
   const { openModal, closeModal } = useModalStore((state) => state);
 
@@ -64,17 +63,17 @@ export function WorkspaceSwitcher() {
     );
     setWorkspaceUsers(workspaceUsers);
     setWorkspaceEvents(workspaceEvents);
-    initRealtime(workspaceId);
+    // initRealtime(workspaceId);
   };
 
   const handleDeleteWorkspace = (workspaceId: string) => {
     openModal('workspace:delete', { workspaceId });
-    closeModal();
+    // closeModal();
   };
 
   const handleCreateWorkspace = (workspaceName: string) => {
     openModal('workspace:create');
-    closeModal();
+    // closeModal();
   };
 
   return (
@@ -123,6 +122,7 @@ export function WorkspaceSwitcher() {
                 ];
 
               return (
+                // <div className='flex items-center justify-between'>
                 <DropdownMenuItem
                   key={workspace.id}
                   onClick={() => handleSwitchWorkspace(workspace.id)}
@@ -132,20 +132,23 @@ export function WorkspaceSwitcher() {
                     <WorkspaceLogo className="size-3.5 shrink-0" />
                   </div>
                   {workspace.name}
-
                   {workspace.id !== activeWorkspace.id && (
                     <DropdownMenuShortcut>
                       <Button
                         variant="secondary"
                         size="icon"
                         className="size-7"
-                        onClick={() => handleDeleteWorkspace(workspace.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteWorkspace(workspace.id);
+                        }}
                       >
                         <Trash className="h-3 w-3" />
                       </Button>
                     </DropdownMenuShortcut>
                   )}
                 </DropdownMenuItem>
+                // </div>
               );
             })}
             <DropdownMenuSeparator className="my-2" />

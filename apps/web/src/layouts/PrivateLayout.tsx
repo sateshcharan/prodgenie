@@ -27,8 +27,7 @@ const PrivateLayout = () => {
     setActiveWorkspaceRole,
     setWorkspaceUsers,
     setWorkspaceEvents,
-    fetchWorkspaceUsers,
-    fetchWorkspaceEvents,
+    subscribeToEvents,
   } = useWorkspaceStore((state) => state);
 
   const { fileType } = useParams();
@@ -97,7 +96,7 @@ const PrivateLayout = () => {
         (w) => w.id === activeWorkspaceId
       );
       const activeWorkspaceRole = data.user.memberships.find(
-        (m) => m.workspace.id === workspaces[0].id
+        (m) => m.workspace.id === activeWorkspaceId
       )?.role;
 
       setUser(data.user);
@@ -106,20 +105,15 @@ const PrivateLayout = () => {
       setWorkspaces(workspaces);
       setActiveWorkspace(activeWorkspace);
       setActiveWorkspaceRole(activeWorkspaceRole);
-      fetchWorkspaceUsers(activeWorkspaceId);
-      fetchWorkspaceEvents(activeWorkspaceId);
     }
-  }, [
-    setUser,
-    setWorkspaces,
-    setActiveWorkspace,
-    setActiveWorkspaceRole,
-    setWorkspaceUsers,
-    setWorkspaceEvents,
-    fetchWorkspaceUsers,
-    fetchWorkspaceEvents,
-    data,
-  ]);
+  }, [data]);
+
+  useEffect(() => {
+    if (!data?.user?.activeWorkspaceId) return;
+
+    subscribeToEvents(data.user.activeWorkspaceId);
+    // return () => {};
+  }, [data?.user?.activeWorkspaceId]);
 
   // useEffect(() => {
   //   // fetch current user

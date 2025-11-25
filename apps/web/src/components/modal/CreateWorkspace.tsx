@@ -14,15 +14,17 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 import api from '../../utils/api';
 import PlanDropdown from '../PlanDropDown';
 
+import { useModalStore } from '@prodgenie/libs/store';
+
 export default function CreateWorkspace() {
   const [loading, setLoading] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
+  const { closeModal } = useModalStore();
+
   const createWorkspace = async () => {
     if (!workspaceName.trim() || !selectedPlanId) return;
-
-    console.log('create workspace clicked');
 
     try {
       setLoading(true);
@@ -37,6 +39,7 @@ export default function CreateWorkspace() {
       console.error(err);
     } finally {
       setLoading(false);
+      closeModal();
     }
   };
 

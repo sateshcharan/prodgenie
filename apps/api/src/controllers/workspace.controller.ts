@@ -20,7 +20,8 @@ export class WorkspaceController {
     const { workspaceId } = req.body;
     const user = req.user;
 
-    //else remove all workspace members, delete all folders and files, delete workspacce history , delete workspace
+    const result = await WorkspaceService.deleteWorkspace(workspaceId, user);
+    return res.status(200).json({ success: true, data: 'Workspace deleted' });
   };
 
   static inviteUserToWorkspace = async (req: Request, res: Response) => {

@@ -9,3 +9,5 @@ export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     flowType: 'pkce',
   },
 });
+
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);

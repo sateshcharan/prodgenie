@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import {
-  type User,
-  type WorkspaceMember,
-  type Workspace,
+  type user,
+  type workspaceMember,
+  type workspace,
 } from '@prisma/client';
 
-type ExtendedUser = User & {
-  memberships: (WorkspaceMember & { workspace: Workspace })[];
+type ExtendedUser = user & {
+  memberships: (workspaceMember & { workspace: workspace })[];
 };
 
 interface UserStore {

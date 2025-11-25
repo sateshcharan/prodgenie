@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createClient } from '@supabase/supabase-js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-// import { api } from '@prodgenie/libs/frontend-services';
+// import { api } from '@prodgenie/apps/web/src/utils/api';
 
 const supabaseAnon = createClient(
   process.env.VITE_SUPABASE_URL!,
@@ -53,7 +53,7 @@ interface WorkspaceStore {
 
   fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
   fetchWorkspaceEvents: (workspaceId: string) => Promise<void>;
-  initRealtime: (workspaceId: string) => void;
+  subscribeToEvents: (workspaceId: string) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
@@ -74,8 +74,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   fetchWorkspaceUsers: async (workspaceId) => {
     try {
       const { data } = await axios.get(
-        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
-        { params: { workspaceId } }
+        `${process.env.VITE_API_URL}${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
+        { params: { workspaceId }, withCredentials: true }
       );
       set({ workspaceUsers: data.data });
     } catch (err) {
@@ -88,8 +88,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   fetchWorkspaceEvents: async (workspaceId) => {
     try {
       const { data } = await axios.get(
-        `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`,
-        { params: { workspaceId } }
+        `${process.env.VITE_API_URL}${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`,
+        { params: { workspaceId }, withCredentials: true }
       );
       set({ workspaceEvents: data.data });
     } catch (err) {
@@ -98,36 +98,96 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
   },
 
-  // Initialize realtime channel for a workspace
-  initRealtime: (workspaceId: string) => {
-    // Unsubscribe previous channel (important!)
+  // subscribe to realtime events
+  subscribeToEvents: (workspaceId: string) => {
     const prevChannel = get().realtimeChannel;
+
     if (prevChannel) {
       supabaseAnon.removeChannel(prevChannel);
     }
 
-    // Create new realtime channel
     const channel = supabaseAnon
-      .channel(`events:${workspaceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'Event',
-          // filter: `workspaceId=eq.${workspaceId}`,
+      .channel(`events:${workspaceId}`, {
+        config: {
+          broadcast: { self: true },
         },
-        async (_payload) => {
-          // Re-fetch workspace events from backend
-          // await get().fetchWorkspaceEvents(workspaceId);
+      })
+
+      // .on(
+      //   'postgres_changes',
+      //   {
+      //     event: '*',
+      //     schema: 'public',
+      //     table: 'event',
+      //     // filter: `workspaceId=eq.${workspaceId}`,
+      //   },
+      //   (payload) => {
+      //     console.log('EVENT', payload);
+
+      //     set((state) => {
+      //       const { eventType, new: newRow, old: oldRow } = payload;
+
+      //       // --- DELETE HANDLING ---
+      //       if (eventType === 'DELETE' && oldRow?.id) {
+      //         return {
+      //           workspaceEvents: state.workspaceEvents.filter(
+      //             (e) => e.id !== oldRow.id
+      //           ),
+      //         };
+      //       }
+
+      //       // --- INSERT / UPDATE (but newRow can still be null) ---
+      //       // if (!newRow?.id) return {};
+
+      //       // const existingIndex = state.workspaceEvents.findIndex(
+      //       //   (e) => e.id === newRow.id
+      //       // );
+
+      //       // UPDATE
+      //       // if (existingIndex !== -1) {
+      //       //   const updatedEvents = [...state.workspaceEvents];
+      //       //   updatedEvents[existingIndex] = newRow;
+      //       //   return { workspaceEvents: updatedEvents };
+      //       // }
+
+      //       // INSERT
+      //       return { workspaceEvents: [newRow, ...state.workspaceEvents] };
+      //     });
+      //   }
+      // )
+
+      .on('broadcast', { event: 'event_created' }, (payload) => {
+        console.log('✅ EVENT CREATED:', payload);
+        set((state) => ({
+          workspaceEvents: [payload.payload, ...state.workspaceEvents],
+        }));
+      })
+      .on('broadcast', { event: 'event_updated' }, (payload) => {
+        console.log('✅ EVENT UPDATED:', payload);
+        set((state) => ({
+          workspaceEvents: state.workspaceEvents.map((e) =>
+            e.id === payload.payload.id ? { ...e, ...payload.payload } : e
+          ),
+        }));
+      })
+      .on('broadcast', { event: 'event_deleted' }, (payload) => {
+        console.log('✅ EVENT DELETED:', payload);
+        set((state) => ({
+          workspaceEvents: state.workspaceEvents.filter(
+            (e) => e.id !== payload.payload.id
+          ),
+        }));
+      })
+      .subscribe((status) => {
+        console.log('📡 Broadcast subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log(
+            '✅ Successfully subscribed to broadcasts for workspace:',
+            workspaceId
+          );
         }
-      )
-      .subscribe();
+      });
 
-    // Save reference to the channel
     set({ realtimeChannel: channel });
-
-    // Initial load
-    // get().fetchWorkspaceEvents(workspaceId);
   },
 }));

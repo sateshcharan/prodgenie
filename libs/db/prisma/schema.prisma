@@ -11,7 +11,7 @@ datasource db {
 // Core Entities
 //
 
-model User {
+model user {
   id       String  @id @default(uuid())
   email    String  @unique
   name     String?
@@ -23,13 +23,13 @@ model User {
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
-  memberships  WorkspaceMember[]
-  files        File[]
-  events       Event[]
-  Notification Notification[]
+  memberships  workspaceMember[]
+  files        file[]
+  events       event[]
+  Notification notification[]
 }
 
-model Plan {
+model plan {
   id             String    @id @default(uuid())
   name           String
   maxMembers     Int
@@ -41,10 +41,10 @@ model Plan {
   features       Json      @default("{}")
   price          Float     @default(0)
 
-  workspaces Workspace[]
+  workspaces workspace[]
 }
 
-model Workspace {
+model workspace {
   id        String    @id @default(uuid())
   name      String
   credits   Float     @default(0)
@@ -54,42 +54,42 @@ model Workspace {
   isDeleted Boolean   @default(false)
 
   planId String?
-  plan   Plan?   @relation(fields: [planId], references: [id])
+  plan   plan?   @relation(fields: [planId], references: [id])
 
-  members      WorkspaceMember[]
-  files        File[]
-  events       Event[]
-  Notification Notification[]
+  members      workspaceMember[]
+  files        file[]
+  events       event[]
+  Notification notification[]
 }
 
 //
 // Memberships & Roles
 //
 
-enum WorkspaceRole {
+enum workspaceRole {
   OWNER
   ADMIN
   MEMBER
 }
 
-enum WorkspaceMemberStatus {
+enum workspaceMemberStatus {
   PENDING
   ACTIVE
   REMOVED
 }
 
-model WorkspaceMember {
+model workspaceMember {
   id          String                @id @default(uuid())
   userId      String
   workspaceId String
-  role        WorkspaceRole         @default(MEMBER)
-  status      WorkspaceMemberStatus @default(PENDING)
+  role        workspaceRole         @default(MEMBER)
+  status      workspaceMemberStatus @default(PENDING)
   joinedAt    DateTime              @default(now())
   deletedAt   DateTime?
   isDeleted   Boolean               @default(false)
 
-  user      User      @relation(fields: [userId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
+  workspace workspace @relation(fields: [workspaceId], references: [id])
 
   @@unique([userId, workspaceId])
 }
@@ -98,7 +98,7 @@ model WorkspaceMember {
 // Files
 //
 
-enum FileType {
+enum fileType {
   drawing
   template
   sequence
@@ -107,29 +107,29 @@ enum FileType {
   table
 }
 
-model File {
+model file {
   id          String    @id @default(uuid())
   workspaceId String
   uploadedBy  String
   name        String
   path        String
-  type        FileType
+  type        fileType
   data        Json?
   thumbnail   String?
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  user      User      @relation(fields: [uploadedBy], references: [id])
-  events    Event[]
+  workspace workspace @relation(fields: [workspaceId], references: [id])
+  user      user      @relation(fields: [uploadedBy], references: [id])
+  events    event[]
 }
 
 //
 // Events (Transactions)
 //
 
-enum EventType {
+enum eventType {
   DRAWING_DATA_EXTRACTION
   JOBCARD_GENERATION
   PLAN_CHANGE
@@ -137,51 +137,51 @@ enum EventType {
   SUBSCRIPTION
 }
 
-enum EventStatus {
+enum eventStatus {
   PENDING
   PROCESSING
   COMPLETED
   FAILED
 }
 
-model Event {
+model event {
   id           String      @id
   workspaceId  String
   userId       String
-  type         EventType
+  type         eventType
   creditChange Float?      @default(0)
   balanceAfter Float?
-  status       EventStatus @default(PENDING)
+  status       eventStatus @default(PENDING)
   progress     Float?      @default(0)
   errorData    Json?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   fileId       String?
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  File      File?     @relation(fields: [fileId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
+  workspace workspace @relation(fields: [workspaceId], references: [id])
+  File      file?     @relation(fields: [fileId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
 }
 
 //
 // Notifications
 //
 
-enum NotificationType {
+enum notificationType {
   INVITE
   ROLE_CHANGED
   REMOVED
 }
 
-model Notification {
+model notification {
   id          String           @id @default(uuid())
   userId      String
   workspaceId String?
-  type        NotificationType
+  type        notificationType
   message     String
   read        Boolean          @default(false)
   createdAt   DateTime         @default(now())
 
-  user      User       @relation(fields: [userId], references: [id])
-  workspace Workspace? @relation(fields: [workspaceId], references: [id])
+  user      user       @relation(fields: [userId], references: [id])
+  workspace workspace? @relation(fields: [workspaceId], references: [id])
 }

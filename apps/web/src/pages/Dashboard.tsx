@@ -50,7 +50,7 @@ const Dashboard = () => {
       )}
 
       <EventTable
-        key={workspaceId}
+        // key={workspaceId}
         // events={workspaceEvents ?? []}
         // onRefresh={refetch}
       />

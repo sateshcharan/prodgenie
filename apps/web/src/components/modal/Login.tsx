@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
@@ -8,7 +9,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
 import { Label } from '@prodgenie/libs/ui/label';
-import { toast } from 'sonner';
 import {
   Card,
   CardContent,
