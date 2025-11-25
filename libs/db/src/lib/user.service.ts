@@ -34,7 +34,7 @@ export class UserService {
             },
           },
           where: {
-            status: 'ACTIVE',
+            status: 'active',
           },
         },
       },

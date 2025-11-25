@@ -1,15 +1,15 @@
 // export type Role = 'owner' | 'admin' | 'member';
-import { WorkspaceRole } from '@prisma/client';
+import { workspaceRole } from '@prisma/client';
 
-export const ROLE_PRIORITY: Record<WorkspaceRole, number> = {
-  OWNER: 3,
-  ADMIN: 2,
-  MEMBER: 1,
+export const ROLE_PRIORITY: Record<workspaceRole, number> = {
+  owner: 3,
+  admin: 2,
+  member: 1,
 };
 
 // Optional fine-grained actions
 export const ROLE_PERMISSIONS = {
-  OWNER: ['invite_user', 'remove_user', 'change_role', 'delete_workspace'],
-  ADMIN: ['invite_user', 'remove_user', 'change_role'],
-  MEMBER: [],
+  owner: ['invite_user', 'remove_user', 'change_role', 'delete_workspace'],
+  admin: ['invite_user', 'remove_user', 'change_role'],
+  member: [],
 } as const;
