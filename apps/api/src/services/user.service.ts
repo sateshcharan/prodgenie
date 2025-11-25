@@ -1,6 +1,4 @@
 import { prisma } from '@prodgenie/libs/db';
-// import { supabase } from '@prodgenie/libs/supabase';
-// import { WorkspaceRole } from '@prodgenie/libs/types';
 
 export class UserService {
   static async createUser(user: {

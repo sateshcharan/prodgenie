@@ -37,7 +37,7 @@ const WorkspaceUsers = () => {
   };
 
   const canInvite =
-    ROLE_PRIORITY[currentUserRole as any] > ROLE_PRIORITY['MEMBER'];
+    ROLE_PRIORITY[currentUserRole as any] > ROLE_PRIORITY['member'];
 
   return (
     <Card className="p-4 h-full">
@@ -95,14 +95,14 @@ const WorkspaceUsers = () => {
 
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            workspaceUser.status === 'PENDING'
+                            workspaceUser.status === 'pending'
                               ? 'bg-yellow-500'
                               : 'bg-green-500'
                           }`}
                           title={
-                            workspaceUser.status === 'PENDING'
+                            workspaceUser.status === 'pending'
                               ? 'Pending invite'
-                              : 'Active'
+                              : 'active'
                           }
                         />
                       </div>

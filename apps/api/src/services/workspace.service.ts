@@ -1,7 +1,7 @@
 import { prisma } from '@prodgenie/libs/db';
 import { workspaceRole } from '@prodgenie/libs/types';
-import { FileStorageService } from '@prodgenie/libs/supabase';
 import { supabaseAdmin } from '@prodgenie/libs/supabase';
+import { FileStorageService } from '@prodgenie/libs/supabase';
 
 import { FolderService } from './folder.service';
 

@@ -32,8 +32,8 @@ export const eventType = {
   description: 'subscription',
 };
 
+export type fileType = (typeof fileType)[keyof typeof fileType];
 export type eventType = (typeof eventType)[keyof typeof eventType];
-
 export type workspaceRole = (typeof workspaceRole)[keyof typeof workspaceRole];
 
 export const workspaceRoleHierarchy: Record<workspaceRole, number> = {
@@ -42,7 +42,6 @@ export const workspaceRoleHierarchy: Record<workspaceRole, number> = {
   [workspaceRole.member]: 0,
 };
 
-export type fileType = (typeof fileType)[keyof typeof fileType];
 
 // zod types
 export type loginSchema = schema.loginSchema;

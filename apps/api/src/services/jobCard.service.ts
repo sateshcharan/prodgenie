@@ -13,7 +13,7 @@ import { FileHelperService } from '@prodgenie/libs/server-services';
 import { jobCardRequest, BomItem, FileType } from '@prodgenie/libs/types';
 import { EventService } from '@prodgenie/libs/db';
 import { jobCardQueue } from '@prodgenie/libs/queues';
-import { EventStatus, EventType } from '@prisma/client';
+import { eventStatus, eventType } from '@prisma/client';
 
 import { PdfService } from './pdf.service.js';
 import { FileService } from './file.service.js';
@@ -210,8 +210,8 @@ export class JobCardService {
       id: jobId,
       userId: user.id,
       workspaceId,
-      type: EventType.JOBCARD_GENERATION,
-      status: EventStatus.PENDING,
+      type: eventType.jobcard_generation,
+      status: eventStatus.pending,
     });
 
     await jobCardQueue.add('generateJobCard', {

@@ -1,9 +1,9 @@
-import { User } from '@prisma/client';
+import { user } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 
-import { WorkspaceRole, WorkspaceRoleHierarchy } from '@prodgenie/libs/types';
+import { workspaceRole, workspaceRoleHierarchy } from '@prodgenie/libs/types';
 
-const requireRole = (minRole: WorkspaceRole) => {
+const requireRole = (minRole: workspaceRole) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
     // const { workspaceId } = req.body;
@@ -14,7 +14,7 @@ const requireRole = (minRole: WorkspaceRole) => {
       (m) => m.workspace.id === activeWorkspaceId
     );
 
-    if (WorkspaceRoleHierarchy[role] >= WorkspaceRoleHierarchy[minRole]) {
+    if (workspaceRoleHierarchy[role] >= workspaceRoleHierarchy[minRole]) {
       return next();
     }
     return res.status(403).json({

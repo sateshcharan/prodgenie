@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { prisma, WorkspacePlan } from '@prodgenie/libs/db';
-import { WorkspaceRoleHierarchy } from '@prodgenie/libs/types';
+import { prisma } from '@prodgenie/libs/db';
+// import { prisma, workspacePlan } from '@prodgenie/libs/db';
+import { workspaceRoleHierarchy } from '@prodgenie/libs/types';
 
-const PLAN_LIMITS: Record<WorkspacePlan, Record<string, number>> = {
+// const PLAN_LIMITS: Record<workspacePlan, Record<string, number>> = {
+const PLAN_LIMITS: any = {
   FREE: {
     MAX_MEMBERS: 3,
     MAX_FILES: 20,
@@ -52,7 +54,8 @@ const validatePlan =
         });
       }
 
-      const plan = workspace.plan as WorkspacePlan;
+      // const plan = workspace.plan as workspacePlan;
+      const plan = workspace.plan;
       const limits = PLAN_LIMITS[plan];
 
       // Step 2: If no specific check provided, just verify plan exists

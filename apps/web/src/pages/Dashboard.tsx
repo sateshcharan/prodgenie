@@ -1,10 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-
-import { apiRoutes } from '@prodgenie/libs/constant';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
 import ChartAreaInteractive from '@prodgenie/libs/ui/components/chart-area-interactive';
-
-import api from '../utils/api';
 
 import EventTable from '../components/dashboard/EventTable';
 import SectionCards from '../components/dashboard/SectionCards';
@@ -19,24 +14,6 @@ const Dashboard = () => {
     (m) => m.workspace.id === workspaceId
   )?.role;
 
-  // // polling evetns via react-query
-  // const {
-  //   data: workspaceEvents = [],
-  //   isLoading,
-  //   refetch,
-  // } = useQuery({
-  //   queryKey: ['workspaceEvents', workspaceId],
-  //   queryFn: async () => {
-  //     const { data } = await api.get(
-  //       `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceEvents}`
-  //     );
-  //     return data.data;
-  //   },
-  //   enabled: !!workspaceId, // only start when workspaceId is loaded
-  //   // refetchInterval: 30000, // polling every 5s
-  //   // refetchIntervalInBackground: false, // don't poll when tab is hidden
-  // });
-
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
       {(role === 'owner' || role === 'admin') && (
@@ -49,11 +26,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      <EventTable
-      // key={workspaceId}
-      // events={workspaceEvents ?? []}
-      // onRefresh={refetch}
-      />
+      <EventTable />
     </div>
   );
 };

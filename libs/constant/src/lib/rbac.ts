@@ -1,7 +1,7 @@
-// export type Role = 'owner' | 'admin' | 'member';
-import { workspaceRole } from '@prisma/client';
+export type Role = 'owner' | 'admin' | 'member';
+// import { workspaceRole } from '@prisma/client';
 
-export const ROLE_PRIORITY: Record<workspaceRole, number> = {
+export const ROLE_PRIORITY: Record<Role, number> = {
   owner: 3,
   admin: 2,
   member: 1,

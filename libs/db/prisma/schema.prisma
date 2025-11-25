@@ -29,21 +29,6 @@ model user {
   Notification notification[]
 }
 
-model plan {
-  id             String    @id @default(uuid())
-  name           String
-  maxMembers     Int
-  maxStorage     Int       @default(340)
-  monthlyCredits Int       @default(0)
-  createdAt      DateTime  @default(now())
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
-  features       Json      @default("{}")
-  price          Float     @default(0)
-
-  workspaces workspace[]
-}
-
 model workspace {
   id        String    @id @default(uuid())
   name      String
@@ -60,6 +45,21 @@ model workspace {
   files        file[]
   events       event[]
   Notification notification[]
+}
+
+model plan {
+  id             String    @id @default(uuid())
+  name           String
+  maxMembers     Int
+  maxStorage     Int       @default(340)
+  monthlyCredits Int       @default(0)
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+  features       Json      @default("{}")
+  price          Float     @default(0)
+
+  workspaces workspace[]
 }
 
 //

@@ -6,9 +6,6 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Button } from '@prodgenie/libs/ui/button';
-import { Input } from '@prodgenie/libs/ui/input';
-import { Label } from '@prodgenie/libs/ui/label';
 import {
   Card,
   CardContent,
@@ -16,6 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@prodgenie/libs/ui/card';
+import { Input } from '@prodgenie/libs/ui/input';
+import { Label } from '@prodgenie/libs/ui/label';
+import { Button } from '@prodgenie/libs/ui/button';
 import { loginSchema } from '@prodgenie/libs/schema';
 import { apiRoutes, loginFields } from '@prodgenie/libs/constant';
 import { useAuthStore, useModalStore } from '@prodgenie/libs/store';
