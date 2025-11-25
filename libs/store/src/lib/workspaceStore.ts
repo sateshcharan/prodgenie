@@ -107,86 +107,54 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
 
     const channel = supabaseAnon
-      .channel(`events:${workspaceId}`, {
+      .channel(`workspace:${workspaceId}:events`, {
         config: {
-          broadcast: { self: true },
+          private: true,
         },
       })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event',
+          // filter: `workspaceId=eq.${workspaceId}`,
+        },
+        (payload) => {
+          console.log('EVENT', payload);
 
-      // .on(
-      //   'postgres_changes',
-      //   {
-      //     event: '*',
-      //     schema: 'public',
-      //     table: 'event',
-      //     // filter: `workspaceId=eq.${workspaceId}`,
-      //   },
-      //   (payload) => {
-      //     console.log('EVENT', payload);
+          set((state) => {
+            const { eventType, new: newRow, old: oldRow } = payload;
 
-      //     set((state) => {
-      //       const { eventType, new: newRow, old: oldRow } = payload;
+            // --- DELETE HANDLING ---
+            if (eventType === 'DELETE' && oldRow?.id) {
+              return {
+                workspaceEvents: state.workspaceEvents.filter(
+                  (e) => e.id !== oldRow.id
+                ),
+              };
+            }
 
-      //       // --- DELETE HANDLING ---
-      //       if (eventType === 'DELETE' && oldRow?.id) {
-      //         return {
-      //           workspaceEvents: state.workspaceEvents.filter(
-      //             (e) => e.id !== oldRow.id
-      //           ),
-      //         };
-      //       }
+            // --- INSERT / UPDATE (but newRow can still be null) ---
+            // if (!newRow?.id) return {};
 
-      //       // --- INSERT / UPDATE (but newRow can still be null) ---
-      //       // if (!newRow?.id) return {};
+            // const existingIndex = state.workspaceEvents.findIndex(
+            //   (e) => e.id === newRow.id
+            // );
 
-      //       // const existingIndex = state.workspaceEvents.findIndex(
-      //       //   (e) => e.id === newRow.id
-      //       // );
+            // UPDATE
+            // if (existingIndex !== -1) {
+            //   const updatedEvents = [...state.workspaceEvents];
+            //   updatedEvents[existingIndex] = newRow;
+            //   return { workspaceEvents: updatedEvents };
+            // }
 
-      //       // UPDATE
-      //       // if (existingIndex !== -1) {
-      //       //   const updatedEvents = [...state.workspaceEvents];
-      //       //   updatedEvents[existingIndex] = newRow;
-      //       //   return { workspaceEvents: updatedEvents };
-      //       // }
-
-      //       // INSERT
-      //       return { workspaceEvents: [newRow, ...state.workspaceEvents] };
-      //     });
-      //   }
-      // )
-
-      .on('broadcast', { event: 'event_created' }, (payload) => {
-        console.log('✅ EVENT CREATED:', payload);
-        set((state) => ({
-          workspaceEvents: [payload.payload, ...state.workspaceEvents],
-        }));
-      })
-      .on('broadcast', { event: 'event_updated' }, (payload) => {
-        console.log('✅ EVENT UPDATED:', payload);
-        set((state) => ({
-          workspaceEvents: state.workspaceEvents.map((e) =>
-            e.id === payload.payload.id ? { ...e, ...payload.payload } : e
-          ),
-        }));
-      })
-      .on('broadcast', { event: 'event_deleted' }, (payload) => {
-        console.log('✅ EVENT DELETED:', payload);
-        set((state) => ({
-          workspaceEvents: state.workspaceEvents.filter(
-            (e) => e.id !== payload.payload.id
-          ),
-        }));
-      })
-      .subscribe((status) => {
-        console.log('📡 Broadcast subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log(
-            '✅ Successfully subscribed to broadcasts for workspace:',
-            workspaceId
-          );
+            // INSERT
+            return { workspaceEvents: [newRow, ...state.workspaceEvents] };
+          });
         }
-      });
+      )
+      .subscribe();
 
     set({ realtimeChannel: channel });
   },

@@ -1,6 +1,7 @@
 import { prisma } from '@prodgenie/libs/db';
-import { WorkspaceRole } from '@prodgenie/libs/types';
+import { workspaceRole } from '@prodgenie/libs/types';
 import { FileStorageService } from '@prodgenie/libs/supabase';
+import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
 import { FolderService } from './folder.service';
 
@@ -32,7 +33,7 @@ export class WorkspaceService {
       data: {
         userId: user.id,
         workspaceId: workspaceDb.id,
-        role: 'OWNER',
+        role: 'owner',
       },
     });
 
@@ -77,7 +78,7 @@ export class WorkspaceService {
   static async inviteUserToWorkspace(
     workspaceId: string,
     email: string,
-    role: WorkspaceRole
+    role: workspaceRole
   ) {
     // 1. Check if user already exists
     let user = await prisma.user.findUnique({
@@ -96,7 +97,7 @@ export class WorkspaceService {
       // Also create in Supabase Auth (optional but recommended)
       try {
         const { data: invited, error } =
-          await supabase.auth.admin.inviteUserByEmail(email, {
+          await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
             redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
           });
 
@@ -122,13 +123,13 @@ export class WorkspaceService {
         role,
         isDeleted: false,
         deletedAt: null,
-        status: 'PENDING',
+        status: 'pending',
       },
       create: {
         userId: user.id,
         workspaceId,
         role,
-        status: 'PENDING',
+        status: 'pending',
       },
     });
 
@@ -293,7 +294,7 @@ export class WorkspaceService {
   static async updateUserRole(
     workspaceId: string,
     userId: string,
-    role: WorkspaceRole
+    role: workspaceRole
   ) {
     await prisma.workspaceMember.update({
       where: {
@@ -309,7 +310,7 @@ export class WorkspaceService {
   static acceptInvite = async (workspaceId: string, userId: string) => {
     return prisma.workspaceMember.update({
       where: { userId_workspaceId: { userId, workspaceId } },
-      data: { status: 'ACTIVE' }, // depends on your membership model
+      data: { status: 'active' }, // depends on your membership model
     });
   };
 
@@ -325,7 +326,7 @@ export class WorkspaceService {
       data: {
         workspaceId,
         userId,
-        role: 'MEMBER',
+        role: 'member',
       },
     });
   }

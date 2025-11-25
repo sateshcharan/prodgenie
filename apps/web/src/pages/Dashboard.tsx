@@ -39,7 +39,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
-      {(role === 'OWNER' || role === 'ADMIN') && (
+      {(role === 'owner' || role === 'admin') && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-4 ">
             <WorkspaceUsers />
@@ -50,9 +50,9 @@ const Dashboard = () => {
       )}
 
       <EventTable
-        // key={workspaceId}
-        // events={workspaceEvents ?? []}
-        // onRefresh={refetch}
+      // key={workspaceId}
+      // events={workspaceEvents ?? []}
+      // onRefresh={refetch}
       />
     </div>
   );
