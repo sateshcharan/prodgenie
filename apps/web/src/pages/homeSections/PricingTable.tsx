@@ -11,7 +11,7 @@ const PricingTable = () => {
     <Ban className="w-5 h-5 text-muted-foreground inline-block" />
   );
 
-  const TooltipButton = ({ text, tooltip }) => (
+  const TooltipButton = ({ text, tooltip }: any) => (
     <button
       type="button"
       className="inline-block text-left hover:cursor-help group relative"
@@ -62,7 +62,7 @@ const PricingTable = () => {
 
   const tiers = ['free', 'base', 'scale', 'enterprise'];
 
-  const renderTableRow = (feature, rowIndex) => (
+  const renderTableRow = (feature: any, rowIndex: number ) => (
     <tr key={rowIndex}>
       <th
         scope="row"
@@ -75,7 +75,7 @@ const PricingTable = () => {
         )}
         <div className="absolute inset-x-8 mt-3 h-px bg-border"></div>
       </th>
-      {feature.values.map((val, i) => (
+      {feature.values.map((val: any, i: number) => (
         <td key={i} className="relative w-1/5 px-4 py-0 text-center">
           <span className="relative h-full w-full py-3">
             {feature.type === 'text' ? (
@@ -99,7 +99,7 @@ const PricingTable = () => {
     </tr>
   );
 
-  const renderFeatureSection = (section, idx) => (
+  const renderFeatureSection = (section: any, idx: number) => (
     <div key={idx} className="relative -mx-8 mt-16">
       <h3 className="text-lg font-semibold mb-4 px-8 text-foreground">
         {section.title}

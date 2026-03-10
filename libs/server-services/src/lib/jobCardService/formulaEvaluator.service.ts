@@ -39,7 +39,7 @@ export class FormulaEvaluator {
       ...context,
       materialThickness: thickness,
     };
-    const refs = Array.from(expr.matchAll(/\$\{(\w+)\}/g), (m) => m[1]);
+    const refs = Array.from(expr.matchAll(/\$\{(\w+)\}/g), (m: any) => m[1]);
 
     for (const r of refs) {
       if (evaluated[r] === undefined && common[r]) {
@@ -49,7 +49,7 @@ export class FormulaEvaluator {
 
     return expr.replace(
       /\$\{(\w+)\}/g,
-      (_, k: string) => evaluated[k]?.toString() ?? ''
+      (_: string, k: string) => evaluated[k]?.toString() ?? ''
     );
   }
 }

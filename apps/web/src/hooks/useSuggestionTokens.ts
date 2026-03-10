@@ -45,9 +45,11 @@ export const useSuggestionTokens = (
 
     const loadSuggestions = async () => {
       // global job card fields
-      const jobCardSuggestions = jobCardFields.flatMap((field) =>
+      const jobCardSuggestions = jobCardFields.flatMap((field: any) =>
         field.fields
-          ? field.fields.map((f) => `jobCardForm_${f.name.replace('.', '_')}`)
+          ? field.fields.map(
+              (f: any) => `jobCardForm_${f.name.replace('.', '_')}`
+            )
           : [`jobCardForm_${field.name.replace('.', '_')}`]
       );
 

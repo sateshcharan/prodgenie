@@ -1,19 +1,23 @@
 import { Handshake, Trash, LogOut } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@prodgenie/libs/ui/avatar';
-import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
-import { Card } from '@prodgenie/libs/ui/card';
-import { Button } from '@prodgenie/libs/ui/button';
 import {
   useWorkspaceStore,
   useUserStore,
   useModalStore,
 } from '@prodgenie/libs/store';
+import { Card } from '@prodgenie/libs/ui/card';
+import { Button } from '@prodgenie/libs/ui/button';
 import { ROLE_PRIORITY } from '@prodgenie/libs/constant';
+import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@prodgenie/libs/ui/avatar';
 
 const WorkspaceUsers = () => {
-  const { workspaceUsers, activeWorkspace, activeWorkspaceRole, fetchWorkspaceUsers } =
-    useWorkspaceStore((state) => state);
+  const {
+    workspaceUsers,
+    activeWorkspace,
+    activeWorkspaceRole,
+    fetchWorkspaceUsers,
+  } = useWorkspaceStore((state) => state);
   const { user } = useUserStore((state) => state);
   const { openModal } = useModalStore((state) => state);
 
@@ -25,7 +29,7 @@ const WorkspaceUsers = () => {
 
   const handleChangeUserRole = (workspaceUserId: string) => {
     openModal('workspace:editUserRole', { workspaceUserId });
-    fetchWorkspaceUsers(activeWorkspace?.id );
+    fetchWorkspaceUsers(activeWorkspace?.id);
   };
 
   const handleInviteUserToWorkspace = () => {
@@ -64,13 +68,10 @@ const WorkspaceUsers = () => {
                   ROLE_PRIORITY[currentUserRole as any] >
                   ROLE_PRIORITY[targetRole];
                 const owners = workspaceUsers.filter(
-                  (wu) => wu.role === 'OWNER'
+                  (wu) => wu.role === 'owner'
                 );
                 const isLastOwner =
                   owners.length === 1 && owners[0].userId === user?.id;
-
-                // console.log('targetRole', targetRole);
-                // console.log('currentUserRole', currentUserRole);
 
                 return (
                   <li

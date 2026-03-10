@@ -10,16 +10,17 @@ import {
 import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../../utils/api';
 import PlanDropdown from '../PlanDropDown';
-
-import { useModalStore } from '@prodgenie/libs/store';
 
 export default function CreateWorkspace() {
   const [loading, setLoading] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+  const { setWorkspaces } = useWorkspaceStore((state) => state);
 
   const { closeModal } = useModalStore();
 
@@ -28,13 +29,17 @@ export default function CreateWorkspace() {
 
     try {
       setLoading(true);
-      const res = await api.post(
+      const { data } = await api.post(
         `${apiRoutes.workspace.base}${apiRoutes.workspace.createWorkspace}`,
         {
           workspaceName,
           planId: selectedPlanId,
         }
       );
+
+      // on success change active workspace and update workspaces list
+      // ✅ Hard refresh the entire app
+      window.location.reload();
     } catch (err) {
       console.error(err);
     } finally {

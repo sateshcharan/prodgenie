@@ -15,6 +15,8 @@ import DeleteUser from './DeleteUser';
 import ResetPassword from './ResetPassword';
 import PricingCard from '../PricingCard';
 import LeaveWorkspace from './LeaveWorkspace';
+import DeleteAccount from './DeleteAccount';
+import ReactivateAccount from './ReactivateAccount';
 
 import { useModalStore } from '@prodgenie/libs/store';
 
@@ -53,6 +55,15 @@ const ModalManager = () => {
         </Modal>
       );
 
+    case 'auth:reactivateAccount':
+      return (
+        <Modal title="Reactivate Account" description="Reactivate your account">
+          <Auth imageUrl={authDialogImage}>
+            <ReactivateAccount />
+          </Auth>
+        </Modal>
+      );
+
     case 'workspace:create':
       return (
         <Modal
@@ -83,13 +94,6 @@ const ModalManager = () => {
         </Modal>
       );
 
-    case 'workspace:deleteUser':
-      return (
-        <Modal title="Delete My Account" description="Delete My Account">
-          <DeleteUser />
-        </Modal>
-      );
-
     case 'workspace:editUserRole':
       return (
         <Modal
@@ -97,6 +101,20 @@ const ModalManager = () => {
           description="Add user to workspace"
         >
           <EditUserRole workspaceUserId={modalProps?.workspaceUserId} />
+        </Modal>
+      );
+
+    case 'workspace:deleteUser':
+      return (
+        <Modal title="Delete My Account" description="Delete My Account">
+          <DeleteUser />
+        </Modal>
+      );
+
+    case 'workspace:deleteAccount':
+      return (
+        <Modal title="Delete My Account" description="Delete My Account">
+          <DeleteAccount workspaceId={modalProps?.workspaceId} />
         </Modal>
       );
 

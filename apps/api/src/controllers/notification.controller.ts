@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
-import { NotificationService, WorkspaceService } from '../services';
+import { WorkspaceService } from '../services/workspace.service';
+import { NotificationService } from '../services/notification.service';
 
 export class NotificationController {
   static getUserNotifications = async (req: Request, res: Response) => {

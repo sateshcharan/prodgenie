@@ -3,19 +3,15 @@ import { randomUUID } from 'crypto';
 import { writeFile } from 'fs/promises';
 import { json } from 'stream/consumers';
 
-import { FileType } from '@prisma/client';
-import { fileProcessingQueue } from '@prodgenie/libs/queues';
+import { fileType } from '@prisma/client';
+import { fileProcessingQueue } from '@prodgenie/libs/redis';
 import { FileStorageService } from '@prodgenie/libs/supabase';
-import { EventStatus, prisma, EventService } from '@prodgenie/libs/db';
+import { status, prisma, EventService } from '@prodgenie/libs/db';
 
 import { ThumbnailService } from './thumbnail.service';
 
-const fileStorageService = new FileStorageService();
-const thumbnailService = new ThumbnailService();
-const eventService = new EventService();
-
 export class FileService {
-  async uploadFile(
+  static async uploadFile(
     filesWithId: any[],
     fileType: string,
     user: any,
@@ -24,7 +20,8 @@ export class FileService {
     const savedFiles: any[] = [];
     const workspaceId = activeWorkspace?.workspace?.id;
     const userId = user?.id;
-    const folder = activeWorkspace?.workspace?.name.trim();
+    // const folder = activeWorkspace?.workspace?.name.trim();
+    const folder = workspaceId;
 
     if (!folder || !workspaceId || !userId) {
       throw new Error('Workspace or user information is missing');
@@ -34,26 +31,31 @@ export class FileService {
       const extension = file.originalname.split('.').pop();
       const uploadPath = `${folder}/${fileType}/${file.id}.${extension}`;
 
-      await fileStorageService.uploadFile(uploadPath, file, fileType, user);
+      await FileStorageService.uploadFile(
+        uploadPath,
+        file
+        // fileType, user
+      ); // upload to storage
 
+      // save file entry in the database
       const savedFile = await prisma.file.create({
         data: {
           id: file.id,
           name: file.originalname,
           path: uploadPath,
-          uploadedBy: userId,
+          userId: userId,
           workspaceId,
-          type: fileType as FileType,
+          type: fileType as fileType,
         },
       });
 
       savedFiles.push(savedFile);
     }
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { credits: true },
-    });
+    // const workspace = await prisma.workspace.findUnique({
+    //   where: { id: workspaceId },
+    //   select: { credits: true },
+    // });
 
     // await EventService.record({
     //   userId,
@@ -61,14 +63,14 @@ export class FileService {
     //   relatedFileId: savedFiles[0].id,
     //   type: 'FILE_UPLOADED',
     //   details: { filename: 'plan.pdf' },
-    //   status: EventStatus.COMPLETED,
+    //   status: status.COMPLETED,
     //   reason: 'File uploaded successfully',
     // });
 
     return savedFiles;
   }
 
-  async handleUpload(
+  static async handleUpload(
     files: any[],
     fileType: string,
     user: any,
@@ -87,7 +89,7 @@ export class FileService {
     }));
 
     // upload files
-    const result = await this.uploadFile(
+    const savedFiles = await this.uploadFile(
       filesWithId,
       fileType,
       user,
@@ -96,13 +98,13 @@ export class FileService {
 
     // queue thumbnail generation
     for (const file of filesWithId) {
-      const screenshotBuffer = await thumbnailService.generate(file, fileType);
+      const screenshotBuffer = await ThumbnailService.generate(file, fileType);
 
       if (screenshotBuffer) {
         const tmpPath = path.join('/tmp', `${file.id}-thumbnail.jpg`);
         await writeFile(tmpPath, screenshotBuffer);
 
-        await thumbnailService.set(
+        await ThumbnailService.set(
           {
             ...file,
             buffer: screenshotBuffer,
@@ -114,7 +116,6 @@ export class FileService {
           activeWorkspace
         );
       }
-      // }
 
       if (fileType === 'drawing') {
         // add empty file data using the bom.json config
@@ -148,16 +149,11 @@ export class FileService {
         );
       }
     }
-    const savedFiles = await this.uploadFile(
-      filesWithId,
-      fileType,
-      user,
-      activeWorkspace
-    );
+
     return savedFiles;
   }
 
-  async updateFile(fileId: string, data: Record<string, any>) {
+  static async updateFile(fileId: string, data: Record<string, any>) {
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
@@ -169,7 +165,7 @@ export class FileService {
     });
   }
 
-  async replaceFile(
+  static async replaceFile(
     fileId: string,
     fileType: string,
     uploadedFiles: any[],
@@ -178,7 +174,7 @@ export class FileService {
     const dbFile = await prisma.file.findUnique({ where: { id: fileId } });
     if (!dbFile) throw new Error('File not found');
 
-    const replacement = await fileStorageService.replaceFile(
+    const replacement = await FileStorageService.replaceFile(
       dbFile.path,
       uploadedFiles[0],
       fileType,
@@ -191,7 +187,18 @@ export class FileService {
     });
   }
 
-  async listFiles(
+  private static async safeSignedUrl(path?: string | null) {
+    if (!path) return null;
+
+    try {
+      return await FileStorageService.getSignedUrl(path);
+    } catch (err) {
+      console.warn('Signed URL failed for:', path);
+      return null; // 🔥 DO NOT THROW
+    }
+  }
+
+  static async listFiles(
     fileType: string,
     workspaceId: string,
     options?: {
@@ -212,7 +219,7 @@ export class FileService {
 
     // 1️⃣ Fetch base files (shared logic)
     const files = await prisma.file.findMany({
-      where: { workspaceId, type: fileType as FileType },
+      where: { workspaceId, type: fileType as fileType },
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -246,16 +253,34 @@ export class FileService {
       );
     }
 
-    // 3️⃣ Enrich: signed URLs + optional extraData
+    // // 3️⃣ Enrich: signed URLs + optional extraData
+    // const enriched = await Promise.all(
+    //   files.map(async (file, i) => {
+    //     const thumbnailUrl = file.thumbnail
+    //       // ? await FileStorageService.getCachedSignedUrl(file.thumbnail) // with caching
+    //       ? await FileStorageService.getSignedUrl(file.thumbnail)
+    //       : null;
+
+    //     const pathUrl = file.path
+    //       // ? await FileStorageService.getCachedSignedUrl(file.path) // with caching
+    //       ? await FileStorageService.getSignedUrl(file.path)
+    //       : null;
+
+    //     return {
+    //       ...file,
+    //       thumbnail: thumbnailUrl,
+    //       path: pathUrl,
+    //       ...(fileType === 'config' ? { data: extraData[i] } : {}),
+    //     };
+    //   })
+    // );
+
     const enriched = await Promise.all(
       files.map(async (file, i) => {
-        const thumbnailUrl = file.thumbnail
-          ? await fileStorageService.getCachedSignedUrl(file.thumbnail)
-          : null;
-
-        const pathUrl = file.path
-          ? await fileStorageService.getCachedSignedUrl(file.path)
-          : null;
+        const [thumbnailUrl, pathUrl] = await Promise.all([
+          this.safeSignedUrl(file.thumbnail),
+          this.safeSignedUrl(file.path),
+        ]);
 
         return {
           ...file,
@@ -268,7 +293,7 @@ export class FileService {
 
     // 4️⃣ Pagination info
     const total = await prisma.file.count({
-      where: { workspaceId, type: fileType as FileType },
+      where: { workspaceId, type: fileType as fileType },
     });
 
     return {
@@ -281,27 +306,28 @@ export class FileService {
     };
   }
 
-  async getFileById(fileId: string, workspaceId: string) {
+  static async getFileById(fileId: string, workspaceId: string) {
     const file = await prisma.file.findUnique({
       where: { id: fileId, workspaceId },
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getCachedSignedUrl(file.path);
+    // const signedUrl = await FileStorageService.getCachedSignedUrl(file.path);
+    const signedUrl = await FileStorageService.getSignedUrl(file.path);
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
-  async getFileByName(fileName: string, workspaceId: string) {
+  static async getFileByName(fileName: string, workspaceId: string) {
     const file = await prisma.file.findFirst({
       where: { name: fileName, workspaceId },
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getCachedSignedUrl(file.path);
+    const signedUrl = await FileStorageService.getCachedSignedUrl(file.path);
     return { data: { ...file, signedUrl }, error: null };
   }
 
-  async getFileData(fileId: string) {
+  static async getFileData(fileId: string) {
     const data = await prisma.file.findUnique({
       where: { id: fileId },
       select: { data: true },
@@ -310,14 +336,14 @@ export class FileService {
     return data;
   }
 
-  async setFileData(fileId: string, data: any) {
+  static async setFileData(fileId: string, data: any) {
     return prisma.file.update({
       where: { id: fileId },
       data: { data },
     });
   }
 
-  async updateFileData(fileId: string, data: any) {
+  static async updateFileData(fileId: string, data: any) {
     const { data: existingFileData } = await prisma.file.findUnique({
       where: { id: fileId },
       select: { data: true },
@@ -334,19 +360,19 @@ export class FileService {
     });
   }
 
-  async getThumbnail(fileId: string, workspaceId: string) {
+  static async getThumbnail(fileId: string, workspaceId: string) {
     const file = await prisma.file.findUnique({
       where: { id: fileId, workspaceId },
     });
     if (!file) return { data: null, error: 'No file found' };
 
-    const signedUrl = await fileStorageService.getCachedSignedUrl(
+    const signedUrl = await FileStorageService.getCachedSignedUrl(
       file.thumbnail
     );
     return { data: { ...file, path: signedUrl }, error: null };
   }
 
-  async updateThumbnail(
+  static async updateThumbnail(
     reqFiles: Express.Multer.File[],
     fileId: string,
     user: any
@@ -361,7 +387,7 @@ export class FileService {
 
     if (!dbFile) throw new Error('File not found');
 
-    const newThumb = await fileStorageService.replaceFile(
+    const newThumb = await FileStorageService.replaceFile(
       dbFile.thumbnail,
       uploadedFile,
       'thumbnail',
@@ -374,7 +400,7 @@ export class FileService {
     });
   }
 
-  async duplicateFile(
+  static async duplicateFile(
     fileId: string,
     fileType: string,
     duplicateFileName: string
@@ -396,19 +422,19 @@ export class FileService {
         path: newPath,
         type: file.type,
         workspaceId: file.workspaceId,
-        uploadedBy: file.uploadedBy,
+        userId: file.userId,
         data: file.data,
         thumbnail: file.thumbnail,
       },
     });
 
     // Duplicate the file in storage
-    await fileStorageService.duplicateFile(file.path, fileType, newPath);
+    await FileStorageService.duplicateFile(file.path, fileType, newPath);
 
     //Duplicate thumbnail entry in database
   }
 
-  async deleteFile(
+  static async deleteFile(
     fileId: string,
     fileType: string,
     user: any,
@@ -427,11 +453,11 @@ export class FileService {
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
-    await fileStorageService.deleteFile(file.path, fileType, user);
+    await FileStorageService.deleteFile(file.path, fileType, user);
     return prisma.file.delete({ where: { id: fileId } });
   }
 
-  async renameFile(fileId: string, newName: string) {
+  static async renameFile(fileId: string, newName: string) {
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 
@@ -441,7 +467,7 @@ export class FileService {
 
     const newNameWithExtension = newName + '.' + extension;
 
-    await fileStorageService.renameFile(file.path, newPath);
+    await FileStorageService.renameFile(file.path, newPath);
 
     return prisma.file.update({
       where: { id: fileId },

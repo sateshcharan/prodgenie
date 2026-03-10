@@ -6,20 +6,14 @@ import { Readable } from 'stream';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 
 export class FileHelperService {
-  private readonly fileStorageService: FileStorageService;
-
-  constructor() {
-    this.fileStorageService = new FileStorageService();
-  }
-
-  async fetchJsonFromSignedUrl(path: string): Promise<any> {
+  static async fetchJsonFromSignedUrl(path: string): Promise<any> {
     if (!path) throw new Error('Path not provided');
-    const url = await this.fileStorageService.getCachedSignedUrl(path);
+    const url = await FileStorageService.getCachedSignedUrl(path);
     const { data } = await axios.get(url);
     return data;
   }
 
-  async downloadToTemp(signedUrl: string, filename: string) {
+  static async downloadToTemp(signedUrl: string, filename: string) {
     const tempDir = './tmp';
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });

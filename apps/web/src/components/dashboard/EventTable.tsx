@@ -23,6 +23,14 @@ import {
 import * as React from 'react';
 
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@prodgenie/libs/ui/table';
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -34,15 +42,7 @@ import {
 import { Badge } from '@prodgenie/libs/ui/badge';
 import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
-import { Progress } from '@radix-ui/react-progress';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@prodgenie/libs/ui/table';
+import { Progress } from '@prodgenie/libs/ui/progress';
 import { useWorkspaceStore } from '@prodgenie/libs/store';
 
 // ✅ Type from your Prisma schema
@@ -64,32 +64,30 @@ export const columns: ColumnDef<Event>[] = [
     cell: ({ row }) => <div className="capitalize">{row.getValue('type')}</div>,
   },
   {
-    accessorFn: (row) => row.user?.name,
-    id: 'user',
-    header: 'User',
+    accessorKey: 'description',
+    header: 'Description',
     cell: ({ row }) => (
-      <div className="text-muted-foreground">{row.getValue('user') || '—'}</div>
+      <div className="capitalize">{row.getValue('description')}</div>
     ),
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Date',
-    cell: ({ row }) =>
-      new Date(row.getValue('createdAt') as string).toLocaleString(),
   },
   {
     accessorKey: 'creditChange',
     header: () => <div className="text-right">Change</div>,
     cell: ({ row }) => {
       const value = row.getValue('creditChange') as number;
-      const formatted = new Intl.NumberFormat('en-US', {
+
+      // Format absolute number using currency
+      const absFormatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
-      }).format(value);
+        currency: 'INR',
+      }).format(Math.abs(value));
+
+      // Add + or - manually
+      const formatted = value > 0 ? `+ ${absFormatted}` : `- ${absFormatted}`;
 
       return (
         <div
-          className={`text-right font-medium ${
+          className={`text-right font-medium whitespace-nowrap ${
             value > 0 ? 'text-green-600' : value < 0 ? 'text-red-600' : ''
           }`}
         >
@@ -100,14 +98,14 @@ export const columns: ColumnDef<Event>[] = [
   },
   {
     accessorKey: 'balanceAfter',
-    header: () => <div className="text-right">Balance</div>,
+    header: () => <div className="text-right">Balance After</div>,
     cell: ({ row }) => {
       const value = row.getValue('balanceAfter') as number | null;
       if (value == null)
         return <div className="text-right text-muted-foreground">—</div>;
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
       }).format(value);
       return <div className="text-right">{formatted}</div>;
     },
@@ -122,10 +120,7 @@ export const columns: ColumnDef<Event>[] = [
 
       return (
         <div className="flex items-center justify-end space-x-2">
-          <Progress value={value} className="w-24" />
-          <span className="text-xs text-muted-foreground w-8 text-right">
-            {Math.round(value)}%
-          </span>
+          <Progress value={value} />
         </div>
       );
     },
@@ -234,6 +229,20 @@ export const columns: ColumnDef<Event>[] = [
       );
     },
   },
+  // {
+  //   accessorFn: (row) => row.user?.name,
+  //   id: 'user',
+  //   header: 'User',
+  //   cell: ({ row }) => (
+  //     <div className="text-muted-foreground">{row.getValue('user')}</div>
+  //   ),
+  // },
+  {
+    accessorKey: 'createdAt',
+    header: 'Created At',
+    cell: ({ row }) =>
+      new Date(row.getValue('createdAt') as string).toLocaleString(),
+  },
   {
     id: 'actions',
     enableHiding: false,
@@ -275,7 +284,7 @@ const EventTable: React.FC<EventTableProps> = ({ events, onRefresh }) => {
   const { workspaceEvents } = useWorkspaceStore();
 
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ errorData: false });
+    React.useState<VisibilityState>({ errorData: false, createdAt: false });
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({

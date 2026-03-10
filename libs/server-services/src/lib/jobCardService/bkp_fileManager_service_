@@ -1,20 +1,15 @@
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
 
-import { FileService } from '../file.service.js';
-import { ThumbnailService } from '../thumbnail.service.js';
-import { PdfService } from '../pdf.service.js';
-
 import { FileStorageService } from '@prodgenie/libs/supabase';
+import { FileService } from './file.service.js';
+
+import { PdfService } from './pdf.service.js';
+import { ThumbnailService } from './thumbnail.service.js';
 
 export class FileManager {
-  private fileService = new FileService();
-  private thumbnailService = new ThumbnailService();
-  private storageService = new FileStorageService();
-  private pdfService = new PdfService();
-
   async saveAsPDF(html: string, jobCardNumber: string) {
-    return this.pdfService.generatePDF(html, jobCardNumber);
+    return PdfService.generatePDF(html, jobCardNumber);
   }
 
   async uploadJobCard(filePath: string, user: any, workspace: any) {
@@ -34,13 +29,13 @@ export class FileManager {
       buffer,
     };
 
-    const jobCard = await this.fileService.uploadFile(
+    const jobCard = await FileService.uploadFile(
       [file],
       'jobCard',
       user,
       workspace
     );
-    const thumbBuffer = await this.thumbnailService.generate(file, 'jobCard');
+    const thumbBuffer = await ThumbnailService.generate(file, 'jobCard');
     const thumb: Express.Multer.File = {
       fieldname: 'file',
       originalname: `${jobCard[0].id}_thumbnail.png`,
@@ -52,7 +47,7 @@ export class FileManager {
       filename: '',
       path: '',
     };
-    await this.thumbnailService.set(thumb, jobCard[0].id, user, workspace);
-    return await this.storageService.getSignedUrl(jobCard[0].path);
+    await ThumbnailService.set(thumb, jobCard[0].id, user, workspace);
+    return await FileStorageService.getSignedUrl(jobCard[0].path);
   }
 }

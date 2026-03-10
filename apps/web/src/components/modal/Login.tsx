@@ -1,8 +1,8 @@
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -24,13 +24,13 @@ import api from '../../utils/api';
 import { useOAuth } from '../../hooks/useOAuth';
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
   const navigate = useNavigate();
   const { setAuthType } = useAuthStore();
   const { continueWithProvider } = useOAuth();
   const { openModal, closeModal } = useModalStore();
+  const [showPassword, setShowPassword] = useState(false);
 
+  // React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -39,9 +39,10 @@ const Login = () => {
     setValue,
   } = useForm({
     mode: 'onTouched',
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema), // Zod schema for validation
   });
 
+  // gets saved remember me data
   useEffect(() => {
     const saved = localStorage.getItem('rememberMeData');
     if (saved) {
@@ -54,27 +55,24 @@ const Login = () => {
   }, [setValue]);
 
   const handleEmailLogin = async (data: any) => {
+    const { rememberMe, ...creds } = data;
+
+    rememberMe
+      ? localStorage.setItem('rememberMeData', JSON.stringify(creds))
+      : localStorage.removeItem('rememberMeData');
+
     try {
-      const { rememberMe, ...creds } = data;
-
-      if (rememberMe) {
-        localStorage.setItem('rememberMeData', JSON.stringify(creds));
-      } else {
-        localStorage.removeItem('rememberMeData');
-      }
-
       const res = await api.post(
         `${apiRoutes.auth.base}${apiRoutes.auth.login.email}`,
         data
       );
-
-      if (res.status === 200) {
-        toast.success('Login successful!');
-        closeModal();
-        navigate('/dashboard');
-      } else if (res.status === 401) {
-        toast.error(res.data.message || 'Invalid email or password');
+      if (!res.data.success) {
+        toast.error('Invalid email or password');
+        return;
       }
+      toast.success('Login successful!');
+      closeModal();
+      navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Login failed');
     }
@@ -102,7 +100,7 @@ const Login = () => {
                       type={showPassword ? 'text' : 'password'}
                       {...register(name)}
                       placeholder={placeholder}
-                      className="pr-10" // gives space for the eye icon
+                      className="pr-10"
                     />
                     <Button
                       type="button"

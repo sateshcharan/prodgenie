@@ -3,16 +3,19 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
+import { useModalStore } from '@prodgenie/libs/store';
 
 import api from '../../utils/api';
 
 const PricingSlider = () => {
   const [plans, setPlans] = useState<
-    { id: string; title: string; price: number; features: string[] }[]
+    { id: string; name: string; price: number; features: string[] }[]
   >([]);
   const [interval, setInterval] = useState<'month' | 'year'>('year');
   const [pages, setPages] = useState(20);
   const isYearly = interval === 'year';
+
+  const { openModal } = useModalStore();
 
   const YEARLY_DISCOUNT = 0.25; // 25% off = 3 months free
 
@@ -39,7 +42,7 @@ const PricingSlider = () => {
 
           return {
             id: p.id,
-            title: p.title || p.name,
+            name: p.name,
             price: p.price,
             features: parsedFeatures,
           };
@@ -56,9 +59,9 @@ const PricingSlider = () => {
 
   const getPlanByPages = (pageCount: number) => {
     if (!plans.length) return null;
-    if (pageCount <= 50) return plans.find((p) => p.id === 'free');
-    if (pageCount <= 500) return plans.find((p) => p.id === 'starter');
-    return plans.find((p) => p.id === 'enterprise');
+    if (pageCount <= 50) return plans.find((p) => p.name === 'free');
+    if (pageCount <= 500) return plans.find((p) => p.name === 'starter');
+    return plans.find((p) => p.name === 'enterprise');
   };
 
   const selectedPlan = getPlanByPages(pages);
@@ -136,7 +139,7 @@ const PricingSlider = () => {
         <div className="flex flex-col md:flex-row justify-center items-center gap-0 mt-10">
           <div className="relative flex flex-col justify-center items-center border-2 border-border rounded-2xl shadow-sm p-8 w-full md:w-[375px] bg-background h-[400px]">
             <h2 className="absolute -top-4 bg-background px-4 font-extrabold text-foreground capitalize">
-              {selectedPlan.title} Plan
+              {selectedPlan.name} Plan
             </h2>
 
             <div className="mt-6">
@@ -173,7 +176,11 @@ const PricingSlider = () => {
               </p>
             </div>
 
-            <Button className="mt-4 bg-primary text-primary-foreground px-6  rounded-full hover:scale-105 transition">
+            <Button
+              type="button"
+              className="mt-4 bg-primary text-primary-foreground px-6  rounded-full hover:scale-105 transition"
+              onClick={() => openModal('auth:signup')}
+            >
               Get started
             </Button>
 

@@ -1,188 +1,220 @@
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+// import { createClient } from '@supabase/supabase-js';
 import {
   createServerClient,
   parseCookieHeader,
   serializeCookieHeader,
 } from '@supabase/ssr';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-// import { createClient } from '@supabase/supabase-js';
 
 import { prisma } from '@prodgenie/libs/db';
-import { supabase } from '@prodgenie/libs/supabase';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { StringService } from '@prodgenie/libs/shared-utils';
+import {
+  supabase,
+  supabaseAdmin,
+  FolderService,
+} from '@prodgenie/libs/supabase';
+import { CustomError } from '@prodgenie/libs/server-services/lib/error.service.js';
 
-import { FolderService } from './folder.service.js';
-
-const folderService = new FolderService();
-const stringService = new StringService();
-
-const SECRET_KEY = process.env.JWT_SECRET_BCRYPT || 'Smar49atck@123';
+import { WorkspaceService } from './workspace.service.js';
+import { UserService } from './user.service.js';
+import { apiRoutes } from '@prodgenie/libs/constant';
 
 const isProd = process.env.NODE_ENV === 'production';
+// const SECRET_KEY = process.env.JWT_SECRET_BCRYPT ;
 
-if (!SECRET_KEY) {
-  throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
-}
-
-interface SignupOwnerPayload {
-  name: string;
-  email: string;
-  password: string;
-}
+// if (!SECRET_KEY) {
+//   throw new Error('JWT_SECRET_BCRYPT is not defined in environment variables');
+// }
 
 export class AuthService {
-  private static async setupNewUser(
-    supabaseUserId: string,
-    email: string,
-    name: string
-  ) {
-    // Confirm pending invites (optional)
-    // await this.acceptPendingInvites(supabaseUserId, email);
+  static async signupEmail({
+    name,
+    email,
+    password,
+  }: {
+    name: string;
+    email: string;
+    password?: string;
+  }) {
+    if (!email || !password) throw new Error('Email and password is required');
 
-    if (!name) name = stringService.camelCase(email.split('@')[0]);
+    // const existingUser = await prisma.user.findUnique({
+    //   where: { email },
+    // });
+    // if (existingUser)
+    //   throw new CustomError(
+    //     'user with this email already exists try logging in',
+    //     409
+    //   );
 
-    // Create or update user in DB
-    await prisma.user.upsert({
-      where: { id: supabaseUserId },
-      update: { email, name },
-      create: { id: supabaseUserId, email, name },
-    });
-
-    // Find or create workspace
-    let workspace = await prisma.workspace.findFirst({ where: { name } });
-    if (!workspace) {
-      workspace = await prisma.workspace.create({
-        data: {
-          name,
-          planId: 'free',
-          // credits: prisma.plan.findUnique({ where: { id: 'free' } }).credits,
-        },
-      });
-    }
-
-    // Add user as workspace member
-    await prisma.workspaceMember.upsert({
-      where: {
-        userId_workspaceId: {
-          userId: supabaseUserId,
-          workspaceId: workspace.id,
-        },
-      },
-      update: { role: 'OWNER' },
-      create: {
-        userId: supabaseUserId,
-        workspaceId: workspace.id,
-        role: 'OWNER',
-      },
-    });
-
-    // Scaffold storage folders
-    await folderService.scaffoldFolder(name, 'free');
-  }
-
-  static async signupEmail({ name, email, password }: SignupOwnerPayload) {
     // Sign up user in Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseAdmin.auth.signUp({
       email,
       password,
       options: {
         data: {
           name,
-          type: 'OWNER',
+          type: 'owner',
+          provider: 'email',
         },
       },
     });
     if (error) throw new Error(error.message);
 
-    const supabaseUserId = data.user?.id;
-    if (!supabaseUserId) throw new Error('User ID not returned');
+    const supabaseUser = data.user;
+    if (!supabaseUser?.id) throw new Error('User ID not returned');
 
-    await this.setupNewUser(supabaseUserId, email, name);
+    // Setup new user and workspace after sign up
+    try {
+      await prisma.$transaction(async (tx) => {
+        const workspace = await UserService.setupNewUserTx(
+          tx,
+          supabaseUser.id,
+          email,
+          name
+        );
+        await FolderService.scaffoldFolder(workspace.id);
+      });
+    } catch (err: any) {
+      await supabaseAdmin.auth.admin.deleteUser(supabaseUser.id);
+      throw new Error(err);
+    }
 
-    return { user: data.user, session: data.session };
+    return { user: data.user, session: data.session ?? null };
   }
 
   static async loginEmail(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    if (!email || !password) throw new Error('Email and password is required');
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser)
+      throw new CustomError('No user found with this email', 404);
+
+    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      const err: any = new Error(error.message || 'Invalid email or password');
-      err.code = 'INVALID_CREDENTIALS';
-      throw err;
+    if (error?.code === 'invalid_credentials') {
+      throw error;
     }
 
-    if (!data.session) {
-      const err: any = new Error('No session returned from Supabase');
-      err.code = 'INVALID_CREDENTIALS';
-      throw err;
-    }
+    const { session, user } = data;
+    if (!session || !user) throw new Error('Invalid session or user');
 
-    // supabase auth session
-    if (!data.session) throw new Error('No session returned from Supabase');
-
-    // sync user confirmation status
-    const supabaseUserId = data.user?.id;
-    if (supabaseUserId && data.user?.email) {
-      await prisma.user.upsert({
-        where: { id: supabaseUserId },
-        update: { email: data.user.email, name: data.user.user_metadata?.name },
-        create: {
-          id: supabaseUserId,
-          email: data.user.email,
-          name: data.user.user_metadata?.name || '',
-        },
-      });
-
-      // await this.acceptPendingInvites(supabaseUserId, data.user.email);
-    }
-
-    return data.session; // contains access_token + refresh_token
+    return session;
   }
 
   static async continueWithProvider(provider: string) {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabaseAdmin.auth.signInWithOAuth({
       provider: provider as 'google',
       options: {
-        redirectTo: `${process.env.VITE_API_URL}/api/callback/OAuth`,
+        redirectTo: `${process.env.VITE_API_URL}${apiRoutes.callback.base}${apiRoutes.callback.OAuth}`,
       },
     });
+
+    // setup new user
+    // await this.setupNewUser(data.user.id, data.user.email, data.user.name);
 
     if (error) throw new Error(error.message);
     return data;
   }
 
+  static async inviteUserViaEmail(email: string) {
+    if (!email) throw new Error('Email required');
+
+    // First, check Supabase auth for existing user (listUsers + find)
+    const { data: listData, error: listError } =
+      await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+
+    if (listError) console.warn('listUsers error', listError);
+
+    const existing = listData?.users?.find(
+      (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+
+    // If user exists in Supabase Auth, return the user object (and ensure Prisma row)
+    if (existing) {
+      await prisma.user.upsert({
+        where: { id: existing.id },
+        update: { email: existing.email },
+        create: {
+          id: existing.id,
+          email: existing.email,
+          name: existing.user_metadata?.name ?? '',
+        },
+      });
+
+      return existing;
+    }
+
+    // Otherwise, send invite (admin.inviteUserByEmail)
+    const { data: invited, error: inviteError } =
+      await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
+      });
+
+    if (inviteError)
+      throw new Error(inviteError.message || 'Failed to invite user');
+
+    // Supabase may or may not return the user id immediately depending on config.
+    // invited.user may exist; if not, we rely on later signup to create Prisma row.
+    const supaUser = invited?.user ?? null;
+
+    // If Supabase returns user id, create Prisma row now
+    if (supaUser?.id) {
+      await prisma.user.upsert({
+        where: { id: supaUser.id },
+        update: { email: supaUser.email ?? email },
+        create: {
+          id: supaUser.id,
+          email: supaUser.email ?? email,
+          name: supaUser.user_metadata?.name ?? '',
+        },
+      });
+    } else {
+      // Create a placeholder pending invite row in your users table if desired,
+      // or create a workspace-invite row - depending on your design.
+      // For now we return the invited payload.
+    }
+
+    return invited;
+  }
+
   static async resetPassword(email: string) {
-    // Step 1: Find the user by email in Supabase
-    const {
-      data: { users },
-      error: fetchError,
-    } = await supabase.auth.admin.listUsers();
+    // Use supabase admin to ensure user exists and is email provider
+    const { data: listData, error: listError } =
+      await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
-    if (fetchError) throw new Error(fetchError.message);
+    if (listError) throw new Error(listError.message);
 
-    const user = users.find((u) => u.email === email);
+    const user = listData?.users?.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
     if (!user) throw new Error('No account found with this email.');
 
-    // Step 2: Check the provider(s)
     const provider =
       user.app_metadata?.provider || user.identities?.[0]?.provider;
-
     if (provider && provider !== 'email') {
       throw new Error(
-        `This account uses ${provider} for login. Password reset isn't required. Please sign in using ${provider}.`
+        `Account uses ${provider} for login. Please sign in using ${provider}.`
       );
     }
 
-    // Step 3: Send reset link (only for email/password users)
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    const { data, error } = await supabaseAdmin.auth.resetPasswordForEmail(
+      email
+    );
     if (error) throw new Error(error.message);
-
-    return { message: 'Password reset link sent successfully.', data };
+    return { message: 'Password reset link sent', data };
   }
 
   static async updatePassword(password: string, email?: string) {
@@ -226,12 +258,27 @@ export class AuthService {
     return { message: 'Password updated successfully.', data };
   }
 
-  static async oAuthCallback(req: Request, res: Response) {
+  static async updatePasswordForUserId(userId: string, newPassword: string) {
+    if (!userId) throw new Error('userId required');
+    // Use admin API to update password
+    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      {
+        password: newPassword,
+      }
+    );
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  static async OAuthCallback(req: Request, res: Response) {
     const next = req.query.next as string;
     const code = req.query.code as string;
     if (!code) return res.status(400).send('Missing code');
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabaseAdmin.auth.exchangeCodeForSession(
+      code
+    );
     if (error) return res.status(401).json({ error: error.message });
 
     const { session } = data;
@@ -251,18 +298,31 @@ export class AuthService {
       maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
     });
 
-    // if (data.user) {
-    //   const supabaseUser = data.user;
+    const supabaseUser = data.user;
 
-    //   await this.setupNewUser(
-    //     supabaseUser.id,
-    //     supabaseUser.email,
-    //     supabaseUser.name
-    //   );
-    // }
+    // Setup new user and workspace after sign up if first time login
+    const existingUser = await prisma.user.findUnique({
+      where: { id: supabaseUser.id },
+    });
 
-    // redirect frontend
-    res.redirect('http://localhost:4200/dashboard');
+    if (!existingUser) {
+      try {
+        await prisma.$transaction(async (tx) => {
+          const workspace = await UserService.setupNewUserTx(
+            tx,
+            supabaseUser.id,
+            supabaseUser.email,
+            supabaseUser.user_metadata?.name
+          );
+          await FolderService.scaffoldFolder(workspace.id);
+        });
+      } catch (err: any) {
+        await supabaseAdmin.auth.admin.deleteUser(supabaseUser.id);
+        throw new Error(err);
+      }
+    }
+
+    res.redirect(process.env.WEB_URL + '/dashboard');
   }
 
   static async resetPasswordCallback(req, res) {
@@ -292,6 +352,7 @@ export class AuthService {
     res.redirect('http://localhost:3000/set-new-password');
   }
 
+  // == future features ==
   // static async acceptPendingInvites(userId: string, email: string) {
   //   const invites = await prisma.workspaceInvite.findMany({
   //     where: {
@@ -317,5 +378,16 @@ export class AuthService {
   //   }
 
   //   return invites;
+  // }
+
+  //   static async reactivateAccount(email: string) {
+  //   const { error } = await supabaseAdmin.auth.signInWithOtp({
+  //     email,
+  //     options: {
+  //       emailRedirectTo: `${process.env.FRONTEND_URL}/auth/reactivate`,
+  //     },
+  //   });
+
+  //   if (error) throw error;
   // }
 }

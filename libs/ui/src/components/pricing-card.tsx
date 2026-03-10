@@ -29,7 +29,7 @@ const PricingCard = ({
     <Card className="w-[350px] border border-gray-200 shadow-md flex flex-col justify-between">
       <div>
         <CardHeader className="text-center">
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className="capitalize">{title}</CardTitle>
           <CardDescription>
             Everything you need to scale your business.
           </CardDescription>
@@ -37,7 +37,7 @@ const PricingCard = ({
 
         <CardContent className="flex flex-col items-center space-y-4">
           <div className="text-3xl font-bold">
-            ${price}
+            ₹{price}
             <span className="text-sm text-gray-500">{cycleLabel}</span>
           </div>
 
@@ -51,7 +51,7 @@ const PricingCard = ({
 
       <CardFooter className="flex justify-center mt-auto">
         <Button
-          className="w-full"
+          className="w-full rounded-full"
           type="button"
           onClick={(e) => {
             e.preventDefault();

@@ -64,18 +64,18 @@ export default defineConfig(() => ({
         __dirname,
         '../../libs/constant/src'
       ),
-      '@prodgenie/libs/frontend-services': path.resolve(
-        __dirname,
-        '../../libs/frontend-services/src'
-      ),
-      '@prodgenie/libs/types': path.resolve(__dirname, '../../libs/types/src'),
       '@prodgenie/libs/shared-utils': path.resolve(
         __dirname,
         '../../libs/shared-utils/src'
       ),
+      '@prodgenie/libs/frontend-services': path.resolve(
+        __dirname,
+        '../../libs/frontend-services/src'
+      ),
       '@prodgenie/libs/ui': path.resolve(__dirname, '../../libs/ui/src'),
       '@prodgenie/libs/utils': path.resolve(__dirname, '../../libs/utils/src'),
       '@prodgenie/libs/store': path.resolve(__dirname, '../../libs/store/src'),
+      '@prodgenie/libs/types': path.resolve(__dirname, '../../libs/types/src'),
     },
   },
   build: {

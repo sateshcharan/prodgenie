@@ -8,62 +8,7 @@ datasource db {
 }
 
 //
-// Core Entities
-//
-
-model user {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  name     String?
-  provider String  @default("email")
-
-  activeWorkspaceId String?
-
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
-
-  memberships  workspaceMember[]
-  files        file[]
-  events       event[]
-  Notification notification[]
-}
-
-model workspace {
-  id        String    @id @default(uuid())
-  name      String
-  credits   Float     @default(0)
-  thumbnail String?
-  createdAt DateTime  @default(now())
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
-
-  planId String?
-  plan   plan?   @relation(fields: [planId], references: [id])
-
-  members      workspaceMember[]
-  files        file[]
-  events       event[]
-  Notification notification[]
-}
-
-model plan {
-  id             String    @id @default(uuid())
-  name           String
-  maxMembers     Int
-  maxStorage     Int       @default(340)
-  monthlyCredits Int       @default(0)
-  createdAt      DateTime  @default(now())
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
-  features       Json      @default("{}")
-  price          Float     @default(0)
-
-  workspaces workspace[]
-}
-
-//
-// Memberships & Roles
+// enums
 //
 
 enum workspaceRole {
@@ -78,26 +23,6 @@ enum workspaceMemberStatus {
   removed
 }
 
-model workspaceMember {
-  id          String                @id @default(uuid())
-  userId      String
-  workspaceId String
-  role        workspaceRole         @default(member)
-  status      workspaceMemberStatus @default(pending)
-  joinedAt    DateTime              @default(now())
-  deletedAt   DateTime?
-  isDeleted   Boolean               @default(false)
-
-  user      user      @relation(fields: [userId], references: [id])
-  workspace workspace @relation(fields: [workspaceId], references: [id])
-
-  @@unique([userId, workspaceId])
-}
-
-//
-// Files
-//
-
 enum fileType {
   drawing
   template
@@ -107,28 +32,6 @@ enum fileType {
   table
 }
 
-model file {
-  id          String    @id @default(uuid())
-  workspaceId String
-  uploadedBy  String
-  name        String
-  path        String
-  type        fileType
-  data        Json?
-  thumbnail   String?
-  createdAt   DateTime  @default(now())
-  deletedAt   DateTime?
-  isDeleted   Boolean   @default(false)
-
-  workspace workspace @relation(fields: [workspaceId], references: [id])
-  user      user      @relation(fields: [uploadedBy], references: [id])
-  events    event[]
-}
-
-//
-// Events (Transactions)
-//
-
 enum eventType {
   drawing_data_extraction
   jobcard_generation
@@ -137,26 +40,132 @@ enum eventType {
   subscription
 }
 
-enum eventStatus {
+enum status {
   pending
   processing
   completed
   failed
 }
 
+// enum notificationType {
+//   invite
+//   role_changed
+//   removed
+// }
+
+enum paymentProvider {
+  phonepe
+  stripe
+}
+
+//
+// Core Entities
+//
+
+model user {
+  id                String    @id @default(dbgenerated("auth.uid()")) @db.Uuid
+  activeWorkspaceId String?   @db.Uuid
+  name              String?
+  email             String    @unique
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  activeWorkspace workspace? @relation(fields: [activeWorkspaceId], references: [id])
+
+  memberships workspaceMember[]
+  files       file[]
+  events      event[]
+  // Notification notification[]
+}
+
+model workspace {
+  id            String    @id @default(uuid()) @db.Uuid
+  planId        String?   @db.Uuid
+  name          String    @unique
+  credits       Float     @default(0)
+  jobCardsCount Int       @default(0)
+  thumbnail     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @default(now())
+
+  plan plan? @relation(fields: [planId], references: [id])
+
+  members         workspaceMember[]
+  files           file[]
+  events          event[]
+  // Notification    notification[]
+  workspaceUsages workspaceUsage[]
+  // users           user[]
+  user            user[]
+}
+
+model workspaceUsage {
+  id          String @id @default(uuid()) @db.Uuid
+  workspaceId String @db.Uuid
+
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, periodStart, periodEnd])
+}
+
+model plan {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String    @unique
+  maxMembers     Int
+  maxStorage     Int       @default(340)
+  monthlyCredits Int       @default(0)
+  features       Json      @default("{}")
+  price          Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @default(now())
+
+  workspaces workspace[]
+}
+
+//
+// Files
+//
+
+model file {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @db.Uuid
+  userId      String    @db.Uuid
+  name        String
+  path        String
+  type        fileType
+  data        Json?
+  thumbnail   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @default(now())
+
+  workspace workspace @relation(fields: [workspaceId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
+  events    event[]
+}
+
+//
+// Events (Transactions)
+//
+
 model event {
-  id           String      @id
-  workspaceId  String
-  userId       String
+  id           String    @id @default(uuid()) @db.Uuid
+  workspaceId  String    @db.Uuid
+  userId       String    @db.Uuid
+  fileId       String?   @db.Uuid
   type         eventType
-  creditChange Float?      @default(0)
+  description  String    @default("")
+  creditChange Float?    @default(0)
   balanceAfter Float?
-  status       eventStatus @default(pending)
-  progress     Float?      @default(0)
+  status       status    @default(pending)
+  progress     Float?    @default(0)
   errorData    Json?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  fileId       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
 
   workspace workspace @relation(fields: [workspaceId], references: [id])
   File      file?     @relation(fields: [fileId], references: [id])
@@ -167,21 +176,54 @@ model event {
 // Notifications
 //
 
-enum notificationType {
-  invite
-  role_changed
-  removed
+// model notification {
+//   id          String           @id @default(uuid()) @db.Uuid
+//   userId      String           @db.Uuid
+//   workspaceId String?          @db.Uuid
+//   type        notificationType
+//   message     String
+//   read        Boolean          @default(false)
+//   createdAt   DateTime         @default(now())
+//   updatedAt   DateTime         @default(now())
+
+//   workspace workspace? @relation(fields: [workspaceId], references: [id])
+//   user      user       @relation(fields: [userId], references: [id])
+// }
+
+//
+// Memberships & Roles
+//
+
+model workspaceMember {
+  id          String                @id @default(uuid()) @db.Uuid
+  userId      String                @db.Uuid
+  workspaceId String                @db.Uuid
+  role        workspaceRole         @default(member)
+  status      workspaceMemberStatus @default(pending)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime?             @default(now())
+
+  workspace workspace @relation(fields: [workspaceId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, workspaceId])
 }
 
-model notification {
-  id          String           @id @default(uuid())
-  userId      String
-  workspaceId String?
-  type        notificationType
-  message     String
-  read        Boolean          @default(false)
-  createdAt   DateTime         @default(now())
+//
+// Payment
+//
 
-  user      user       @relation(fields: [userId], references: [id])
-  workspace workspace? @relation(fields: [workspaceId], references: [id])
+model payment {
+  merchantOrderId String          @unique @default(uuid())
+  providerOrderId String?
+  workspaceId     String?         @db.Uuid
+  userId          String?         @db.Uuid
+  amount          Int
+  currency        String          @default("INR")
+  provider        paymentProvider
+  status          status
+  transactionAt   DateTime?
+  meta            Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }

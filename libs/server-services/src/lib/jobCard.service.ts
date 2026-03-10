@@ -5,32 +5,23 @@ import { Readable } from 'stream';
 import { Parser } from 'expr-eval';
 import { randomUUID } from 'crypto';
 
-import { EventService, eventStatus, prisma } from '@prodgenie/libs/db';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { FileStorageService } from '@prodgenie/libs/supabase';
+import { EventService, status, prisma } from '@prodgenie/libs/db';
 import { jobCardRequest, BomItem, fileType } from '@prodgenie/libs/types';
+import { TemplateService } from '@prodgenie/libs/server-services/lib/template.service.js';
+import { FileHelperService } from '@prodgenie/libs/server-services/lib/fileHelper.service.js';
 
-import { PdfService } from './pdf.service.js';
-import { FileService } from './file.service.js';
-import { TemplateService } from './template.service.js';
-import { ThumbnailService } from './thumbnail.service.js';
-import { WorkspaceService } from './workspace.service.js';
-import { FileHelperService } from '../fileHelper.service.js';
+import { PdfService } from './jobCardService/pdf.service.js';
+import { FileService } from './jobCardService/file.service.js';
+import { ThumbnailService } from './jobCardService/thumbnail.service.js';
+import { WorkspaceService } from './jobCardService/workspace.service.js';
+import { jobCardQueue } from '@prodgenie/libs/redis';
 
 // const parser = new Parser();
 
 export class JobCardService {
-  private fileService = new FileService();
-  private fileStorageService = new FileStorageService();
-  private fileHelperService = new FileHelperService();
-  private templateService = new TemplateService();
-  private pdfService = new PdfService();
-  private stringService = new StringService();
-  private thumbnailService = new ThumbnailService();
-  private workspaceService = new WorkspaceService();
-  private eventService = new EventService();
-
-  async generateJobCard(
+  static async generateJobCard(
     {
       bom,
       jobCardForm,
@@ -47,24 +38,23 @@ export class JobCardService {
     const progress = (step: number) => Math.round((step / totalSteps) * 100);
     const templates: string[] = [];
     const {
-      name: workspaceName,
+      // name: workspaceName,
       id: workspaceId,
       credits: workspaceCredits,
     } = activeWorkspace?.workspace || {};
 
-    const next = async (status: eventStatus, message: string) => {
+    const next = async (status: status, message: string) => {
       currentStep++;
-      await this.eventService.updateProgress(
+      await EventService.updateProgress(
         workspaceId,
         jobId,
         status,
-        progress(currentStep),
-        message
+        progress(currentStep)
       );
     };
 
     // STEP 1 - Start
-    await next(eventStatus.processing, 'Initializing job card generation...');
+    await next('processing', 'Initializing job card generation...');
 
     if (!bom.length) return console.warn('bom is empty');
 
@@ -73,30 +63,30 @@ export class JobCardService {
     }
 
     // STEP 2 - Fetch workspace data
-    await next(eventStatus.processing, 'Loading workspace configurations...');
+    await next('processing', 'Loading workspace configurations...');
 
     console.log(`Generating job card : ${jobCardForm.global.jobCardNumber} `);
 
-    const tables = await this.fetchAllWorkspaceTables(workspaceId);
-    const tableConfigs = await this.buildTableConfigs(tables);
-    const bomConfig = await this.workspaceService.getWorkspaceConfig(
+    const tables = await JobCardService.fetchAllWorkspaceTables(workspaceId);
+    const tableConfigs = await JobCardService.buildTableConfigs(tables);
+    const bomConfig = await WorkspaceService.getWorkspaceConfig(
       workspaceId,
       'bom.json'
     );
 
     // STEP 3 - Download drawing
-    await next(eventStatus.processing, 'Downloading source drawing...');
-    // const drawingFile = await this.fileHelperService.downloadToTemp(
-    await this.fileHelperService.downloadToTemp(signedUrl, 'drawing.pdf');
+    await next('processing', 'Downloading source drawing...');
+    // const drawingFile = await FileHelperService.downloadToTemp(
+    await FileHelperService.downloadToTemp(signedUrl, 'drawing.pdf');
 
     // for (const bomItem of bom) {
     for (const [index, bomItem] of bom.entries()) {
       await next(
-        eventStatus.processing,
+        'processing',
         `Processing BOM item ${index + 1}/${bom.length}: ${bomItem.description}`
       );
 
-      const productSequence = await this.identifyProduct(bomItem);
+      const productSequence = await JobCardService.identifyProduct(bomItem);
       if (!productSequence?.sequencePath) {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
@@ -108,14 +98,13 @@ export class JobCardService {
         string
       >;
 
-      const sequence = await this.fileHelperService.fetchJsonFromSignedUrl(
+      const sequence = await FileHelperService.fetchJsonFromSignedUrl(
         productSequence.sequencePath
       ); // sequence formulas
 
       for (const templateSection of sequence.sections) {
-        const sectionUrl = await this.fileStorageService.getCachedSignedUrl(
-          `${workspaceName}/${templateSection.path}`
-        ); // template htm file in storage
+        const path = `${workspaceId}/${templateSection.path}`;
+        const sectionUrl = await FileStorageService.getCachedSignedUrl(path); // template htm file in storage
 
         const templateData = await prisma.file.findFirst({
           where: {
@@ -151,21 +140,21 @@ export class JobCardService {
               bomItem.description?.trim().toLowerCase()
           ), // filters printing details by part
 
-          ...this.stringService.prefixKeys('user', user),
-          ...this.stringService.prefixKeys('bomItem', bomItem),
-          ...this.stringService.prefixKeys('titleBlock', titleBlock),
-          ...this.stringService.prefixKeys('jobCardForm', jobCardForm.global), // global jobCardForm
+          ...StringService.prefixKeys('user', user),
+          ...StringService.prefixKeys('bomItem', bomItem),
+          ...StringService.prefixKeys('titleBlock', titleBlock),
+          ...StringService.prefixKeys('jobCardForm', jobCardForm.global), // global jobCardForm
           ...(jobCardForm.sections[
-            this.stringService.camelCase(bomItem.description)
+            StringService.camelCase(bomItem.description)
           ] &&
-            this.stringService.flattenObjectWith_({
+            StringService.flattenObjectWith_({
               [`jobCardForm`]:
                 jobCardForm.sections[
-                  this.stringService.camelCase(bomItem.description)
+                  StringService.camelCase(bomItem.description)
                 ],
             })), // section jobCardForm
 
-          ...this.stringService.prefixKeys('keyword', {
+          ...StringService.prefixKeys('keyword', {
             currentDate: new Date().toISOString().split('T')[0],
           }),
         }).reduce((acc, [key, value]) => {
@@ -178,15 +167,15 @@ export class JobCardService {
           templateContext
         );
 
-        const template = await this.fileHelperService.downloadToTemp(
+        const template = await FileHelperService.downloadToTemp(
           sectionUrl,
           templateSection.name
         );
 
-        const populatedTemplate = await this.templateService.injectValues(
-          template,
-          { ...templateContext, ...evaluatedtemplateFormulas }
-        );
+        const populatedTemplate = await TemplateService.injectValues(template, {
+          ...templateContext,
+          ...evaluatedtemplateFormulas,
+        });
         templates.push(populatedTemplate);
       }
       templates.push(`<div style="page-break-after: always;"></div>`);
@@ -194,52 +183,77 @@ export class JobCardService {
     }
 
     // STEP 5 - Merge and generate final PDF
-    await next(eventStatus.processing, 'Combining templates into final PDF...');
-    const finalDoc = await this.templateService.combineTemplates(templates);
+    await next('processing', 'Combining templates into final PDF...');
+    const finalDoc = await TemplateService.combineTemplates(templates);
 
     // STEP 6 - PDF generation
-    await next(eventStatus.processing, 'Rendering PDF...');
-    const outputPath = await this.pdfService.generatePDF(
+    await next('processing', 'Rendering PDF...');
+    const outputPath = await PdfService.generatePDF(
       finalDoc,
       jobCardForm.global.jobCardNumber
     );
     console.log(`Job card saved to ${outputPath}`);
 
     // STEP 7 - Upload file
-    await next(eventStatus.processing, 'Uploading generated job card...');
-    const { jobCardUrl, jobCardId } = await this.uploadJobCard(
+    await next('processing', 'Uploading generated job card...');
+    const { jobCardUrl, jobCardId } = await JobCardService.uploadJobCard(
       outputPath,
       user,
       activeWorkspace
     );
 
     // STEP 8 - Deduct credits
-    await next(eventStatus.processing, 'Deducting workspace credits...');
+    await next('processing', 'Deducting workspace credits...');
     await prisma.workspace.update({
       where: { id: workspaceId },
       data: { credits: { decrement: 10 } },
     });
 
     // STEP 9 - Cleanup
-    await next(eventStatus.processing, 'Cleaning up temporary files...');
+    await next('processing', 'Cleaning up temporary files...');
     await fs.rm('./tmp', { recursive: true });
 
     // STEP 10 - Done
-    await this.eventService.updateProgress(
-      activeWorkspace.id,
+    await EventService.updateProgress(
+      // activeWorkspace.id,
+      workspaceId,
       jobId,
-      eventStatus.completed,
-      100,
-      'Job card generation complete'
+      'completed',
+      100
     );
-    await this.eventService.update(jobId, {
+    await EventService.update(jobId, {
       fileId: jobCardId,
       creditChange: -10,
     });
+
+    // Update the usage record
+    // const now = new Date();
+
+    // const usage = await prisma.workspaceUsage.findFirst({
+    //   where: {
+    //     workspaceId,
+    //     periodStart: { lte: now },
+    //     periodEnd: { gte: now },
+    //   },
+    // });
+
+    // if (!usage) {
+    //   throw new Error('No active billing period found');
+    // }
+
+    await prisma.workspace.update({
+      where: {
+        id: workspaceId,
+      },
+      data: {
+        jobCardsCount: { increment: 1 },
+      },
+    });
+
     return jobCardUrl;
   }
 
-  // private async fetchWorkspaceConfig(
+  // static async fetchWorkspaceConfig(
   //   workspaceId: string,
   //   name: string,
   //   type: string
@@ -249,12 +263,12 @@ export class JobCardService {
   //     select: { path: true },
   //   });
 
-  //   return await this.fileHelperService.fetchJsonFromSignedUrl(
+  //   return await FileHelperService.fetchJsonFromSignedUrl(
   //     `${configFile?.path}`
   //   );
   // }
 
-  private async fetchAllWorkspaceTables(workspaceId: string) {
+  static async fetchAllWorkspaceTables(workspaceId: string) {
     const tableFiles = await prisma.file.findMany({
       where: { workspaceId, type: { in: ['table'] as fileType[] } },
       select: { name: true, type: true, path: true },
@@ -265,7 +279,7 @@ export class JobCardService {
     for (const file of tableFiles) {
       try {
         tables[file.name.replace('.json', '')] =
-          await this.fileHelperService.fetchJsonFromSignedUrl(file.path);
+          await FileHelperService.fetchJsonFromSignedUrl(file.path);
       } catch (err) {
         console.warn(`⚠️ Failed to load config: ${file.name}`, err);
       }
@@ -274,7 +288,7 @@ export class JobCardService {
     return tables;
   }
 
-  private async buildTableConfigs(tables: Record<string, any>) {
+  static async buildTableConfigs(tables: Record<string, any>) {
     const configs: Record<string, any> = {};
 
     for (const [tableName, tableData] of Object.entries(tables)) {
@@ -301,8 +315,8 @@ export class JobCardService {
     return configs;
   }
 
-  private async identifyProduct(item: BomItem) {
-    const keyword = this.stringService.camelCase(item.description); // e.g., "partitionLen"
+  static async identifyProduct(item: BomItem) {
+    const keyword = StringService.camelCase(item.description); // e.g., "partitionLen"
     const baseKeyword = keyword
       .replace(
         /^(Length|Width|Height|Master|Primary|Size|Dim|Len|Wid|Ht)|(?:Length|Width|Height|Master|Primary|Size|Dim|Len|Wid|Ht)$/gi,
@@ -363,7 +377,7 @@ export class JobCardService {
     }
   }
 
-  private async uploadJobCard(
+  static async uploadJobCard(
     filePath: string,
     user: string,
     activeWorkspace: string
@@ -385,14 +399,14 @@ export class JobCardService {
       // stream: undefined as any,
     } as Express.Multer.File & { id: string };
 
-    const jobCard = await this.fileService.uploadFile(
+    const jobCard = await FileService.uploadFile(
       [fakeMulterFile],
       'jobCard',
       user,
       activeWorkspace
     );
 
-    const thumbnailBuffer = await this.thumbnailService.generate(
+    const thumbnailBuffer = await ThumbnailService.generate(
       fakeMulterFile,
       'jobCard'
     );
@@ -409,21 +423,19 @@ export class JobCardService {
       stream: Readable.from(thumbnailBuffer),
     };
 
-    await this.thumbnailService.set(
+    await ThumbnailService.set(
       thumbnailFile,
       jobCard[0].id,
       user,
       activeWorkspace
     );
     return {
-      jobCardUrl: await this.fileStorageService.getCachedSignedUrl(
-        jobCard[0].path
-      ),
+      jobCardUrl: await FileStorageService.getCachedSignedUrl(jobCard[0].path),
       jobCardId,
     };
   }
 
-  async getJobCardNumber(workspace: {
+  static async getJobCardNumber(workspace: {
     workspace: { id: string; name: string };
   }) {
     const latest = await prisma.file.findFirst({
@@ -534,7 +546,59 @@ export class JobCardService {
   //   return cache;
   // }
 
-  private evaluateFormulasUnified(
+  static enqueueJobCardGeneration = async ({
+    user,
+    bom,
+    titleBlock,
+    printingDetails,
+    jobCardForm,
+    signedUrl,
+    activeWorkspaceId,
+    description,
+  }: {
+    user: any;
+    bom: any;
+    titleBlock: any;
+    printingDetails: any;
+    jobCardForm: any;
+    signedUrl: any;
+    activeWorkspaceId: any;
+    description: string;
+  }) => {
+    const activeWorkspace = user?.memberships?.find(
+      (m: any) => m.workspace.id === activeWorkspaceId
+    );
+
+    const jobCardGenerationData = {
+      user,
+      bom,
+      titleBlock,
+      printingDetails,
+      jobCardForm,
+      signedUrl,
+      activeWorkspace: activeWorkspace,
+    };
+
+    const jobId = randomUUID();
+
+    await EventService.record({
+      id: jobId,
+      userId: user?.id,
+      workspaceId: activeWorkspaceId,
+      type: 'jobcard_generation',
+      status: 'pending',
+      description: description,
+    });
+
+    await jobCardQueue.add('generateJobCard', {
+      jobCardGenerationData: jobCardGenerationData,
+      jobId: jobId,
+    });
+
+    return jobId;
+  };
+
+  static evaluateFormulasUnified(
     formulas: Record<string, string>,
     context: Record<string, any>
   ) {

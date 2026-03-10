@@ -11,24 +11,25 @@ import { extractBOMPrompt } from '@prodgenie/libs/constant';
 const puppeteer = puppeteerExtra as unknown as PuppeteerExtra;
 puppeteer.use(StealthPlugin());
 
+const openaiIds = {
+  url: 'https://chat.openai.com/',
+  fileUploadButton: '#upload-file-btn',
+  fileUploadMenu: '[role="menuitem"]',
+  fileUploadMenuAddPhotos: 'Add photos & files',
+  promptBox: '#prompt-textarea',
+  textAreaSubmitButton: '#composer-submit-button',
+  chatResponse: '[data-message-author-role="assistant"]',
+  deleteMenuButton: '[data-testid="conversation-options-button"]',
+  deleteConfirmButton:
+    'button[data-testid="delete-conversation-confirm-button"]',
+};
+
+const userDataDir = path.resolve(process.cwd(), 'puppeteer-session');
+const singletonLockPath = path.join(userDataDir, 'SingletonLock');
+
 export class PuppeteerService {
-  private openaiIds = {
-    url: 'https://chat.openai.com/',
-    fileUploadButton: '#upload-file-btn',
-    fileUploadMenu: '[role="menuitem"]',
-    fileUploadMenuAddPhotos: 'Add photos & files',
-    promptBox: '#prompt-textarea',
-    textAreaSubmitButton: '#composer-submit-button',
-    chatResponse: '[data-message-author-role="assistant"]',
-    deleteMenuButton: '[data-testid="conversation-options-button"]',
-    deleteConfirmButton:
-      'button[data-testid="delete-conversation-confirm-button"]',
-  };
 
-  private userDataDir = path.resolve(process.cwd(), 'puppeteer-session');
-  private singletonLockPath = path.join(this.userDataDir, 'SingletonLock');
-
-  public async extractFromChatGPT(filePath: string): Promise<string> {
+  static async extractFromChatGPT(filePath: string): Promise<string> {
     console.log(`Processing file: ${filePath}`);
     const browser = await this.launchBrowser();
 
@@ -36,7 +37,7 @@ export class PuppeteerService {
 
     try {
       const page = await browser.newPage();
-      await page.goto(this.openaiIds.url, { waitUntil: 'networkidle2' });
+      await page.goto(openaiIds.url, { waitUntil: 'networkidle2' });
 
       // upload file gpt-4
       // const uploadButton = await page.$('#upload-file-btn');
@@ -85,13 +86,13 @@ export class PuppeteerService {
     }
   }
 
-  private async delay(ms: number) {
+  static async delay(ms: number) {
     return new Promise((res) => setTimeout(res, ms));
   }
 
-  private async launchBrowser() {
-    if (fs.existsSync(this.singletonLockPath)) {
-      fs.unlinkSync(this.singletonLockPath);
+  static async launchBrowser() {
+    if (fs.existsSync(singletonLockPath)) {
+      fs.unlinkSync(singletonLockPath);
     }
     return puppeteer.launch({
       // needed for docker environment
@@ -111,7 +112,7 @@ export class PuppeteerService {
     });
   }
 
-  private async parseJsonSafely(jsonString: string) {
+  static async parseJsonSafely(jsonString: string) {
     try {
       const parsed = JSON.parse(jsonString);
       return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
@@ -121,8 +122,8 @@ export class PuppeteerService {
     }
   }
 
-  private async typePrompt(page: Page, prompt: string) {
-    const promptBox = await page.$(this.openaiIds.promptBox);
+  static async typePrompt(page: Page, prompt: string) {
+    const promptBox = await page.$(openaiIds.promptBox);
     if (!promptBox) throw new Error('Prompt textarea not found');
 
     // await page.evaluate((text: string) => {
@@ -135,16 +136,16 @@ export class PuppeteerService {
         const el = document.querySelector(selector) as HTMLElement | null;
         if (el) el.textContent = text;
       },
-      this.openaiIds.promptBox,
+      openaiIds.promptBox,
       prompt
     );
 
-    const submitButton = await page.$(this.openaiIds.textAreaSubmitButton);
+    const submitButton = await page.$(openaiIds.textAreaSubmitButton);
     if (!submitButton) throw new Error('Submit button not found');
     await submitButton.click();
   }
 
-  private async extractAssistantResponse(page: Page): Promise<any> {
+  static async extractAssistantResponse(page: Page): Promise<any> {
     await this.delay(30000);
     // await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 });
 
@@ -154,7 +155,7 @@ export class PuppeteerService {
       ) as HTMLElement[];
       const lastBlock = blocks.at(-1);
       return lastBlock?.textContent || null;
-    }, this.openaiIds.chatResponse);
+    }, openaiIds.chatResponse);
 
     console.log('Extracted text:', extractedText);
 
@@ -178,8 +179,8 @@ export class PuppeteerService {
     return this.parseJsonSafely(jsonMatch[1]);
   }
 
-  private async deleteCurrentChat(page: Page) {
-    const deleteMenuButton = await page.$(this.openaiIds.deleteMenuButton);
+  static async deleteCurrentChat(page: Page) {
+    const deleteMenuButton = await page.$(openaiIds.deleteMenuButton);
     if (!deleteMenuButton) throw new Error('Delete menu button not found');
 
     await deleteMenuButton.click();
@@ -188,14 +189,14 @@ export class PuppeteerService {
     await page.keyboard.press('Enter');
     await this.delay(1000);
     const deleteConfirmButton = await page.$(
-      this.openaiIds.deleteConfirmButton
+      openaiIds.deleteConfirmButton
     );
     if (!deleteConfirmButton)
       throw new Error('Delete confirm button not found');
     await deleteConfirmButton?.click();
   }
 
-  // private async deleteLastChat(page: Page) {
+  // static async deleteLastChat(page: Page) {
   //   const firstChat = await page.$('#history aside a');
   //   if (!firstChat) throw new Error('No chat history item found');
 

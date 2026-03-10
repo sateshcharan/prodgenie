@@ -1,5 +1,5 @@
 import { prisma } from '@prodgenie/libs/db';
-import { JobCardConfig } from './config';
+import { JobCardConfig } from './config.js';
 
 export class CreditService {
   async ensure(workspaceId: string) {

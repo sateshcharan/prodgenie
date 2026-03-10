@@ -1,9 +1,8 @@
-import { Router, raw } from 'express';
-import express from 'express';
-
-import { PaymentController } from '../controllers/payment.controller';
+import express, { Router, raw } from 'express';
 
 import { prisma } from '@prodgenie/libs/db';
+
+import { PaymentController } from '../controllers/payment.controller';
 
 const router: Router = Router();
 

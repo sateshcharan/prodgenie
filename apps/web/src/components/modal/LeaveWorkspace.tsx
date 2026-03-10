@@ -1,9 +1,6 @@
+import { toast } from 'sonner';
 import { useState } from 'react';
 
-import api from '../../utils/api';
-
-import { Button } from '@prodgenie/libs/ui/button';
-import { apiRoutes } from '@prodgenie/libs/constant';
 import {
   Card,
   CardContent,
@@ -11,8 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@prodgenie/libs/ui/card';
-import { toast } from 'sonner';
+import { Button } from '@prodgenie/libs/ui/button';
+import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
+
+import api from '../../utils/api';
 
 export default function LeaveWorkspace() {
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export default function LeaveWorkspace() {
     try {
       setLoading(true);
       const { data } = await api.post(
-        `${apiRoutes.workspace.base}/${apiRoutes.workspace.deleteCurrentWorkspace}`,
+        `${apiRoutes.workspace.base}/${apiRoutes.workspace.removeUserFromWorkspace}`,
         {
           workspaceId,
         }

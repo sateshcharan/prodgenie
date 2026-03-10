@@ -7,10 +7,10 @@ import { prisma } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { FileType } from '@prodgenie/libs/db';
 
-const storageFileService = new FileStorageService();
+// const storageFileService = new FileStorageService();
 
 export class ThumbnailService {
-  async get(
+  static async get(
     fileId: string,
     workspaceId: string
   ): Promise<{ data: any | null; error: string | null }> {
@@ -20,7 +20,7 @@ export class ThumbnailService {
 
     if (!dbFile) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(dbFile.thumbnail!);
+    const signedUrl = await FileStorageService.getSignedUrl(dbFile.thumbnail!);
 
     return {
       data: {
@@ -31,7 +31,7 @@ export class ThumbnailService {
     };
   }
 
-  async set(
+  static async set(
     uploadedFile: Express.Multer.File,
     fileId: string,
     user: any,
@@ -39,11 +39,11 @@ export class ThumbnailService {
   ) {
     if (!uploadedFile) throw new Error('No file uploaded');
 
-    const storageResult = await storageFileService.uploadFile(
-      `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
+    const storageResult = await FileStorageService.uploadFile(
+      `${activeWorkspace.workspace.id}/thumbnail/${fileId}`,
       uploadedFile,
-      'thumbnail',
-      user
+      // 'thumbnail',
+      // user
     );
 
     const updated = await prisma.file.update({
@@ -54,7 +54,7 @@ export class ThumbnailService {
     return updated;
   }
 
-  async update(
+  static async update(
     uploadedFile: Express.Multer.File,
     fileId: string,
     user: any,
@@ -74,15 +74,15 @@ export class ThumbnailService {
     let result;
     if (!dbFile?.thumbnail) {
       // No previous thumbnail, upload new
-      result = await storageFileService.uploadFile(
-        `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
+      result = await FileStorageService.uploadFile(
+        `${activeWorkspace.workspace.id}/thumbnail/${fileId}`,
         uploadedFile,
-        'thumbnail',
-        user
+        // 'thumbnail',
+        // user
       );
     } else {
       // Replace old thumbnail
-      result = await storageFileService.replaceFile(
+      result = await FileStorageService.replaceFile(
         dbFile.thumbnail,
         uploadedFile,
         'thumbnail',
@@ -98,12 +98,11 @@ export class ThumbnailService {
     return updated;
   }
 
-  async generate(file: any, fileType: string): Promise<Buffer> {
+  static async generate(file: any, fileType: string): Promise<Buffer> {
     if (!file) throw new Error('No file provided');
-    const filename = path.basename(
-      file.originalname,
-      path.extname(file.mimetype)
-    );
+    const filename = file.originalname.includes('.')
+      ? file.originalname
+      : path.basename(file.originalname, path.extname(file.mimetype));
 
     if (fileType === 'drawing' || fileType === 'jobCard') {
       try {

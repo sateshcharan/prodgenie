@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 
-import { ThumbnailService } from '../services/index.js';
-
-const thumbnailService = new ThumbnailService();
+import { ThumbnailService } from '@prodgenie/libs/server-services/lib/jobCardService/thumbnail.service';
 
 export class ThumbnailController {
   static getThumbnailController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
     const orgId = req.user?.orgId;
 
-    const files = await thumbnailService.get(fileId, orgId);
+    const files = await ThumbnailService.get(fileId, orgId);
     return res.status(200).json(files);
   };
 
@@ -17,7 +15,7 @@ export class ThumbnailController {
     const { fileId } = req.params;
     const orgId = req.user?.orgId;
 
-    const files = await thumbnailService.set(fileId, orgId, req.user);
+    const files = await ThumbnailService.set(fileId, orgId, req.user);
     return res.status(200).json(files);
   };
 
@@ -32,7 +30,19 @@ export class ThumbnailController {
     // const file = req.files as Express.Multer.File[];
     if (!file) throw new Error('No files uploaded');
 
-    await thumbnailService.update(file, fileId, user, activeWorkspaceId);
+    await ThumbnailService.update(file, fileId, user, activeWorkspaceId);
     return res.status(200).json('Thumbnail updated');
+  };
+
+  static regenerateThumbnailController = async (
+    req: Request,
+    res: Response
+  ) => {
+    const { fileType } = req.params;
+    const user = req.user;
+    const activeWorkspaceId = req.activeWorkspaceId;
+
+    await ThumbnailService.regenerate(fileType, user, activeWorkspaceId);
+    return res.status(200).json('Thumbnail regeneration started');
   };
 }

@@ -1,8 +1,10 @@
 import { Queue } from 'bullmq';
 
-import { redis } from '@prodgenie/libs/redis';
+import { redis } from '../lib/redis';
 
-export const fileProcessingQueue = new Queue('file-processing', { connection: redis });
+export const fileProcessingQueue = new Queue('file-processing', {
+  connection: redis,
+});
 
 (async () => {
   // Remove all jobs from the queue (waiting, delayed, active, failed, completed)
@@ -13,3 +15,4 @@ export const fileProcessingQueue = new Queue('file-processing', { connection: re
   await fileProcessingQueue.clean(0, 0, 'completed');
   console.log('file-processing Queue cleaned');
 })();
+

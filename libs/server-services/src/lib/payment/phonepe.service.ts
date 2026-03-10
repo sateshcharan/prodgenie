@@ -1,18 +1,18 @@
+import { randomUUID } from 'crypto';
 import {
   StandardCheckoutClient,
+  StandardCheckoutPayRequest,
   Env,
   MetaInfo,
-  StandardCheckoutPayRequest,
   RefundRequest,
 } from 'pg-sdk-node';
-import { randomUUID } from 'crypto';
 
 const clientId = process.env.PHONEPE_CLIENT_ID!;
 const clientSecret = process.env.PHONEPE_CLIENT_SECRET!;
 const clientVersion = 1;
 const env = Env.SANDBOX; // Env.PRODUCTION
 const redirectUrl = process.env.PHONEPE_REDIRECT_URL!;
-const callbackUrl = process.env.PHONEPE_CALLBACK_URL!;
+// const callbackUrl = process.env.PHONEPE_CALLBACK_URL!;
 
 // Initialize PhonePe client
 const client = StandardCheckoutClient.getInstance(
@@ -23,9 +23,8 @@ const client = StandardCheckoutClient.getInstance(
 );
 
 export const PhonePeService = {
-  /* Create a payment order with PhonePe   */
   async createPayment(
-    orderId: string,
+    merchantOrderId: string,
     amount: number,
     mobile: string,
     name: string
@@ -34,18 +33,21 @@ export const PhonePeService = {
       const metaInfo = MetaInfo.builder().udf1(mobile).udf2(name).build();
 
       const request = StandardCheckoutPayRequest.builder()
-        .merchantOrderId(orderId)
-        .amount(amount * 100)
-        .redirectUrl(redirectUrl)
+        .merchantOrderId(merchantOrderId)
+        .amount(amount)
+        // .redirectUrl(redirectUrl)
+        .redirectUrl(`${redirectUrl}?orderId=${merchantOrderId}`)
         .metaInfo(metaInfo)
         .build();
 
       const response = await client.pay(request);
 
+      // `${redirectUrl}?orderId=${orderId}`
+
       return {
         success: true,
         redirectUrl: response.redirectUrl,
-        orderId,
+        merchantOrderId,
         raw: response,
       };
     } catch (error: any) {
@@ -57,11 +59,9 @@ export const PhonePeService = {
     }
   },
 
-  /* Verify payment status */
-  async verifyPayment(orderId: string) {
+  async verifyPayment(merchantOrderId: string) {
     try {
-      const response = await client.getOrderStatus(orderId);
-      console.log('PhonePe Payment Status:', response);
+      const response = await client.getOrderStatus(merchantOrderId);
       return response;
     } catch (error: any) {
       console.error(
@@ -72,12 +72,11 @@ export const PhonePeService = {
     }
   },
 
-  /* Initiate refund */
   async refundPayment(originalOrderId: string, amount: number) {
     try {
       const refundId = randomUUID();
       const request = RefundRequest.builder()
-        .amount(amount * 100)
+        .amount(amount)
         .merchantRefundId(refundId)
         .originalMerchantOrderId(originalOrderId)
         .build();

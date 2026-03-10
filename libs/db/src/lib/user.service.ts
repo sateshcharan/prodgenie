@@ -15,9 +15,14 @@ export class UserService {
   }
 
   static async deleteUser(userId: string) {
-    return await prisma.user.update({
+    // soft delete
+    // return await prisma.user.update({
+    //   where: { id: userId },
+    //   data: { isDeleted: true, deletedAt: new Date() },
+    // });
+
+    return await prisma.user.delete({
       where: { id: userId },
-      data: { isDeleted: true, deletedAt: new Date() },
     });
   }
 

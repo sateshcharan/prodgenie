@@ -3,8 +3,9 @@ import express, { Router } from 'express';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { FileController } from '../controllers/index';
-import { validateFileType, asyncHandler } from '../middlewares/index';
+import { FileController } from '../controllers/file.controller';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { validateFileType } from '../middlewares/fileType.middleware';
 
 const router: Router = express.Router({ mergeParams: true }); // to merge parent params
 const upload = multer();

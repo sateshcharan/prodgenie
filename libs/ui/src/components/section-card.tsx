@@ -11,7 +11,7 @@ import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 
 type SectionCardProps = {
   title: string;
-  value: string;
+  value: number | string;
   description: string;
   trend: string;
   trendDirection: 'up' | 'down';

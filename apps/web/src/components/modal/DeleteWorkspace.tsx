@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useState } from 'react';
 
 import {
@@ -7,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@prodgenie/libs/ui/card';
-import { toast } from 'sonner';
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
@@ -19,8 +19,6 @@ export default function DeleteWorkspace({
 }: {
   workspaceId: string;
 }) {
-  console.log(workspaceId);
-
   const [loading, setLoading] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -28,7 +26,7 @@ export default function DeleteWorkspace({
   const { closeModal } = useModalStore();
   const { activeWorkspace } = useWorkspaceStore((state) => state);
 
-  const deleteWorkspace = async () => {
+  const handleDeleteWorkspace = async () => {
     if (!workspaceId) return;
 
     try {
@@ -39,6 +37,9 @@ export default function DeleteWorkspace({
           workspaceId,
         }
       );
+
+      // ✅ Hard refresh the entire app
+      window.location.reload();
     } catch (err: any) {
       if (
         err.response?.status === 403 &&
@@ -65,9 +66,10 @@ export default function DeleteWorkspace({
           data.
         </CardDescription>
       </CardHeader>
+
       <CardContent className="flex gap-4">
         <Button
-          onClick={deleteWorkspace}
+          onClick={handleDeleteWorkspace}
           disabled={loading}
           variant={'destructive'}
         >

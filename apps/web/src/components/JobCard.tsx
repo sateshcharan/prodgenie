@@ -1,15 +1,11 @@
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { CheckCheck } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 
-import { Button } from '@prodgenie/libs/ui/button';
-import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
-import { Separator } from '@prodgenie/libs/ui/separator';
-import { toast } from 'sonner';
-import { Card, CardContent } from '@prodgenie/libs/ui/card';
 import {
   Tabs,
   TabsContent,
@@ -25,8 +21,12 @@ import {
   Form,
 } from '@prodgenie/libs/ui/form';
 import { BomItem } from '@prodgenie/libs/types';
+import { Button } from '@prodgenie/libs/ui/button';
+import { Separator } from '@prodgenie/libs/ui/separator';
+import { Card, CardContent } from '@prodgenie/libs/ui/card';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
+import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
 import { apiRoutes, jobCardFields, COLORS } from '@prodgenie/libs/constant';
 
@@ -37,8 +37,6 @@ import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import PresetSelector from './PresetSelector';
 import { wakeWorkers } from '../utils/wakeup';
-
-const stringService = new StringService();
 
 function getColorForItem(key: string) {
   const hash = key
@@ -171,7 +169,7 @@ const JobCard = ({
       const topShape: Record<string, any> = {};
 
       jobCardData.forEach((groupArray) => {
-        const seqName = stringService.camelCase(groupArray.sequence);
+        const seqName = StringService.camelCase(groupArray.sequence);
         const groupShape: Record<string, any> = {};
 
         groupArray.data.forEach((group) => {
@@ -234,8 +232,8 @@ const JobCard = ({
     jobCardData.forEach((groupArray) => {
       groupArray.data.forEach((group) => {
         const groupName =
-          // stringService.camelCase(groupArray.sequence) + '.' + group.name;
-          stringService.camelCase(groupArray.sequence);
+          // StringService.camelCase(groupArray.sequence) + '.' + group.name;
+          StringService.camelCase(groupArray.sequence);
         defaults[groupName] = defaults[groupName] || {};
         (group.sections || []).forEach((subSection: any) => {
           defaults[groupName][subSection.name] =
@@ -504,7 +502,7 @@ const JobCard = ({
                                     <FormField
                                       key={fi}
                                       control={form.control}
-                                      name={`sections.${stringService.camelCase(
+                                      name={`sections.${StringService.camelCase(
                                         sequence
                                       )}.${group.name}.${subSection.name}.${
                                         field.name

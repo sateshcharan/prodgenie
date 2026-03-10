@@ -3,14 +3,12 @@ import express, { Router } from 'express';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { workspaceRole } from '@prodgenie/libs/types';
 
-import { WorkspaceController } from '../controllers';
-import {
-  authenticateSupabaseJWT,
-  // authenticatePassportJWT,
-  requireRole,
-  asyncHandler,
-  validatePlan,
-} from '../middlewares';
+import { requireRole } from '../middlewares/user.middleware';
+import { validatePlan } from '../middlewares/plan.middleware';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { WorkspaceController } from '../controllers/workspace.controller';
+import { authenticateSupabaseJWT } from '../middlewares/supabase.middleware';
+// import { authenticatePassportJWT } from '../middlewares/passport.middleware';
 
 const router: Router = express.Router();
 
@@ -28,23 +26,10 @@ router.post(
 );
 
 router.post(
-  apiRoutes.workspace.inviteUserToWorkspace,
-  validatePlan,
+  apiRoutes.workspace.deleteAccount,
   authenticateSupabaseJWT,
-  requireRole(workspaceRole.admin),
-  asyncHandler(WorkspaceController.inviteUserToWorkspace)
-);
-
-router.post(
-  apiRoutes.workspace.acceptInvite,
-  authenticateSupabaseJWT,
-  asyncHandler(WorkspaceController.acceptInvite)
-);
-
-router.post(
-  apiRoutes.workspace.rejectInvite,
-  authenticateSupabaseJWT,
-  asyncHandler(WorkspaceController.rejectInvite)
+  // requireRole(workspaceRole.owner),
+  asyncHandler(WorkspaceController.deleteAccount)
 );
 
 router.post(
@@ -66,6 +51,13 @@ router.get(
   authenticateSupabaseJWT,
   // authenticatePassportJWT,
   asyncHandler(WorkspaceController.getWorkspaceEvents)
+);
+
+router.get(
+  apiRoutes.workspace.getJobCardStats(':workspaceId', ':days'),
+  authenticateSupabaseJWT,
+  // authenticatePassportJWT,
+  asyncHandler(WorkspaceController.getJobCardStats)
 );
 
 router.get(
@@ -98,5 +90,26 @@ router.patch(
   // authenticatePassportJWT,
   asyncHandler(WorkspaceController.updateWorkspaceConfig)
 );
+
+// === future features ===
+// router.post(
+//   apiRoutes.workspace.inviteUserToWorkspace,
+//   // validatePlan,
+//   authenticateSupabaseJWT,
+//   // requireRole(workspaceRole.admin),
+//   asyncHandler(WorkspaceController.inviteUserToWorkspace)
+// );
+
+// router.post(
+//   apiRoutes.workspace.acceptInvite,
+//   authenticateSupabaseJWT,
+//   asyncHandler(WorkspaceController.acceptInvite)
+// );
+
+// router.post(
+//   apiRoutes.workspace.rejectInvite,
+//   authenticateSupabaseJWT,
+//   asyncHandler(WorkspaceController.rejectInvite)
+// );
 
 export { router };

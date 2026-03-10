@@ -1,12 +1,18 @@
-import { prisma } from '@prodgenie/libs/db';
-import { workspaceRole } from '@prodgenie/libs/types';
-import { supabaseAdmin } from '@prodgenie/libs/supabase';
-import { FileStorageService } from '@prodgenie/libs/supabase';
+import { randomUUID, UUID } from 'crypto';
 
-import { FolderService } from './folder.service';
+import {
+  supabaseAdmin,
+  FileStorageService,
+  FolderService,
+} from '@prodgenie/libs/supabase';
+import { prisma, workspaceRole } from '@prodgenie/libs/db';
+import { StringService } from '@prodgenie/libs/shared-utils';
 
-const folderService = new FolderService();
-const fileStorageService = new FileStorageService();
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { workspaceMemberStatus } from '@prisma/client';
+// import { workspaceRole } from '@prodgenie/libs/types';
+// import { NotificationService } from './notification.service';
 
 export class WorkspaceService {
   static async createWorkspace(
@@ -14,176 +20,209 @@ export class WorkspaceService {
     planId: string,
     user: any
   ) {
-    // Create workspace
-    const workspaceFolder = await folderService.scaffoldFolder(
-      workspaceName,
-      planId
-    );
+    workspaceName = StringService.camelCase(workspaceName);
 
-    // Create workspace in DB
-    const workspaceDb = await prisma.workspace.create({
-      data: {
-        name: workspaceName,
+    const workspace = await prisma.$transaction(async (tx) => {
+      const ws = await this.setupNewWorkspaceTx(
+        tx,
+        workspaceName,
         planId,
-      },
-    });
+        user
+      ); // setup new workspace and dependencies
 
-    // Create workspace membership
+      return ws;
+    });
+    await FolderService.scaffoldFolder(workspace.id); // setup workspace folders
+
+    // add user as owner of workspace
     await prisma.workspaceMember.create({
       data: {
         userId: user.id,
-        workspaceId: workspaceDb.id,
+        workspaceId: workspace.id,
         role: 'owner',
+        status: 'active',
       },
     });
 
-    return workspaceDb;
-  }
-
-  static async deleteWorkspace(workspaceId: string, user: any) {
-    // delete all workspace members
-    await prisma.workspaceMember.updateMany({
-      where: { workspaceId },
-      data: { isDeleted: true, deletedAt: new Date() },
+    // fetch updated workspaces for user
+    const updatedWorkspaces = await prisma.workspace.findMany({
+      where: {
+        members: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
     });
 
-    // delete all workspace files and folders
-    const { data: files } = await fileStorageService.listFiles(workspaceId);
-    if (files) {
-      const paths = files.map((f) => `${workspaceId}/${f.name}`);
-      await fileStorageService.deleteFile(paths);
+    return updatedWorkspaces;
+  }
+
+  static async deleteWorkspace(user: any, workspaceId: string) {
+    const isOwner = await prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: user.id, role: 'owner' },
+    });
+    if (!isOwner) throw new Error('You are not the owner');
+
+    await prisma.$transaction(async (tx) => {
+      await this.deleteWorkspaceTx(tx, workspaceId);
+    });
+
+    // delete storage folders after DB commit
+    try {
+      await FolderService.deleteFolderRecursive(workspaceId);
+    } catch (err) {
+      console.error(
+        `Failed to delete folder for workspace ${workspaceId}:`,
+        err
+      );
     }
 
-    // delete all workspace events
-    await prisma.event.deleteMany({
-      where: { workspaceId },
-      // data: { isDeleted: true, deletedAt: new Date() },
-    });
-
-    // delete workspace
-    await prisma.workspace.update({
+    // fetch updated workspaces for user
+    const updatedWorkspaces = await prisma.workspace.findMany({
       where: {
-        id: workspaceId,
-      },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
+        members: {
+          some: {
+            userId: user.id,
+          },
+        },
       },
     });
 
-    // delete user in supabase auth // why ?
-    // await supabase.auth.admin.deleteUser(user.id);
+    return updatedWorkspaces;
   }
 
-  static async inviteUserToWorkspace(
-    workspaceId: string,
-    email: string,
-    role: workspaceRole
-  ) {
-    // 1. Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    // 2. If not exist, create a placeholder user
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: email.split('@')[0],
-        },
+  static async deleteAccount(userId: string) {
+    // STEP 1 — run DB transaction only
+    const workspaceIds = await prisma.$transaction(async (tx) => {
+      const memberships = await tx.workspaceMember.findMany({
+        where: { userId, role: 'owner' },
+        select: { workspaceId: true },
       });
 
-      // Also create in Supabase Auth (optional but recommended)
-      try {
-        const { data: invited, error } =
-          await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
-          });
+      const ids: string[] = [];
 
-        if (error) {
-          console.error('Supabase invite error:', error.message);
-        } else {
-          console.log('Supabase invite sent:', invited);
-        }
+      for (const m of memberships) {
+        await WorkspaceService.deleteWorkspaceTx(tx, m.workspaceId);
+        ids.push(m.workspaceId);
+      }
+
+      await tx.user.delete({
+        where: { id: userId },
+      });
+
+      return ids; // 👈 important
+    });
+
+    // STEP 2 — external side effects AFTER commit
+
+    // delete storage folders
+    for (const workspaceId of workspaceIds) {
+      try {
+        await FolderService.deleteFolderRecursive(workspaceId);
       } catch (err) {
-        console.error('Supabase invite exception:', err);
+        console.error(
+          `Failed to delete folder for workspace ${workspaceId}:`,
+          err
+        );
       }
     }
 
-    // 3. Create workspace membership with status pending
-    const workspaceMember = await prisma.workspaceMember.upsert({
-      where: {
-        userId_workspaceId: {
-          userId: user.id,
-          workspaceId,
-        },
-      },
-      update: {
-        role,
-        isDeleted: false,
-        deletedAt: null,
-        status: 'pending',
-      },
-      create: {
-        userId: user.id,
-        workspaceId,
-        role,
-        status: 'pending',
+    // delete Supabase auth user
+    try {
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+    } catch (err) {
+      console.error('Failed to delete auth user:', err);
+    }
+  }
+
+  static async setupNewWorkspaceTx(
+    tx: any,
+    workspaceName: string,
+    planId: string,
+    user?: any
+  ) {
+    const plan = await tx.plan.findUnique({
+      where: { id: planId },
+    });
+    if (!plan) throw new Error('Plan not found');
+
+    // Create workspace
+    const workspace = await tx.workspace.create({
+      data: {
+        name: workspaceName,
+        planId,
+        credits: plan?.monthlyCredits,
       },
     });
 
-    // 4. Optionally also send your own branded invite email
-    // await EmailService.sendInvite(email, {
-    //   workspaceId,
-    //   role,
-    //   link: `${process.env.WEB_URL}/invite/accept?workspaceId=${workspaceId}`,
+    // Create workspace usage
+    await tx.workspaceUsage.create({
+      data: {
+        workspaceId: workspace.id,
+        periodStart: new Date(),
+        periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      },
+    });
+
+    // // add user as owner of workspace
+    // await tx.workspaceMember.create({
+    //   data: {
+    //     userId: user.id,
+    //     workspaceId: workspace.id,
+    //     role: workspaceRole.owner,
+    //     status: workspaceMemberStatus.active,
+    //   },
     // });
 
-    return workspaceMember;
+    return workspace;
   }
 
-  static async removeUserFromWorkspace(workspaceId: string, userId: string) {
-    await prisma.workspaceMember.update({
-      where: {
-        userId_workspaceId: {
-          workspaceId,
-          userId,
-        },
-      },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
-      },
+  static async deleteWorkspaceTx(tx: any, workspaceId: string) {
+    // Delete workspace files
+    await tx.file.deleteMany({
+      where: { workspaceId },
+    });
+
+    // Delete workspace events
+    await tx.event.deleteMany({
+      where: { workspaceId },
+    });
+
+    // Delete usage records
+    await tx.workspaceUsage.deleteMany({
+      where: { workspaceId },
+    });
+
+    // Delete members
+    await tx.workspaceMember.deleteMany({
+      where: { workspaceId },
+    });
+
+    // Delete notifications (future)
+    // await tx.notification.deleteMany({ where: { workspaceId } });
+
+    // Finally delete workspace
+    await tx.workspace.delete({
+      where: { id: workspaceId },
     });
   }
 
-  static async getWorkspaceUser(workspaceId: string) {
-    // safe guard
-    if (!workspaceId) {
-      throw new Error('workspaceId is required.');
-    }
-
-    const users = await prisma.workspaceMember.findMany({
-      where: {
-        workspaceId,
-        isDeleted: false,
-      },
-      include: { user: true },
+  static async switchActiveWorkspace(workspaceId: string, userId: string) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { activeWorkspaceId: workspaceId },
     });
-    return users;
   }
 
   static async getWorkspaceEvents(workspaceId: string) {
-    // safe guard
-    if (!workspaceId) {
-      throw new Error('workspaceId is required.');
-    }
+    if (!workspaceId) throw new Error('workspaceId is required.');
 
     const events = await prisma.event.findMany({
       where: {
         workspaceId,
       },
+      orderBy: { createdAt: 'desc' },
       include: {
         user: {
           select: {
@@ -196,21 +235,58 @@ export class WorkspaceService {
     return events;
   }
 
-  // static async getWorkspaceTransactions(workspaceId: string) {
-  //   const transactions = await prisma.transaction.findMany({
-  //     where: {
-  //       workspaceId,
-  //     },
-  //   });
-  //   return transactions;
-  // }
+  static async getWorkspaceUsage(workspaceId: string) {
+    return await prisma.workspaceUsage.findMany({
+      where: {
+        workspaceId,
+      },
+    });
+  }
 
-  static async checkWorkspaceExists(workspaceName: string) {
-    const workspace = await prisma.workspace.findFirst({
-      where: { name: workspaceName },
+  static async getJobCardStats(workspaceId: string, days: number) {
+    const events = await prisma.event.findMany({
+      where: {
+        workspaceId,
+        type: 'jobcard_generation',
+        createdAt: {
+          gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
+        },
+      },
+      select: {
+        createdAt: true,
+      },
     });
 
-    return workspace ? true : false;
+    const stats = events.reduce((acc, e) => {
+      const day = e.createdAt.toISOString().slice(0, 10); // YYYY-MM-DD
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(stats).map(([date, count]) => ({
+      date,
+      count,
+    }));
+  }
+
+  static async getTotalJobCards(workspaceId: string) {
+    // return await prisma.event.count({
+    //   where: {
+    //     workspaceId,
+    //     type: 'jobcard_generation',
+    //     status: 'completed',
+    //   },
+    // });
+
+    const counts = await prisma.workspaceUsage.findMany({
+      where: {
+        workspaceId,
+      },
+    });
+
+    const total = counts.map((c) => c.jobCardsCount).reduce((a, b) => a + b, 0);
+
+    return total;
   }
 
   static async getWorkspaceConfig(workspaceId: string, configName: string) {
@@ -260,6 +336,14 @@ export class WorkspaceService {
     };
   }
 
+  static async checkWorkspaceExists(workspaceName: string) {
+    const workspace = await prisma.workspace.findFirst({
+      where: { name: workspaceName },
+    });
+
+    return workspace ? true : false;
+  }
+
   static async updateWorkspaceConfig(
     workspaceId: string,
     configName: string,
@@ -291,43 +375,142 @@ export class WorkspaceService {
     });
   }
 
-  static async updateUserRole(
-    workspaceId: string,
-    userId: string,
-    role: workspaceRole
-  ) {
-    await prisma.workspaceMember.update({
-      where: {
-        userId_workspaceId: {
-          workspaceId,
-          userId,
-        },
-      },
-      data: { role: role },
-    });
-  }
+  // === future features ===
+  // static async removeUserFromWorkspace(workspaceId: string, userId: string) {
+  //   await prisma.$transaction(async (tx) => {
+  //     await tx.workspaceMember.delete({
+  //       where: {
+  //         userId_workspaceId: {
+  //           workspaceId,
+  //           userId,
+  //         },
+  //       },
+  //     });
+  //   });
 
-  static acceptInvite = async (workspaceId: string, userId: string) => {
-    return prisma.workspaceMember.update({
-      where: { userId_workspaceId: { userId, workspaceId } },
-      data: { status: 'active' }, // depends on your membership model
-    });
-  };
+  //   // await NotificationService.createNotification(
+  //   //   userId,
+  //   //   workspaceId,
+  //   //   'removed',
+  //   //   { workspaceId }
+  //   // );
+  // }
 
-  static rejectInvite = async (workspaceId: string, userId: string) => {
-    return prisma.workspaceMember.delete({
-      where: { userId_workspaceId: { userId, workspaceId } },
-    });
-  };
+  // static async getWorkspaceUsers(workspaceId: string) {
+  //   if (!workspaceId) throw new Error('workspaceId is required.');
 
-  //helper methods
-  static async addUserToWorkspace(workspaceId: string, userId: string) {
-    await prisma.workspaceMember.create({
-      data: {
-        workspaceId,
-        userId,
-        role: 'member',
-      },
-    });
-  }
+  //   const users = await prisma.workspaceMember.findMany({
+  //     where: {
+  //       workspaceId,
+  //       // isDeleted: false,
+  //     },
+  //     include: { user: true },
+  //   });
+
+  //   return users;
+  // }
+
+  // static async getWorkspaceTransactions(workspaceId: string) {
+  //   const transactions = await prisma.transaction.findMany({
+  //     where: {
+  //       workspaceId,
+  //     },
+  //   });
+  //   return transactions;
+  // }
+
+  // static async updateUserRole(
+  //   workspaceId: string,
+  //   userId: string,
+  //   role: workspaceRole
+  // ) {
+  //   await prisma.workspaceMember.update({
+  //     where: {
+  //       userId_workspaceId: {
+  //         workspaceId,
+  //         userId,
+  //       },
+  //     },
+  //     data: { role: role },
+  //   });
+
+  //   await NotificationService.createNotification(
+  //     userId,
+  //     workspaceId,
+  //     'role_changed',
+  //     { role }
+  //   );
+  // }
+
+  // static acceptInvite = async (workspaceId: string, userId: string) => {
+  //   return prisma.workspaceMember.update({
+  //     where: { userId_workspaceId: { userId, workspaceId } },
+  //     data: { status: 'active' }, // depends on your membership model
+  //   });
+  // };
+
+  // static rejectInvite = async (workspaceId: string, userId: string) => {
+  //   return prisma.workspaceMember.delete({
+  //     where: { userId_workspaceId: { userId, workspaceId } },
+  //   });
+  // };
+
+  // //helper methods
+  // static async addUserToWorkspace(workspaceId: string, userId: string) {
+  //   await prisma.workspaceMember.create({
+  //     data: {
+  //       workspaceId,
+  //       userId,
+  //       role: 'member',
+  //     },
+  //   });
+  // }
+
+  // static async inviteUserToWorkspace(
+  //   workspaceId: string,
+  //   email: string,
+  //   role: workspaceRole
+  // ) {
+  //   return prisma.$transaction(async (tx) => {
+  //     // Check if user exists in DB
+  //     let user = await tx.user.findUnique({
+  //       where: { email },
+  //     });
+
+  //     // If not exist, signupNewUser
+  //     if (!user) {
+  //       user = await AuthService.inviteUserViaEmail(email);
+  //     }
+
+  //     // Create workspace membership with status pending
+  //     const workspaceMember = await tx.workspaceMember.upsert({
+  //       where: {
+  //         userId_workspaceId: {
+  //           userId: user.id,
+  //           workspaceId,
+  //         },
+  //       },
+  //       update: {
+  //         role,
+  //         status: 'pending',
+  //       },
+  //       create: {
+  //         userId: user.id,
+  //         workspaceId,
+  //         role,
+  //         status: 'pending',
+  //       },
+  //     });
+
+  //     // Send invite notification
+  //     await NotificationService.createNotification(
+  //       user.id,
+  //       workspaceId,
+  //       'invite',
+  //       { workspaceId, role }
+  //     );
+
+  //     return workspaceMember;
+  //   });
+  // }
 }

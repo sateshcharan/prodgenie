@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 
-import { FileService } from '../services/index.js';
-
-const fileService = new FileService();
+import { FileService } from '../services/file.service';
 
 export class FileController {
   static uploadFileController = async (req: Request, res: Response) => {
@@ -11,11 +9,9 @@ export class FileController {
     const activeWorkspaceId = req.activeWorkspaceId!;
     const files = req.files as Express.Multer.File[];
 
-    if (!files?.length) {
-      throw new Error('No files uploaded');
-    }
+    if (!files?.length) throw new Error('No files uploaded');
 
-    const result = await fileService.handleUpload(
+    const result = await FileService.handleUpload(
       files,
       fileType,
       user,
@@ -33,7 +29,7 @@ export class FileController {
       return res.status(400).json({ message: 'No data provided' });
     }
 
-    const result = await fileService.updateFile(fileId, data);
+    const result = await FileService.updateFile(fileId, data);
     return res.status(200).json(result);
   };
 
@@ -46,7 +42,7 @@ export class FileController {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    const result = await fileService.replaceFile(
+    const result = await FileService.replaceFile(
       fileId,
       fileType,
       uploadedFiles,
@@ -59,7 +55,7 @@ export class FileController {
     const { fileType } = req.params;
     const { fileId, duplicateFileName } = req.body;
 
-    const result = await fileService.duplicateFile(
+    const result = await FileService.duplicateFile(
       fileId,
       fileType,
       duplicateFileName
@@ -78,7 +74,7 @@ export class FileController {
       limit: Number(limit) || 8,
     };
 
-    const result = await fileService.listFiles(
+    const result = await FileService.listFiles(
       fileType,
       activeWorkspaceId,
       options
@@ -91,7 +87,7 @@ export class FileController {
     const { fileId } = req.params;
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getFileById(fileId, activeWorkspaceId);
+    const file = await FileService.getFileById(fileId, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
@@ -99,14 +95,14 @@ export class FileController {
     const { fileName } = req.params;
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getFileByName(fileName, activeWorkspaceId);
+    const file = await FileService.getFileByName(fileName, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
   static getFileDataController = async (req: Request, res: Response) => {
     const { fileId } = req.params;
 
-    const file = await fileService.getFileData(fileId);
+    const file = await FileService.getFileData(fileId);
     return res.status(200).json(file);
   };
 
@@ -114,7 +110,7 @@ export class FileController {
     const { fileId } = req.params;
     const data = req.body;
 
-    const file = await fileService.setFileData(fileId, data);
+    const file = await FileService.setFileData(fileId, data);
     return res.status(200).json(file);
   };
 
@@ -122,7 +118,7 @@ export class FileController {
     const { fileId } = req.params;
     const data = req.body;
 
-    const file = await fileService.updateFileData(fileId, data);
+    const file = await FileService.updateFileData(fileId, data);
     return res.status(200).json(file);
   };
 
@@ -130,7 +126,7 @@ export class FileController {
     const { fileId } = req.params;
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const file = await fileService.getThumbnail(fileId, activeWorkspaceId);
+    const file = await FileService.getThumbnail(fileId, activeWorkspaceId);
     return res.status(200).json(file);
   };
 
@@ -143,7 +139,7 @@ export class FileController {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    await fileService.updateThumbnail(files, fileId, user);
+    await FileService.updateThumbnail(files, fileId, user);
     return res.status(200).json({ message: 'Thumbnail updated' });
   };
 
@@ -152,7 +148,7 @@ export class FileController {
     const { fileType, fileId } = req.params;
     const activeWorkspaceId = req.activeWorkspaceId!;
 
-    const result = await fileService.deleteFile(
+    const result = await FileService.deleteFile(
       fileId,
       fileType,
       user,
@@ -164,7 +160,7 @@ export class FileController {
   static renameFileController = async (req: Request, res: Response) => {
     const { newName, fileId } = req.body;
 
-    const result = await fileService.renameFile(fileId, newName);
+    const result = await FileService.renameFile(fileId, newName);
     return res.status(200).json(result);
   };
 }

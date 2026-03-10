@@ -2,24 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpCircleIcon, GalleryVerticalEnd } from 'lucide-react';
 
-import api from '../utils/api';
-import { WorkspaceSwitcher } from './WorkspaceSwitcher';
-
 import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
 } from '@prodgenie/libs/ui/sidebar';
-import { NavMain } from '@prodgenie/libs/ui/components/nav-main';
-import { NavDocuments } from '@prodgenie/libs/ui/components/nav-documents';
-import { NavConfigurations } from '@prodgenie/libs/ui/components/nav-configurations';
-import { NavBuilders } from '@prodgenie/libs/ui/components/nav-builder';
-import { NavSecondary } from '@prodgenie/libs/ui/components/nav-secondary';
-import { NavUser } from '@prodgenie/libs/ui/components/nav-user';
 import { StringService } from '@prodgenie/libs/shared-utils';
+import { NavUser } from '@prodgenie/libs/ui/components/nav-user';
+import { NavMain } from '@prodgenie/libs/ui/components/nav-main';
 import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
 import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import { NavBuilders } from '@prodgenie/libs/ui/components/nav-builder';
+import { NavSecondary } from '@prodgenie/libs/ui/components/nav-secondary';
+import { NavDocuments } from '@prodgenie/libs/ui/components/nav-documents';
+import { NavConfigurations } from '@prodgenie/libs/ui/components/nav-configurations';
+
+import api from '../utils/api';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 const stringService = new StringService();
 

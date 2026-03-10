@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import { asyncHandler } from '../middlewares';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
 import { SubscribeController } from '../controllers/subscribe.controller';
 
 const router: Router = express.Router();

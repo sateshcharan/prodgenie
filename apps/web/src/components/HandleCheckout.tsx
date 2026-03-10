@@ -25,6 +25,9 @@ const handleCheckout = async ({
 
   const email = user?.email;
   const workspaceId = activeWorkspace?.id;
+  const priceId = import.meta.env.VITE_STRIPE_PRICE_ID!;
+
+  console.log(priceId);
 
   try {
     // Stripe checkout
@@ -39,7 +42,7 @@ const handleCheckout = async ({
           email,
           workspaceId,
           type,
-          priceId: import.meta.env.VITE_STRIPE_PRICE_ID!,
+          priceId,
         }
       );
 
@@ -56,14 +59,14 @@ const handleCheckout = async ({
       if (type === 'credits' && !amount)
         throw new Error('amount required for credits purchase');
 
-      const orderId = `ORD-${Date.now()}`;
+      const merchantOrderId = `ORD-${Date.now()}`;
       const mobile = '9999999999';
       const name = user?.name || 'Guest User';
 
       const res = await api.post(
-        `${apiRoutes.payment.base}${apiRoutes.payment.phonepeCreatePayment}`,
+        `${apiRoutes.payment.base}${apiRoutes.payment.phonepeCreate}`,
         {
-          orderId,
+          merchantOrderId,
           planId,
           billingCycle,
           type,
@@ -75,9 +78,9 @@ const handleCheckout = async ({
         }
       );
 
-      const redirectUrl =
-        res.data?.redirectUrl ||
-        res.data?.data?.instrumentResponse?.redirectInfo?.url;
+      const redirectUrl = res.data.phonepe.redirectUrl;
+
+      console.log(redirectUrl);
 
       if (redirectUrl) {
         window.location.href = redirectUrl;

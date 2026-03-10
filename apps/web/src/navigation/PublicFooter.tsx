@@ -1,15 +1,15 @@
+import axios from 'axios';
+import { toast } from 'sonner';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Phone, Twitter, Linkedin, Youtube } from 'lucide-react';
 
 import { Input } from '@prodgenie/libs/ui/input';
 import { Button } from '@prodgenie/libs/ui/button';
+import { apiRoutes } from '@prodgenie/libs/constant';
 import { Separator } from '@prodgenie/libs/ui/separator';
 
 import logo from '../assets/logo.png';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import axios from 'axios';
-import { apiRoutes } from '@prodgenie/libs/constant';
 
 const FOOTER_SECTIONS = [
   {

@@ -4,9 +4,9 @@ import {
   CardTitle,
   CardDescription,
 } from '@prodgenie/libs/ui/card';
-import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 import { Badge } from '@prodgenie/libs/ui/badge';
 import { Button } from '@prodgenie/libs/ui/button';
+import { ScrollArea } from '@prodgenie/libs/ui/scroll-area';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useNotificationStore } from '@prodgenie/libs/store';
@@ -14,9 +14,9 @@ import { useNotificationStore } from '@prodgenie/libs/store';
 import api from '../utils/api';
 
 const typeClassMap: Record<string, string> = {
-  INVITE: 'border-primary',
-  ROLE_CHANGED: 'border-accent',
-  REMOVED: 'border-destructive',
+  invite: 'border-primary',
+  role_changed: 'border-accent',
+  removed: 'border-destructive',
 };
 
 const UserNotifications = () => {
@@ -78,7 +78,7 @@ const UserNotifications = () => {
                 {!n.read && <Badge variant="secondary">New</Badge>}
               </div>
 
-              {n.type === 'INVITE' && (
+              {n.type === 'invite' && (
                 <div className="flex gap-2 mt-3">
                   <Button
                     size="sm"

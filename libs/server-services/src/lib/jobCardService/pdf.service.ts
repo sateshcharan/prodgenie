@@ -26,14 +26,10 @@ import { FileHelperService } from '../fileHelper.service.js';
 // }
 
 export class PdfService {
-  private static fileHelperService = new FileHelperService();
-  // private static stringService = new StringService();
-  private static puppeteerService = new PuppeteerService();
-
   static async extractPdfData(signedUrl: string, user: any): Promise<any> {
     // const config = await this.loadOrgConfig(user);
     await this.loadOrgConfig(user);
-    const drawingFile = await this.fileHelperService.downloadToTemp(
+    const drawingFile = await FileHelperService.downloadToTemp(
       signedUrl,
       'drawing.pdf'
     );
@@ -43,7 +39,7 @@ export class PdfService {
     // return this.processParsedPdf(parsedData, config);
 
     // llm stratergy
-    return await this.puppeteerService.extractFromChatGPT(drawingFile);
+    return await PuppeteerService.extractFromChatGPT(drawingFile);
   }
 
   // local setup
@@ -89,14 +85,13 @@ export class PdfService {
   //   });
   // }
 
-  private static async loadOrgConfig(user: any): Promise<any> {
+  static async loadOrgConfig(user: any): Promise<any> {
     // const fileHelperService = new FileHelperService();
     const setupConfig: Record<string, any> = {};
 
-    const onboardingConfig =
-      await this.fileHelperService.fetchJsonFromSignedUrl(
-        `${user?.org?.name}/config/onboarding.json`
-      );
+    const onboardingConfig = await FileHelperService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
+    );
 
     Object.entries(onboardingConfig.setup).forEach(([key, value]) => {
       setupConfig[`${key}Config`] = value;
@@ -107,7 +102,7 @@ export class PdfService {
     };
   }
 
-  // private static processParsedPdf(data: any, config: any): ParsedPdf {
+  //  static processParsedPdf(data: any, config: any): ParsedPdf {
   //   function cleanTable(table: any): any {
   //     if (Array.isArray(table)) {
   //       const cleaned = table
@@ -142,7 +137,7 @@ export class PdfService {
   //   };
   // }
 
-  // private static extractBomFromTables(
+  //  static extractBomFromTables(
   //   tables: any[][][],
   //   config: any
   // ): JobCardItem[] {
@@ -329,7 +324,10 @@ export class PdfService {
   //   return [];
   // }
 
-  async generatePDF(htmlContent: string, jobCardNo: string): Promise<string> {
+  static async generatePDF(
+    htmlContent: string,
+    jobCardNo: string
+  ): Promise<string> {
     const dirPath = path.join('./tmp/jobcards', jobCardNo);
     const outputPath = path.join(dirPath, `${jobCardNo}.pdf`);
     const drawingPath = path.join('./tmp/drawing.pdf');

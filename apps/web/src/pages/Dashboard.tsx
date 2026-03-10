@@ -3,7 +3,7 @@ import ChartAreaInteractive from '@prodgenie/libs/ui/components/chart-area-inter
 
 import EventTable from '../components/dashboard/EventTable';
 import SectionCards from '../components/dashboard/SectionCards';
-import WorkspaceUsers from '../components/dashboard/WorkspaceUsers';
+// import WorkspaceUsers from '../components/dashboard/WorkspaceUsers';
 
 const Dashboard = () => {
   const user = useUserStore((state) => state.user);
@@ -16,15 +16,18 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
-      {(role === 'owner' || role === 'admin') && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-4 ">
-            <WorkspaceUsers />
-            <SectionCards />
-          </div>
+      {/* === future feature ===
+       {(role === 'owner' || role === 'admin') && ( */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-4 ">
+          {/* === future feature ===
+          <WorkspaceUsers />   */}
+          <SectionCards />
+        </div>
+        <div className="col-span-2">
           <ChartAreaInteractive />
         </div>
-      )}
+      </div>
 
       <EventTable />
     </div>

@@ -1,3 +1,18 @@
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Trash } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { forwardRef, useEffect, useState, useRef, useMemo } from 'react';
 
@@ -26,24 +41,7 @@ import { StringService } from '@prodgenie/libs/shared-utils';
 // import { api } from '../utils';
 import { useSuggestionTokens } from '../hooks/useSuggestionTokens';
 
-// 🧩 DnD imports
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  rectSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash } from 'lucide-react';
-
-const stringService = new StringService();
+// const StringService = new StringService();
 
 interface SuggestionInputProps {
   readonly?: boolean;
@@ -328,7 +326,7 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
                             ? 'formula fields'
                             : group === 'depField' || group === 'currentDate'
                             ? 'system fields'
-                            : stringService.camelToNormal(group)
+                            : StringService.camelToNormal(group)
                         }
                       >
                         {items.map(

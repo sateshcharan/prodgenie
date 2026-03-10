@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { PdfService } from '../services/index.js';
+import { PdfService } from '../services/pdf.service';
 
 export class PdfController {
   static async extractPdfData(req: Request, res: Response) {

@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export class TemplateService {
-  async injectValues(templatePath: string, item: any): Promise<string> {
+  static async injectValues(templatePath: string, item: any): Promise<string> {
     try {
       const absolutePath = path.resolve(templatePath);
       const templateContent = await fs.readFile(absolutePath, 'utf-8');
@@ -51,7 +51,7 @@ export class TemplateService {
     // }
   }
 
-  async combineTemplates(templates: string[]): Promise<string> {
+  static async combineTemplates(templates: string[]): Promise<string> {
     // Join all populated templates
     const combined = templates.join('\n');
 

@@ -21,59 +21,64 @@ import {
 } from '@prodgenie/libs/ui/dropdown-menu';
 import { Button } from '@prodgenie/libs/ui/button';
 import { useSidebar } from '@prodgenie/libs/ui/sidebar';
+import { StringService } from '@prodgenie/libs/shared-utils';
 import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
 
 import api from '../utils/api';
 
-export function WorkspaceSwitcher() {
+export const WorkspaceSwitcher = () => {
   const { isMobile } = useSidebar();
   const { user } = useUserStore((state) => state);
+  const { openModal, closeModal } = useModalStore((state) => state);
   const {
     workspaces,
     activeWorkspace,
+    setTotalJobCards,
     setActiveWorkspace,
-    setWorkspaceUsers,
+    // setWorkspaceUsers,
     setWorkspaceEvents,
   } = useWorkspaceStore((state) => state);
-  const { openModal, closeModal } = useModalStore((state) => state);
 
   const userRoleinActiveWorkspace = user?.memberships.find(
-    (m) => m.workspaceId === activeWorkspace.id
+    (m) => m.workspaceId === activeWorkspace?.id
   )?.role;
 
+  // Get a random logo fallback if no logo is set for the workspace
   const logoFallback =
     appSidebarItems.workspaceLogos[
       Math.floor(Math.random() * appSidebarItems.workspaceLogos.length)
     ];
 
-  const ActiveLogo = activeWorkspace.logo || logoFallback;
+  const ActiveLogo = activeWorkspace?.logo || logoFallback;
 
   const handleSwitchWorkspace = async (workspaceId: string) => {
     const currentMembership = user?.memberships.find(
       (m) => m.workspaceId === workspaceId
     );
-    setActiveWorkspace(currentMembership.workspace);
+    setTotalJobCards(currentMembership?.workspace.jobCardsCount);
+    setActiveWorkspace(currentMembership.workspace); // for frontend quick switch
+    // queryClient.invalidateQueries(['dashboard-init'])
+    // for backend switch and fetch data
     const {
-      data: { workspaceUsers, workspaceEvents },
+      data: { workspaceEvents },
+      // data: { workspaceUsers, workspaceEvents },
     } = await api.get(
       `${apiRoutes.batched.base}${apiRoutes.batched.workspaceChange}`,
       {
         params: { workspaceId },
       }
     );
-    setWorkspaceUsers(workspaceUsers);
     setWorkspaceEvents(workspaceEvents);
+    // setWorkspaceUsers(workspaceUsers);
     // initRealtime(workspaceId);
   };
 
   const handleDeleteWorkspace = (workspaceId: string) => {
     openModal('workspace:delete', { workspaceId });
-    // closeModal();
   };
 
-  const handleCreateWorkspace = (workspaceName: string) => {
+  const handleCreateWorkspace = () => {
     openModal('workspace:create');
-    // closeModal();
   };
 
   return (
@@ -89,15 +94,15 @@ export function WorkspaceSwitcher() {
                 <ActiveLogo className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {activeWorkspace.name}
+                <span className="truncate font-medium capitalize">
+                  {StringService.camelToNormal(activeWorkspace?.name)}
                 </span>
                 <div className="flex gap-2">
                   <span className="truncate text-xs">
-                    {activeWorkspace.plan?.name || 'No Plan'}
+                    {activeWorkspace?.plan?.name || 'No Plan'}
                   </span>
                   <span className="text-xs">
-                    {userRoleinActiveWorkspace.toLowerCase()}
+                    {userRoleinActiveWorkspace?.toLowerCase()}
                   </span>
                 </div>
               </div>
@@ -126,13 +131,13 @@ export function WorkspaceSwitcher() {
                 <DropdownMenuItem
                   key={workspace.id}
                   onClick={() => handleSwitchWorkspace(workspace.id)}
-                  className="gap-2 p-2"
+                  className="gap-2 p-2 capitalize"
                 >
                   <div className="flex size-6 items-center justify-center rounded-md border">
                     <WorkspaceLogo className="size-3.5 shrink-0" />
                   </div>
-                  {workspace.name}
-                  {workspace.id !== activeWorkspace.id && (
+                  {StringService.camelToNormal(workspace.name)}
+                  {workspace.id !== activeWorkspace?.id && (
                     <DropdownMenuShortcut>
                       <Button
                         variant="secondary"
@@ -154,7 +159,7 @@ export function WorkspaceSwitcher() {
             <DropdownMenuSeparator className="my-2" />
             <DropdownMenuItem
               className="gap-2 p-2"
-              onClick={() => handleCreateWorkspace(workspaces.id)}
+              onClick={() => handleCreateWorkspace()}
             >
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <Plus className="size-4" />
@@ -168,4 +173,4 @@ export function WorkspaceSwitcher() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};

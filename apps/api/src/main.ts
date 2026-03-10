@@ -9,33 +9,31 @@ import compression from 'compression';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
 
-import {
-  authRoutes,
-  fileRoutes,
-  userRoutes,
-  pdfRoutes,
-  jobCardRoutes,
-  workspaceRoutes,
-  paymentRoutes,
-  thumbnailRoutes,
-  sequenceRoutes,
-  webhookRoutes,
-  projectWideRoutes,
-  sseRoutes,
-  callbackRoutes,
-  notificationRoutes,
-  batchedRoutes,
-  subscribeRoutes,
-} from './routes';
-import {
-  // passport,
-  // authenticatePassportJWT,
-  errorHandler,
-  authenticateSupabaseJWT,
-} from './middlewares';
+import { router as authRoutes } from './routes/auth.routes';
+import { router as userRoutes } from './routes/user.routes';
+import { router as fileRoutes } from './routes/file.routes';
+import { router as pdfRoutes } from './routes/pdf.routes';
+import { router as jobCardRoutes } from './routes/jobCard.routes';
+import { router as workspaceRoutes } from './routes/workspace.routes';
+import { router as paymentRoutes } from './routes/payment.routes';
+import { router as thumbnailRoutes } from './routes/thumbnail.routes';
+import { router as sequenceRoutes } from './routes/sequence.routes';
+import { router as webhookRoutes } from './routes/webhook.routes';
+import { router as sseRoutes } from './routes/sse.routes';
+import { router as batchedRoutes } from './routes/batched.routes';
+import { router as callbackRoutes } from './routes/callback.routes';
+import { router as subscribeRoutes } from './routes/subscribe.routes';
+import { router as projectWideRoutes } from './routes/projectWide.routes';
+import { router as notificationRoutes } from './routes/notification.routes';
+
+// import passport from 'passport';
+// import { passport } from './middlewares/passport.middleware';
+// import { authenticatePassportJWT } from './middlewares/passport.middleware';
+import { errorHandler } from './middlewares/error.middleware';
+import { authenticateSupabaseJWT } from './middlewares/supabase.middleware';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 // Middlewares
 app.use(compression());
@@ -116,11 +114,12 @@ app.use(
   authenticateSupabaseJWT,
   sequenceRoutes
 );
-app.use(
-  apiRoutes.notification.base,
-  authenticateSupabaseJWT,
-  notificationRoutes
-);
+// === future feature ===
+// app.use(
+//   apiRoutes.notification.base,
+//   authenticateSupabaseJWT,
+//   notificationRoutes
+// );
 app.use(
   apiRoutes.projectWide.base,
   // authenticatePassportJWT,

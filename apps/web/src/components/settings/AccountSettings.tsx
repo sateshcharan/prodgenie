@@ -40,8 +40,8 @@ const AccountSettings = () => {
     openModal('workspace:replacePassword');
   };
 
-  const handleUserDelete = () => {
-    openModal('workspace:deleteUser');
+  const handleDeleteAccount = () => {
+    openModal('workspace:deleteAccount');
   };
 
   const handleUpdateUserProfile = (data: any) => {
@@ -53,6 +53,10 @@ const AccountSettings = () => {
         }
       );
       toast.success('User profile updated successfully!');
+
+      // Update the user store with the updated user data
+      // user?.name && (user.name = data.name);
+      // user?.email && (user.email = data.email);
     } catch (error) {
       console.error(error);
     }
@@ -103,7 +107,11 @@ const AccountSettings = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Current Password</label>
             <div className="flex gap-4">
-              <Input type="password" placeholder="********" />
+              <Input
+                type="password"
+                placeholder="********"
+                onClick={handleResetPassword}
+              />
               <Button variant="outline" onClick={handleResetPassword}>
                 Reset Password
               </Button>
@@ -113,7 +121,7 @@ const AccountSettings = () => {
       </Card>
 
       {/* Danger Zone */}
-      {activeWorkspaceRole === 'OWNER' && (
+      {activeWorkspaceRole === 'owner' && (
         <Card className="rounded-2xl border border-destructive/30 bg-destructive/5">
           <CardHeader>
             <CardTitle className="text-red-600">Danger Zone</CardTitle>
@@ -121,14 +129,14 @@ const AccountSettings = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Delete Account</p>
+                <p className="font-medium">Delete Account & Workspace</p>
                 <p className="text-sm text-muted-foreground">
                   Permanently remove your account and all associated data. This
                   action cannot be undone.
                 </p>
               </div>
-              <Button variant="destructive" onClick={handleUserDelete}>
-                Delete My Account
+              <Button variant="destructive" onClick={handleDeleteAccount}>
+                Delete My Account & All Workspaces
               </Button>
             </div>
           </CardContent>

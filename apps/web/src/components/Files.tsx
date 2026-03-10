@@ -1,24 +1,24 @@
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
-import { FolderSync, Plus, Upload } from 'lucide-react';
+import { FolderSync, ImagePlay, ImagePlus, Plus, Upload } from 'lucide-react';
 import { useNavigate, useLoaderData } from 'react-router-dom';
 
 import api from '../utils/api';
-import { fetchFilesByType } from '../utils/fileService';
-import banner from '../assets/banner.png';
 import FileCard from './FileCard';
+import banner from '../assets/banner.png';
 import SearchBanner from './SearchBanner';
+import { fetchFilesByType } from '../utils/fileService';
 
-import { CardItem } from '@prodgenie/libs/types';
-import { apiRoutes, FileType } from '@prodgenie/libs/constant';
 import {
   useAddDialogStore,
   useEditDialogStore,
   useWorkspaceStore,
   useModalStore,
 } from '@prodgenie/libs/store';
-import { Card, CardContent } from '@prodgenie/libs/ui/card';
+import { CardItem } from '@prodgenie/libs/types';
 import { Button } from '@prodgenie/libs/ui/button';
+import { apiRoutes, FileType } from '@prodgenie/libs/constant';
+import { Card, CardContent } from '@prodgenie/libs/ui/card';
 
 const Files = () => {
   const { fileType } = useLoaderData() as { fileType: string };
@@ -62,7 +62,7 @@ const Files = () => {
 
   const handleCardClick = (card_id: string, signedUrl: string) => {
     let path = `/dashboard/${fileType}/${card_id}`;
-    let options: { state?: { signedUrl: string } } = {};
+    const options: { state?: { signedUrl: string } } = {};
 
     if (
       fileType === 'sequence' ||
@@ -142,6 +142,18 @@ const Files = () => {
     console.log(res);
   };
 
+  const handleRegenerateThumbnails = async () => {
+    toast.info('🌟 Regenerating thumbnails...');
+    try {
+      await api.post(`${apiRoutes.thumbnail.base}/regenerate/${fileType}`);
+      toast.success('✅ Thumbnails regenerated successfully!');
+      fetchFiles();
+    } catch (err) {
+      console.error('Error regenerating thumbnails:', err);
+      toast.error('❌ Failed to regenerate thumbnails.');
+    }
+  };
+
   return (
     <div className="p-4 flex flex-col gap-4 ">
       {/* Search Bar with Banner */}
@@ -151,17 +163,27 @@ const Files = () => {
         banner={banner}
       />
 
-      {fileType === 'sequence' && (
-        <div>
+      <div className="flex gap-2">
+        <Button
+          variant={'outline'}
+          onClick={handleRegenerateThumbnails}
+          className="flex items-center gap-2 px-4 py-2 rounded disabled:opacity-50"
+        >
+          <ImagePlus size={16} />
+          Regenerate All Thumbnails
+        </Button>
+
+        {fileType === 'sequence' && (
           <Button
+            variant={'outline'}
             onClick={handleSequenceSync}
-            className=" px-4 py-2 rounded disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded disabled:opacity-50"
           >
             <FolderSync size={16} />
-            Sync
+            Sync All Paths in Sequences
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* File Cards */}
       <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300">

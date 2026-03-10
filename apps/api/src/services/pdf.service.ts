@@ -8,11 +8,11 @@ import { PDFDocument, degrees } from 'pdf-lib';
 // import { StringService, CrudService } from '../utils/index.js';
 // import { FileService } from './file.service.js';
 
+import { prisma } from '@prodgenie/libs/db';
 import { JobCardItem } from '@prodgenie/libs/types';
+import { StringService } from '@prodgenie/libs/shared-utils';
 import { PuppeteerService } from '@prodgenie/libs/server-services';
 import { FileHelperService } from '@prodgenie/libs/server-services';
-import { StringService } from '@prodgenie/libs/shared-utils';
-import { prisma } from '@prodgenie/libs/db';
 
 interface ParsedPdf {
   bom: JobCardItem[];

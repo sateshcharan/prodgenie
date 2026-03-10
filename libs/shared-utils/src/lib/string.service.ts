@@ -1,5 +1,5 @@
 export class StringService {
-  camelCase(str: string): string {
+  static camelCase(str: string): string {
     return (str || '')
       .toLowerCase()
       .replace(/\./g, '')
@@ -7,11 +7,11 @@ export class StringService {
       .replace(/\s+/g, '');
   }
 
-  camelToNormal(text: string): string {
+  static camelToNormal(text: string): string {
     return text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
   }
 
-  trimKeys(
+  static trimKeys(
     obj: Record<string, any> | any[],
     keys: string[],
     options?: { toCamelCase?: boolean }
@@ -47,7 +47,7 @@ export class StringService {
   //   }, {} as Record<string, any>);
   // };
 
-  prefixKeys = (
+  static prefixKeys = (
     keyToReplace: string,
     objectToPrefixIn: Record<string, any>
   ): Record<string, any> => {
@@ -68,7 +68,7 @@ export class StringService {
     return result;
   };
 
-  flattenObjectWith_ = (
+  static flattenObjectWith_ = (
     obj: Record<string, any>,
     parentKey = '',
     separator = '_'
@@ -89,7 +89,7 @@ export class StringService {
     return result;
   };
 
-  evaluateSimpleConcat(
+  static evaluateSimpleConcat(
     expression: string,
     source: Record<string, any>
   ): string {
@@ -102,7 +102,7 @@ export class StringService {
       .join(' ');
   }
 
-  similarityScore(a: string, b: string): number {
+  static similarityScore(a: string, b: string): number {
     const normalize = (str: string) => str.trim().toLowerCase();
     a = normalize(a);
     b = normalize(b);
@@ -115,7 +115,7 @@ export class StringService {
   }
 
   // Levenshtein distance algorithm
-  private levenshteinDistance(a: string, b: string): number {
+  static levenshteinDistance(a: string, b: string): number {
     const matrix: number[][] = Array.from({ length: a.length + 1 }, () =>
       new Array(b.length + 1).fill(0)
     );
@@ -137,11 +137,11 @@ export class StringService {
     return matrix[a.length][b.length];
   }
 
-  getInitials(text: string): string {
+  static getInitials(text: string): string {
     return text.slice(0, 2).toUpperCase();
   }
 
-  getNameWithoutExtension(text: string): string {
+  static getNameWithoutExtension(text: string): string {
     return text.split('.')[0];
   }
 }

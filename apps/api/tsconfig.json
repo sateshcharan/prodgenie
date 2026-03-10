@@ -4,12 +4,6 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/redis"
-    },
-    {
-      "path": "../../libs/server-services"
-    },
-    {
       "path": "../../libs/shared-utils"
     },
     {
@@ -19,19 +13,19 @@
       "path": "../../libs/sse"
     },
     {
-      "path": "../../libs/supabase"
+      "path": "../../libs/types"
     },
     {
-      "path": "../../libs/types"
+      "path": "../../libs/redis"
     },
     {
       "path": "../../libs/constant"
     },
     {
-      "path": "../../libs/queues"
+      "path": "../../libs/db"
     },
     {
-      "path": "../../libs/db"
+      "path": "../../libs/server-services"
     },
     {
       "path": "./tsconfig.app.json"

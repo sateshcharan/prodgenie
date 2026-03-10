@@ -2,10 +2,9 @@ import { prisma } from '@prodgenie/libs/db';
 import { StringService } from '@prodgenie/libs/shared-utils';
 
 export class SequenceResolver {
-  private stringService = new StringService();
 
   async resolve(description: string) {
-    const keyword = this.stringService.camelCase(description);
+    const keyword = StringService.camelCase(description);
     const baseKeyword = keyword.replace(
       /(Len|Wid|Ht|Size|Dim|Length|Width|Height)$/i,
       ''

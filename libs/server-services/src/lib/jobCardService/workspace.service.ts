@@ -1,11 +1,12 @@
+import {
+  supabaseAdmin,
+  FolderService,
+  // FileStorageService,
+} from '@prodgenie/libs/supabase';
 import { prisma } from '@prodgenie/libs/db';
 import { workspaceRole } from '@prodgenie/libs/types';
-// import { FileStorageService, supabase } from '@prodgenie/libs/supabase';
-import { supabaseAdmin } from '@prodgenie/libs/supabase';
 
-import { FolderService } from '../folder.service.js';
-
-const folderService = new FolderService();
+// const folderService = new FolderService();
 // const fileStorageService = new FileStorageService();
 
 export class WorkspaceService {
@@ -19,7 +20,7 @@ export class WorkspaceService {
     //   workspaceName,
     //   planId
     // );
-    await folderService.scaffoldFolder(workspaceName, planId);
+    await FolderService.scaffoldFolder(workspaceName);
 
     // Create workspace in DB
     const workspaceDb = await prisma.workspace.create({
@@ -43,18 +44,18 @@ export class WorkspaceService {
 
   static async deleteWorkspace(workspaceId: string) {
     // delete all workspace members
-    await prisma.workspaceMember.updateMany({
-      where: { workspaceId },
-      data: { isDeleted: true, deletedAt: new Date() },
-    });
+    // await prisma.workspaceMember.updateMany({
+    //   where: { workspaceId },
+    //   data: { isDeleted: true, deletedAt: new Date() },
+    // });
 
     // delete all workspace files
     const { data: files } = await supabaseAdmin.storage
-      .from('workspace-files')
+      .from('prodgenie')
       .list(`${workspaceId}/`);
     if (files) {
       const paths = files.map((f) => `${workspaceId}/${f.name}`);
-      await supabaseAdmin.storage.from('workspace-files').remove(paths);
+      await supabaseAdmin.storage.from('prodgenie').remove(paths);
     }
 
     // delete all workspace activity
@@ -70,8 +71,8 @@ export class WorkspaceService {
         id: workspaceId,
       },
       data: {
-        isDeleted: true,
-        deletedAt: new Date(),
+        // isDeleted: true,
+        // deletedAt: new Date(),
       },
     });
   }
@@ -82,66 +83,60 @@ export class WorkspaceService {
     role: workspaceRole
   ) {
     // 1. Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // let user = await prisma.user.findUnique({
+    //   where: { email },
+    // });
     // 2. If not exist, create a placeholder user
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: email.split('@')[0],
-        },
-      });
-
-      // Also create in Supabase Auth (optional but recommended)
-      try {
-        const { data: invited, error } =
-          await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
-          });
-
-        if (error) {
-          console.error('Supabase invite error:', error.message);
-        } else {
-          console.log('Supabase invite sent:', invited);
-        }
-      } catch (err) {
-        console.error('Supabase invite exception:', err);
-      }
-    }
-
+    // if (!user) {
+    //   user = await prisma.user.create({
+    //     data: {
+    //       email,
+    //       name: email.split('@')[0],
+    //     },
+    //   });
+    //   // Also create in Supabase Auth (optional but recommended)
+    //   try {
+    //     const { data: invited, error } =
+    //       await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+    //         redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
+    //       });
+    //     if (error) {
+    //       console.error('Supabase invite error:', error.message);
+    //     } else {
+    //       console.log('Supabase invite sent:', invited);
+    //     }
+    //   } catch (err) {
+    //     console.error('Supabase invite exception:', err);
+    //   }
+    // }
     // 3. Create workspace membership with status pending
-    const workspaceMember = await prisma.workspaceMember.upsert({
-      where: {
-        userId_workspaceId: {
-          userId: user.id,
-          workspaceId,
-        },
-      },
-      update: {
-        role,
-        isDeleted: false,
-        deletedAt: null,
-        status: 'pending',
-      },
-      create: {
-        userId: user.id,
-        workspaceId,
-        role,
-        status: 'pending',
-      },
-    });
-
+    // const workspaceMember = await prisma.workspaceMember.upsert({
+    //   where: {
+    //     userId_workspaceId: {
+    //       userId: user.id,
+    //       workspaceId,
+    //     },
+    //   },
+    //   update: {
+    //     role,
+    //     // isDeleted: false,
+    //     deletedAt: null,
+    //     status: 'pending',
+    //   },
+    //   create: {
+    //     userId: user.id,
+    //     workspaceId,
+    //     role,
+    //     status: 'pending',
+    //   },
+    // });
     // 4. Optionally also send your own branded invite email
     // await EmailService.sendInvite(email, {
     //   workspaceId,
     //   role,
     //   link: `${process.env.WEB_URL}/invite/accept?workspaceId=${workspaceId}`,
     // });
-
-    return workspaceMember;
+    // return workspaceMember;
   }
 
   static async removeUserFromWorkspace(workspaceId: string, userId: string) {
@@ -153,18 +148,18 @@ export class WorkspaceService {
         },
       },
       data: {
-        isDeleted: true,
-        deletedAt: new Date(),
+        // isDeleted: true,
+        // deletedAt: new Date(),
       },
     });
   }
 
-  static async getWorkspaceUser(workspaceId: string) {
+  static async getWorkspaceUsers(workspaceId: string) {
     if (!workspaceId) return [];
     const users = await prisma.workspaceMember.findMany({
       where: {
         workspaceId,
-        isDeleted: false,
+        // isDeleted: false,
       },
       include: { user: true },
     });
@@ -206,7 +201,7 @@ export class WorkspaceService {
     return workspace ? true : false;
   }
 
-  async getWorkspaceConfig(workspaceId: string, configName: string) {
+  static async getWorkspaceConfig(workspaceId: string, configName: string) {
     const config = await prisma.file.findFirst({
       where: {
         workspaceId,

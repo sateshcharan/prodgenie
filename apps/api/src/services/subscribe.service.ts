@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 export class SubscribeService {
-  async sendNewsletterEmail(email: string) {
+  static async sendNewsletterEmail(email: string) {
     if (!email) {
       throw new Error('Email is required');
     }

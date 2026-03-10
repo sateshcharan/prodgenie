@@ -9,7 +9,7 @@ import {
 
 import AccountSettings from './AccountSettings';
 import BillingSettings from './BillingSettings';
-import NotificationSettings from './NotificationSettings';
+// import NotificationSettings from './NotificationSettings';
 
 export default function Settings() {
   const { tab } = useParams();
@@ -27,7 +27,8 @@ export default function Settings() {
         <TabsList>
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="notification">Notification</TabsTrigger>
+          {/* === future feature ===
+           <TabsTrigger value="notification">Notification</TabsTrigger>  */}
         </TabsList>
 
         <TabsContent value="account">
@@ -36,9 +37,10 @@ export default function Settings() {
         <TabsContent value="billing">
           <BillingSettings />
         </TabsContent>
-        <TabsContent value="notification">
+        {/* === future feature === */}
+        {/* <TabsContent value="notification">
           <NotificationSettings />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

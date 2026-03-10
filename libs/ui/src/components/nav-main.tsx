@@ -9,7 +9,7 @@ import {
   SidebarMenuItem,
 } from '../sidebar';
 
-import { useNotificationStore } from '@prodgenie/libs/store';
+// import { useNotificationStore } from '@prodgenie/libs/store';
 
 export function NavMain({
   items,
@@ -20,7 +20,7 @@ export function NavMain({
     icon?: LucideIcon;
   }[];
 }) {
-  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  // const unreadCount = useNotificationStore((state) => state.unreadCount);
 
   return (
     <SidebarGroup>
@@ -38,13 +38,15 @@ export function NavMain({
                     <span>{item.title}</span>
                   </div>
 
+                  {/* === future feature === */}
+
                   {/* Badge only for notifications */}
-                  {item.title.toLowerCase() === 'notifications' &&
+                  {/* {item.title.toLowerCase() === 'notifications' &&
                     unreadCount > 0 && (
                       <span className="ml-2 text-xs bg-red-500 text-white rounded-full px-2 py-0.5">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
-                    )}
+                    )} */}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -1,5 +1,6 @@
-import { Worker } from 'bullmq';
 import express from 'express';
+import { Worker } from 'bullmq';
+
 import { redis } from '@prodgenie/libs/redis';
 
 import { processDrawingBom } from './processors/file-processor.js';

@@ -32,7 +32,7 @@ export default function FileDropZone({
   onUploadSuccess,
   multiple = true,
 }: DialogDropZoneProps) {
-  const { modalProps } = useModalStore();
+  const { modalProps, closeModal } = useModalStore();
   const { isOpen, close } = useAddDialogStore();
   const { activeWorkspace } = useWorkspaceStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -51,9 +51,8 @@ export default function FileDropZone({
 
     selectedFiles.forEach((file) => formData.append('files', file));
 
-    if (activeWorkspace?.id) {
+    activeWorkspace?.id &&
       formData.append('activeWorkspace', JSON.stringify(activeWorkspace));
-    }
 
     try {
       await api.post(submitUrl, formData);
@@ -63,6 +62,8 @@ export default function FileDropZone({
     } catch (error) {
       console.error('Upload failed:', error);
       toast.error('upload failed');
+    } finally {
+      closeModal();
     }
   };
 

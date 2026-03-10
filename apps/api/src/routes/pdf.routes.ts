@@ -1,9 +1,10 @@
 import express, { Router } from 'express';
 
-import { PdfController } from '../controllers/index.js';
-import { validateParsed, asyncHandler } from '../middlewares/index.js';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { PdfController } from '../controllers/pdf.controller';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { validateParsed } from '../middlewares/parsed.middleware';
 
 const router: Router = express.Router();
 

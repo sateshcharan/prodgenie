@@ -44,7 +44,7 @@ export const apiRoutes = {
 
   callback: {
     base: '/api/callback',
-    oAuth: '/oAuth',
+    OAuth: '/OAuth',
   },
 
   webhook: {
@@ -54,8 +54,10 @@ export const apiRoutes = {
 
   workspace: {
     base: '/api/workspace',
+    check: '/check',
     createWorkspace: '/createWorkspace',
     deleteWorkspace: '/deleteWorkspace',
+    deleteAccount: '/deleteAccount',
     inviteUserToWorkspace: '/inviteUserToWorkspace',
     acceptInvite: '/acceptInvite',
     rejectInvite: '/rejectInvite',
@@ -63,8 +65,9 @@ export const apiRoutes = {
     getWorkspaceUsers: '/getWorkspaceUsers',
     getWorkspaceEvents: '/getWorkspaceEvents',
     // getWorkspaceTransactions: '/getWorkspaceTransactions',
-    check: '/check',
     updateUserRoleInWorkspace: '/updateUserRoleInWorkspace',
+    getJobCardStats: (workspaceId: string, days: string) =>
+      `/getJobCardStats/${workspaceId}/${days}`,
     getWorkspaceConfig: (configName: string) =>
       `/getWorkspaceConfig/${configName}`,
     setWorkspaceConfig: (configName: string) =>
@@ -95,6 +98,7 @@ export const apiRoutes = {
     get: (fileId: string) => `/get/${fileId}`,
     set: (fileId: string) => `/set/${fileId}`,
     update: (fileId: string) => `/update/${fileId}`,
+    regenerate: (fileType: string) => `/regenerate/${fileType}`,
   },
 
   pdf: {
@@ -119,7 +123,9 @@ export const apiRoutes = {
     base: '/api/payment',
     stripeSession: '/stripe/session',
     stripeWebhook: '/stripe/webhook',
-    phonepeCreatePayment: '/phonepe/createPayment',
+    phonepeCreate: '/phonepe/create',
+    phonepeRedirect: '/phonepe/redirect',
+    phonepeCallback: '/phonepe/callback',
     phonepeStatus: (orderId: string) => `/phonepe/status/${orderId}`,
   },
 

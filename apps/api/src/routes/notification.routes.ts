@@ -1,7 +1,8 @@
 import express, { Router } from 'express';
 
-import { NotificationController } from '../controllers';
-import { authenticateSupabaseJWT, asyncHandler } from '../middlewares';
+import { NotificationController } from '../controllers/notification.controller';
+import { authenticateSupabaseJWT } from '../middlewares/supabase.middleware';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
 
 const router: Router = express.Router();
 

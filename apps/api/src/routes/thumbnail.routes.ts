@@ -1,10 +1,11 @@
-import express, { Router } from 'express';
 import multer from 'multer';
-
-import { validateFileType, asyncHandler } from '../middlewares/index';
-import { ThumbnailController } from '../controllers/index';
+import express, { Router } from 'express';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { ThumbnailController } from '../controllers/thumbnail.controller';
+import { validateFileType } from '../middlewares/fileType.middleware';
 
 const router: Router = express.Router({ mergeParams: true }); // to merge parent params
 const upload = multer();
@@ -26,6 +27,11 @@ router.post(
     // validateFileType
   ],
   asyncHandler(ThumbnailController.updateThumbnailController)
+);
+router.post(
+  apiRoutes.thumbnail.regenerate(':fileType'),
+  // validateFileType,
+  asyncHandler(ThumbnailController.regenerateThumbnailController)
 );
 
 export { router };

@@ -1,19 +1,14 @@
 import axios from 'axios';
+import { isDeepStrictEqual } from 'util';
 
-import { prisma, FileType } from '@prodgenie/libs/db';
+import { prisma, fileType } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 
 import { FileService } from './file.service';
-import e from 'express';
-import { isDeepStrictEqual } from 'util';
-
-const storageFileService = new FileStorageService();
-const fileHelperService = new FileHelperService();
-const fileService = new FileService();
 
 export class SequenceService {
-  async syncAll(workspaceId: string, user: any) {
+  static async syncAll(workspaceId: string, user: any) {
     // 1. Get all template file details
     const templateDetails = await prisma.file.findMany({
       where: { workspaceId, type: 'template' },
@@ -36,7 +31,7 @@ export class SequenceService {
     for (const sequence of sequenceFiles) {
       try {
         // 3. Get the signed URL to download the sequence file
-        const signedUrl = await storageFileService.getSignedUrl(sequence.path);
+        const signedUrl = await FileStorageService.getSignedUrl(sequence.path);
         const { data } = await axios.get(signedUrl);
         const json = typeof data === 'string' ? JSON.parse(data) : data;
 
@@ -59,7 +54,7 @@ export class SequenceService {
             return {
               ...section,
               path: matchingTemplate.path,
-              jobCardForm: matchingTemplate.data.jobCardForm,
+              jobCardForm: matchingTemplate?.data?.jobCardForm,
             };
           }
 
@@ -88,7 +83,7 @@ export class SequenceService {
             size: buffer.length,
           };
 
-          await storageFileService.replaceFile(
+          await FileStorageService.replaceFile(
             sequence.path,
             fileForUpload,
             'sequence',
@@ -103,7 +98,7 @@ export class SequenceService {
     }
   }
 
-  async getJobCardDataFromSequence(sequence: string) {
+  static async getJobCardDataFromSequence(sequence: string) {
     // Normalize input: lowercase + remove spaces, underscores, and dashes
     const normalizedSeq = sequence
       .toLowerCase()
@@ -132,7 +127,7 @@ export class SequenceService {
     }
 
     // Fetch JSON content from the file
-    const json = await fileHelperService.fetchJsonFromSignedUrl(
+    const json = await FileHelperService.fetchJsonFromSignedUrl(
       matchedFile.path
     );
 

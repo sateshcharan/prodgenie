@@ -22,15 +22,15 @@ interface OpenRouterResponse {
   }>;
 }
 
-export class OpenRouterService {
-  private apiKey = process.env.OPENROUTER_API_KEY || '';
-  private baseUrl = 'https://openrouter.ai/api/v1';
-  private defaultModel = 'anthropic/claude-3.5-sonnet'; // openai/gpt-5-nano
+const apiKey = process.env.OPENROUTER_API_KEY || '';
+const baseUrl = 'https://openrouter.ai/api/v1';
+const defaultModel = 'anthropic/claude-3.5-sonnet'; // openai/gpt-5-nano
 
+export class OpenRouterService {
   // unified extract method for both signed URL and local file
-  public async extract(
+  static async extract(
     input: string,
-    model: string = this.defaultModel
+    model: string = defaultModel
   ): Promise<any> {
     try {
       console.log(`🔍 Extracting using model: ${model}`);
@@ -60,7 +60,9 @@ export class OpenRouterService {
       } else if (fs.existsSync(input)) {
         // Handle local file
         const fileBuffer = fs.readFileSync(input);
-        const mimeType = this.getMimeType(path.extname(input).toLowerCase());
+        const mimeType = OpenRouterService.getMimeType(
+          path.extname(input).toLowerCase()
+        );
         const base64 = fileBuffer.toString('base64');
         const dataUrl = `data:${mimeType};base64,${base64}`;
 
@@ -83,13 +85,13 @@ export class OpenRouterService {
         ];
       }
 
-      const response = await this.makeRequest(messages, model);
+      const response = await OpenRouterService.makeRequest(messages, model);
       const assistantMessage = response.choices[0]?.message?.content;
 
       if (!assistantMessage) throw new Error('No response received');
 
       console.log('🧠 Raw response:', assistantMessage);
-      return this.extractJsonFromResponse(assistantMessage);
+      return OpenRouterService.extractJsonFromResponse(assistantMessage);
     } catch (error) {
       console.error('❌ Extraction failed:', error);
       throw error;
@@ -97,11 +99,11 @@ export class OpenRouterService {
   }
 
   // ---- Core API call ----
-  private async makeRequest(
+  static async makeRequest(
     messages: OpenRouterMessage[],
     model: string
   ): Promise<OpenRouterResponse> {
-    const url = `${this.baseUrl}/chat/completions`;
+    const url = `${baseUrl}/chat/completions`;
 
     try {
       const response: AxiosResponse<OpenRouterResponse> = await axios.post(
@@ -109,7 +111,7 @@ export class OpenRouterService {
         { model, messages, temperature: 0.1, max_tokens: 4000 },
         {
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer':
               process.env.YOUR_SITE_URL || 'http://localhost:3000',
@@ -131,7 +133,7 @@ export class OpenRouterService {
   }
 
   // ---- Helper: MIME detection ----
-  private getMimeType(ext: string): string {
+  static getMimeType(ext: string): string {
     const map: Record<string, string> = {
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
@@ -143,7 +145,7 @@ export class OpenRouterService {
   }
 
   // ---- Helper: JSON parsing ----
-  private extractJsonFromResponse(responseText: string): any {
+  static extractJsonFromResponse(responseText: string): any {
     const jsonMatch =
       responseText.match(/```(?:json)?\s*([\s\S]*?)```/) ||
       responseText.match(/{[\s\S]*}/);
@@ -160,10 +162,10 @@ export class OpenRouterService {
   }
 
   // ---- Utility: Fetch available models ----
-  public async listModels(): Promise<string[]> {
+  static async listModels(): Promise<string[]> {
     try {
-      const res = await axios.get(`${this.baseUrl}/models`, {
-        headers: { Authorization: `Bearer ${this.apiKey}` },
+      const res = await axios.get(`${baseUrl}/models`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
       return res.data?.data?.map((m: any) => m.id) || [];
     } catch (e) {

@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from './prismaClient.js';
 import {
   eventType,
-  eventStatus,
+  status,
   // Event,
 } from './prismaTypes.js';
 // import { sseServer } from '@prodgenie/libs/sse';
@@ -38,6 +38,8 @@ export class EventService {
           status: params.status,
           creditChange,
           balanceAfter,
+          progress: params.progress,
+          description: params.description,
         },
       });
 
@@ -59,7 +61,15 @@ export class EventService {
     });
   }
 
-  async update(id: string, data: any, workspaceId?: string) {
+  static async recordTx(
+    tx: Prisma.TransactionClient,
+    // data: EventCreateInput // todo: type this strongly
+    data: any
+  ) {
+    return tx.event.create({ data });
+  }
+
+  static async update(id: string, data: any, workspaceId?: string) {
     const updated = await prisma.event.update({
       where: { id },
       data,
@@ -82,23 +92,32 @@ export class EventService {
     return updated;
   }
 
-  async updateProgress(
+  static async updateProgress(
     workspaceId: string,
     jobId: string,
-    status: eventStatus,
+    status: status,
     progress: number,
     message?: string
-    // workspaceId: string,
   ) {
-    await this.update(
-      jobId,
-      {
-        status,
-        progress,
-        // reason: message ? { message } : undefined,
-      },
-      workspaceId
-    );
+    // Update the event itself
+    const event = await this.update(jobId, { status, progress }, workspaceId);
+
+    // Only apply usage tracking for completed jobcards
+    if (status === 'completed' && event.type === 'jobcard_generation') {
+      const now = new Date();
+
+      console.log(workspaceId)
+
+      await prisma.workspace.update({
+        where: {
+          id: workspaceId,
+        },
+        data: {
+          jobCardsCount: { increment: 1 },
+          updatedAt: now,
+        },
+      });
+    }
   }
 
   static async getWorkspaceEvents(workspaceId: string) {

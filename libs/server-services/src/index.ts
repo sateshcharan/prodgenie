@@ -3,4 +3,3 @@ export * from './lib/puppeteer.service.js';
 export * from './lib/fileHelper.service.js';
 export * from './lib/openrouter.service.js';
 
-export * from './lib/jobCardService/jobCard.service.js';

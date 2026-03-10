@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { X, Download, Pencil, Copy, Briefcase, Calculator } from 'lucide-react';
 
-import { Avatar, AvatarImage, AvatarFallback } from '@prodgenie/libs/ui/avatar';
 import { Button } from '@prodgenie/libs/ui/button';
-import { Card, CardHeader, CardContent } from '@prodgenie/libs/ui/card';
-import { StringService } from '@prodgenie/libs/shared-utils';
 import { useWorkspaceStore } from '@prodgenie/libs/store';
+import { StringService } from '@prodgenie/libs/shared-utils';
+import { Card, CardHeader, CardContent } from '@prodgenie/libs/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@prodgenie/libs/ui/avatar';
 
 import PdfThumbnail from './PdfThumbnail';
 import { ExcelHTMLViewer } from '../utils/ExcelViewer';
@@ -26,8 +26,6 @@ interface FileCardProps {
   onDuplicate: (id: string) => void;
   onClick: (id: string, path: string) => void;
 }
-
-const stringService = new StringService();
 
 const FileCard = ({
   card,
@@ -121,7 +119,7 @@ const FileCard = ({
             // )
             // <div className="text-gray-400">No Preview</div>
             <AvatarFallback className="rounded-lg w-full h-[120px]">
-              {stringService.getInitials(card?.name)}
+              {StringService.getInitials(card?.name)}
             </AvatarFallback>
           )}
         </Avatar>
@@ -131,8 +129,8 @@ const FileCard = ({
       <CardHeader className="text-center p-0 capitalize">
         {fileType === 'drawing' || fileType === 'sequence' ? (
           <EditableTitle
-            value={stringService.camelToNormal(
-              stringService.getNameWithoutExtension(card.name)
+            value={StringService.camelToNormal(
+              StringService.getNameWithoutExtension(card.name)
             )}
             onSave={(newValue) => {
               // Optional save logic
@@ -142,8 +140,8 @@ const FileCard = ({
           />
         ) : (
           <div className="text-center p-2 capitalize">
-            {stringService.camelToNormal(
-              stringService.getNameWithoutExtension(card.name)
+            {StringService.camelToNormal(
+              StringService.getNameWithoutExtension(card.name)
             )}
           </div>
         )}

@@ -6,37 +6,39 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useUserStore,
   useWorkspaceStore,
-  useNotificationStore,
+  // useNotificationStore,
 } from '@prodgenie/libs/store';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { SiteHeader } from '@prodgenie/libs/ui/components/site-header';
 import { SidebarInset, SidebarProvider } from '@prodgenie/libs/ui/sidebar';
 
 import api from '../utils/api';
-import { useSSE } from '../hooks/useSSE';
+// import { useSSE } from '../hooks/useSSE';
 import PrivateHeader from '../navigation/PrivateHeader';
 import ChatWidget from '../components/ChatWidget';
 import AppSidebar from '../components/AppSidebar';
 import ModalManager from '../components/modal/ModalManager';
+// import { subscribeToEvents } from '../components/SubscribeToEvents';
 
 const PrivateLayout = () => {
-  const setUser = useUserStore((state) => state.setUser);
   const {
+    activeWorkspace,
     setWorkspaces,
     setActiveWorkspace,
     setActiveWorkspaceRole,
     setWorkspaceUsers,
     setWorkspaceEvents,
     subscribeToEvents,
+    setWorkspaceUsage,
+    setJobCardStats,
+    setTotalJobCards,
   } = useWorkspaceStore((state) => state);
+  const setUser = useUserStore((state) => state.setUser);
+  // const setNotifications = useNotificationStore(
+  //   (state) => state.setNotifications
+  // );
 
   const { fileType } = useParams();
-
-  // setWorkspaces(data.workspaces);
-  // setActiveWorkspace(data.activeWorkspace);
-  // setActiveWorkspaceRole(data.activeWorkspaceRole);
-  // setWorkspaceUsers(data.workspaceUsers);
-  // setUser(data.user);
 
   // const queryClient = useQueryClient();
   // const workspaceId = activeWorkspace?.id;
@@ -69,91 +71,73 @@ const PrivateLayout = () => {
   // useSSE(workspaceId, onMessage);
 
   // determine title for SiteHeader
+
   const getPageTitle = () => {
     if (fileType) return fileType;
     if (location.pathname.includes('settings')) return 'Settings';
     return 'Dashboard';
   };
 
+  // const activeWorkspaceId = useWorkspaceStore(
+  //   (state) => state.activeWorkspace?.id
+  // );
+
   //batched init
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['dashboard-init'],
+    queryKey: ['dashboard-init'], // need to update with workspaceId
     queryFn: () =>
       api
         .get(`${apiRoutes.batched.base}${apiRoutes.batched.init}`)
         .then((r) => r.data),
     enabled: true,
     staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    // refetchOnMount: false,
+    // refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (data) {
-      const workspaces = data.user.memberships.map((m) => m.workspace);
-      const activeWorkspaceId = data.user.activeWorkspaceId;
-      const activeWorkspace = workspaces.find(
-        (w) => w.id === activeWorkspaceId
-      );
-      const activeWorkspaceRole = data.user.memberships.find(
-        (m) => m.workspace.id === activeWorkspaceId
-      )?.role;
+      const totalJobCards = data.user.memberships.find(
+        (m: any) => m.workspaceId === data.user.activeWorkspaceId
+      ).workspace.jobCardsCount;
 
       setUser(data.user);
-      setWorkspaceUsers(data.workspaceUsers);
       setWorkspaceEvents(data.workspaceEvents);
+      setJobCardStats(data.jobCardStats);
+      setWorkspaceUsage(data.workspaceUsage);
+      setTotalJobCards(totalJobCards);
+      // setNotifications(data.notifications);
+      // setWorkspaceUsers(data.workspaceUsers);
+
+      const workspaces = data.user.memberships.map((m) => m.workspace);
+      // all memberships
       setWorkspaces(workspaces);
-      setActiveWorkspace(activeWorkspace);
-      setActiveWorkspaceRole(activeWorkspaceRole);
+
+      // find and set active workspace
+      const activeMembership = data.user.memberships.find(
+        (m: any) => m.workspaceId === data.user.activeWorkspaceId
+      );
+      setActiveWorkspace(activeMembership?.workspace || null);
+      setActiveWorkspaceRole(activeMembership?.role || null);
     }
   }, [data]);
 
   useEffect(() => {
-    if (!data?.user?.activeWorkspaceId) return;
+    if (data) {
+      subscribeToEvents(data.user.activeWorkspaceId);
+    }
 
-    subscribeToEvents(data.user.activeWorkspaceId);
-    // return () => {};
-  }, [data?.user?.activeWorkspaceId]);
-
-  // useEffect(() => {
-  //   // fetch current user
-  //   const fetchUserData = async () => {
-  //     const { data } = await api.get(
-  //       `${apiRoutes.users.base}${apiRoutes.users.getProfile}`
-  //     );
-  //     setUser(data);
-  //     const workspaces = data.memberships.map((m) => m.workspace);
-  //     setWorkspaces(workspaces);
-  //     setActiveWorkspace(workspaces[0]);
-  //     setActiveWorkspaceRole(
-  //       data.memberships.find((m) => m.workspace.id === workspaces[0].id)?.role
-  //     );
-  //   };
-  //   fetchUserData();
-  // }, [setUser, setWorkspaces, setActiveWorkspace]);
-  //
-  // // fetch workspace users
-  // useEffect(() => {
-  //   if (!activeWorkspace) return;
-  //   const fetchWorkspaceUsers = async () => {
-  //     const { data: workspaceUsers } = await api.get(
-  //       `${apiRoutes.workspace.base}${apiRoutes.workspace.getWorkspaceUsers}`,
-  //       { params: { workspaceId: activeWorkspace.id } }
-  //     );
-  //     setWorkspaceUsers(workspaceUsers.data);
-  //   };
-  //   fetchWorkspaceUsers();
-  // }, [activeWorkspace, setWorkspaceUsers]);
+    return () => {
+      // cleanup on unmount or workspace change
+      useWorkspaceStore.getState().reset();
+    };
+  }, [data]);
 
   // useEffect(() => {
-  //   const fetchNotifications = async () => {
-  //     const { data } = await api.get(
-  //       `${apiRoutes.notification.base}${apiRoutes.notification.getUserNotifications}`
-  //     );
-  //     useNotificationStore.getState().setNotifications(data.data);
-  //   };
-  //   fetchNotifications();
-  // }, []);
+  //   if (activeWorkspace?.id) {
+  //     subscribeToEvents(activeWorkspace.id);
+  //   }
+  // }, [activeWorkspace?.id]);
 
   return (
     <>
@@ -170,7 +154,6 @@ const PrivateLayout = () => {
         </SidebarInset>
       </SidebarProvider>
 
-      {/* chat widget */}
       <ChatWidget />
 
       {/* all private modals render here */}

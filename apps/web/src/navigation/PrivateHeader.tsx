@@ -13,17 +13,29 @@ import { Button } from '@prodgenie/libs/ui/button';
 import { ModeToggle } from '@prodgenie/libs/ui/components/mode-toggle';
 import logo from '../assets/logo.png';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useModalStore } from '@prodgenie/libs/store';
+import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
 
 const Header = () => {
   const navigate = useNavigate();
   const { openModal } = useModalStore();
+  const { reset } = useWorkspaceStore();
 
   const handleChangePlan = () => {
     openModal('workspace:pricing');
   };
+
+  const handleLogout = async () => {
+    try {
+      await api.post(`${apiRoutes.auth.base}${apiRoutes.auth.logout}`);
+    } finally {
+      // cleanup always runs
+      reset();
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
     <header className="bg-background flex justify-between border-b  p-4">
       <div className=" flex items-center gap-2">
@@ -48,14 +60,7 @@ const Header = () => {
           <Sparkles />
           Upgrade to Pro
         </Button>
-        <Button
-          onClick={() => {
-            // localStorage.clear();
-            api.post(`${apiRoutes.auth.base}${apiRoutes.auth.logout}`);
-            navigate('/');
-          }}
-          variant="outline"
-        >
+        <Button onClick={handleLogout} variant="outline">
           Log Out
         </Button>
       </div>

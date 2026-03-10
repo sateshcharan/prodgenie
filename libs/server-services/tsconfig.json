@@ -7,6 +7,9 @@
       "path": "../constant"
     },
     {
+      "path": "../redis"
+    },
+    {
       "path": "../types"
     },
     {
@@ -14,9 +17,6 @@
     },
     {
       "path": "../db"
-    },
-    {
-      "path": "../supabase"
     },
     {
       "path": "./tsconfig.lib.json"

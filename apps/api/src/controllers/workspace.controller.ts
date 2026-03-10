@@ -1,11 +1,13 @@
+import { UUID } from 'crypto';
 import { Request, Response } from 'express';
 
-import { FolderService } from '../services/index.js';
-import { WorkspaceService } from '../services/index.js';
+import { FolderService } from '../services/folder.service';
+import { WorkspaceService } from '../services/workspace.service.js';
 
 export class WorkspaceController {
   static createWorkspace = async (req: Request, res: Response) => {
     const { workspaceName, planId } = req.body;
+
     const user = req.user;
 
     const result = await WorkspaceService.createWorkspace(
@@ -13,70 +15,58 @@ export class WorkspaceController {
       planId,
       user
     );
-    return res.status(200).json({ success: true, data: 'Workspace created' });
+    return res.status(200).json({ success: true, data: result });
   };
 
   static deleteWorkspace = async (req: Request, res: Response) => {
     const { workspaceId } = req.body;
     const user = req.user;
 
-    const result = await WorkspaceService.deleteWorkspace(workspaceId, user);
-    return res.status(200).json({ success: true, data: 'Workspace deleted' });
+    const result = await WorkspaceService.deleteWorkspace(user, workspaceId);
+    return res.status(200).json({ success: true, data: result });
   };
 
-  static inviteUserToWorkspace = async (req: Request, res: Response) => {
-    const { workspaceId, email, role } = req.body;
+  static deleteAccount = async (req: Request, res: Response) => {
+    const userId = req.user.id!;
 
-    const invitedUser = await WorkspaceService.inviteUserToWorkspace(
-      workspaceId,
-      email,
-      role
-    );
-    return res.status(200).json({ success: true, data: invitedUser });
+    const result = await WorkspaceService.deleteAccount(userId);
+    return res.status(200).json({ success: true, data: 'Account deleted' });
   };
 
-  static acceptInvite = async (req: Request, res: Response) => {
-    const user = req.user!;
-    const { workspaceId } = req.body;
+  // static removeUserFromWorkspace = async (req: Request, res: Response) => {
+  //   const { workspaceId, userId } = req.body;
 
-    await WorkspaceService.acceptInvite(workspaceId, user.id);
-    // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
-    return res.status(200).json({ success: true, message: 'Invite accepted' });
-  };
+  //   const removedUser = await WorkspaceService.removeUserFromWorkspace(
+  //     workspaceId,
+  //     userId
+  //   );
+  //   return res.status(200).json({ success: true, data: removedUser });
+  // };
 
-  static rejectInvite = async (req: Request, res: Response) => {
-    const user = req.user!;
-    const { workspaceId } = req.params;
+  // static getWorkspaceUsers = async (req: Request, res: Response) => {
+  //   const { workspaceId } = req.query;
 
-    await WorkspaceService.rejectInvite(workspaceId, user.id);
-    // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
-    return res.status(200).json({ success: true, message: 'Invite rejected' });
-  };
-
-  static removeUserFromWorkspace = async (req: Request, res: Response) => {
-    const { workspaceId, userId } = req.body;
-
-    const removedUser = await WorkspaceService.removeUserFromWorkspace(
-      workspaceId,
-      userId
-    );
-    return res.status(200).json({ success: true, data: removedUser });
-  };
-
-  static getWorkspaceUsers = async (req: Request, res: Response) => {
-    const { workspaceId } = req.query;
-
-    const users = await WorkspaceService.getWorkspaceUser(
-      workspaceId as string
-    );
-    return res.status(200).json({ success: true, data: users });
-  };
+  //   const users = await WorkspaceService.getWorkspaceUsers(workspaceId as UUID);
+  //   return res.status(200).json({ success: true, data: users });
+  // };
 
   static getWorkspaceEvents = async (req: Request, res: Response) => {
     const { workspaceId } = req.query;
 
     const events = await WorkspaceService.getWorkspaceEvents(workspaceId);
     return res.status(200).json({ success: true, data: events });
+  };
+
+  static getJobCardStats = async (req: Request, res: Response) => {
+    const { workspaceId } = req.params;
+    const { days = 90 } = req.query; // default last 90 days
+
+    const stats = await WorkspaceService.getJobCardStats(
+      workspaceId,
+      Number(days)
+    );
+
+    return res.json({ data: stats });
   };
 
   // static getWorkspaceTransactions = async (req: Request, res: Response) => {
@@ -141,4 +131,35 @@ export class WorkspaceController {
     );
     return res.status(200).json({ success: true, data: config });
   };
+
+  // == future features ==
+
+  //   static inviteUserToWorkspace = async (req: Request, res: Response) => {
+  //   const { workspaceId, email, role } = req.body;
+
+  //   const invitedUser = await WorkspaceService.inviteUserToWorkspace(
+  //     workspaceId,
+  //     email,
+  //     role
+  //   );
+  //   return res.status(200).json({ success: true, data: invitedUser });
+  // };
+
+  // static acceptInvite = async (req: Request, res: Response) => {
+  //   const user = req.user!;
+  //   const { workspaceId } = req.body;
+
+  //   await WorkspaceService.acceptInvite(workspaceId, user.id);
+  //   // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
+  //   return res.status(200).json({ success: true, message: 'Invite accepted' });
+  // };
+
+  // static rejectInvite = async (req: Request, res: Response) => {
+  //   const user = req.user!;
+  //   const { workspaceId } = req.params;
+
+  //   await WorkspaceService.rejectInvite(workspaceId, user.id);
+  //   // await WorkspaceService.markWorkspaceInviteAsHandled(workspaceId, user.id);
+  //   return res.status(200).json({ success: true, message: 'Invite rejected' });
+  // };
 }

@@ -25,7 +25,10 @@ export const appSidebarItems = {
       url: '/dashboard',
       icon: Home,
     },
-    { title: 'Notifications', url: '/dashboard/notifications', icon: BellIcon },
+
+    // === future feature ===
+
+    // { title: 'Notifications', url: '/dashboard/notifications', icon: BellIcon },
   ],
   navSecondary: [
     {

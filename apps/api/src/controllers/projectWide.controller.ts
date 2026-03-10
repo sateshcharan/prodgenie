@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { ProjectWideService } from '../services/index.js';
+import { ProjectWideService } from '../services/projectWide.service';
 
 export class ProjectWideController {
   static async getPlans(req: Request, res: Response) {

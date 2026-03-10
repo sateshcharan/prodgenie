@@ -1,7 +1,9 @@
+import { Pencil, Check, Plus } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
-import { Pencil, Check, Plus } from 'lucide-react'; // Or any icon lib you're using
-import { Button } from '@prodgenie/libs/ui/button'; // from ShadCN
+
+import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
+
 import api from '../utils/api';
 
 interface PrintingDetailItem {

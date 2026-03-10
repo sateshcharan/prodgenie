@@ -9,6 +9,10 @@
     "moduleResolution": "nodenext",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
-  "references": []
+  "include": ["src/**/*.ts", "supabase/**/*.ts"],
+  "references": [
+    {
+      "path": "../redis/tsconfig.lib.json"
+    }
+  ]
 }

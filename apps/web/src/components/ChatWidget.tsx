@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useChatStore } from '@prodgenie/libs/store';
 import { X, MessageCircle, Paperclip } from 'lucide-react';
-import { useState } from 'react';
 
 type Message = {
   id: string;

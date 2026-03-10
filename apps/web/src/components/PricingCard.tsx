@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { cn } from '@prodgenie/libs/utils';
+import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useAuthStore } from '@prodgenie/libs/store';
-import {  PricingCard as PricingCardUI } from '@prodgenie/libs/ui/components/pricing-card';
-import { Button } from '@prodgenie/libs/ui/button';
+import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui/components/pricing-card';
 
 import api from '../utils/api';
 import handleCheckout from './HandleCheckout';
@@ -84,14 +84,15 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
         </h2>
 
         {/* Billing Cycle Toggle */}
-        <div className="inline-flex rounded-lg bg-white p-1 mb-8">
+        <div className="inline-flex rounded-full bg-white p-1 mb-8 outline outline-1 outline-gray-200">
           {(['monthly', 'annual'] as const).map((cycle) => (
             <Button
               key={cycle}
               onClick={() => setBillingCycle(cycle)}
               variant={billingCycle === cycle ? 'default' : 'ghost'}
+              className="rounded-full"
             >
-              {cycle === 'monthly' ? 'Monthly' : 'Annual (2 months free)'}
+              {cycle === 'monthly' ? 'Monthly' : 'Annual (3 months free)'}
             </Button>
           ))}
         </div>
@@ -106,7 +107,6 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               cycle={billingCycle}
               features={plan.features}
               onClick={
-                // plan.price === 0 ? handleClick : () => handleCheckout('phonepe')
                 plan.price === 0
                   ? handleClick
                   : () =>
@@ -129,10 +129,10 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               variant === 'page' ? 'text-3xl' : 'text-xl'
             )}
           >
-            Need more credits?
+            Need only credits?
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Purchase extra credits anytime within your billing cycle.
+            Purchase extra credits anytime valid throughout your billing cycle.
           </p>
           <div className="flex justify-center gap-4">
             {[50, 500, 1000].map((credits) => (
@@ -145,6 +145,7 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
                     amount: credits,
                   })
                 }
+                className="rounded-full"
               >
                 {credits} credits
               </Button>

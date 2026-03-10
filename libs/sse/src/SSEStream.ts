@@ -25,13 +25,12 @@ export class SSEServer {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      res.setHeader('Access-Control-Allow-Origin', ['http://localhost:4200']);
       res.flushHeaders?.();
 
       const client: SSEClient = { id: clientId, workspaceId, res };
       this.clients.set(clientId, client);
 
-      console.log(this.clients);
+      // console.log(this.clients);
 
       res.write(
         this.formatMessage(null, 'connected', { clientId, workspaceId })
@@ -63,7 +62,7 @@ export class SSEServer {
     payload: any,
     id?: string | number
   ) {
-    console.log(this.clients);
+    // console.log(this.clients);
     for (const [clientId, client] of this.clients) {
       if (client.workspaceId !== workspaceId) continue;
       try {

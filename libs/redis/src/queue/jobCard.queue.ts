@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 
-import { redis } from '@prodgenie/libs/redis';
+import { redis } from '../lib/redis';
 
 export const jobCardQueue = new Queue('generateJobCard', { connection: redis });
 

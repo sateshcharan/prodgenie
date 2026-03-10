@@ -1,9 +1,9 @@
 import { Pencil, Check } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 
-import api from '../utils/api';
-
 import { apiRoutes } from '@prodgenie/libs/constant';
+
+import api from '../utils/api';
 
 interface EditableTitleProps {
   value: string;

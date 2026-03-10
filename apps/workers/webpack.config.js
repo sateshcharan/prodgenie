@@ -7,8 +7,8 @@ const typesLibPath = resolve(__dirname, '../../libs/types/src');
 const redisLibPath = resolve(__dirname, '../../libs/redis/src');
 const prismaLibPath = resolve(__dirname, '../../libs/prisma/src');
 const schemaLibPath = resolve(__dirname, '../../libs/schema/src');
-const queuesLibPath = resolve(__dirname, '../../libs/queues/src');
-const supabaseLibPath = resolve(__dirname, '../../libs/supabase/src');
+// const queuesLibPath = resolve(__dirname, '../../libs/queues/src');
+const supabaseLibPath = resolve(__dirname, '../../libs/db/supabase');
 const constantsLibPath = resolve(__dirname, '../../libs/constant/src');
 const sharedUtilsLibPath = resolve(__dirname, '../../libs/shared-utils/src');
 const serverServicesLibPath = resolve(
@@ -37,7 +37,7 @@ module.exports = {
       '@prodgenie/libs/constant': constantsLibPath,
       '@prodgenie/libs/types': typesLibPath,
       '@prodgenie/libs/db': dbLibPath,
-      '@prodgenie/libs/queues': queuesLibPath,
+      // '@prodgenie/libs/queues': queuesLibPath,
       '@prodgenie/libs/redis': redisLibPath,
       '@prodgenie/libs/server-services': serverServicesLibPath,
       '@prodgenie/libs/frontend-services': frontendServicesLibPath,

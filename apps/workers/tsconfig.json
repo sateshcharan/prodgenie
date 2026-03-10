@@ -7,9 +7,6 @@
       "path": "../../libs/server-services"
     },
     {
-      "path": "../../libs/supabase"
-    },
-    {
       "path": "../../libs/db"
     },
     {

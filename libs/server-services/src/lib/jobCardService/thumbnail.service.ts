@@ -7,10 +7,8 @@ import { prisma } from '@prodgenie/libs/db';
 import { FileStorageService } from '@prodgenie/libs/supabase';
 // import { FileType } from '@prodgenie/libs/prisma';
 
-const storageFileService = new FileStorageService();
-
 export class ThumbnailService {
-  async get(
+  static async get(
     fileId: string,
     workspaceId: string
   ): Promise<{ data: any | null; error: string | null }> {
@@ -20,7 +18,7 @@ export class ThumbnailService {
 
     if (!dbFile) return { data: null, error: 'No file found' };
 
-    const signedUrl = await storageFileService.getSignedUrl(dbFile.thumbnail!);
+    const signedUrl = await FileStorageService.getSignedUrl(dbFile.thumbnail!);
 
     return {
       data: {
@@ -31,7 +29,7 @@ export class ThumbnailService {
     };
   }
 
-  async set(
+  static async set(
     uploadedFile: Express.Multer.File,
     fileId: string,
     user: any,
@@ -39,11 +37,11 @@ export class ThumbnailService {
   ) {
     if (!uploadedFile) throw new Error('No file uploaded');
 
-    const storageResult = await storageFileService.uploadFile(
-      `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
-      uploadedFile,
-      'thumbnail',
-      user
+    const storageResult = await FileStorageService.uploadFile(
+      `${activeWorkspace.workspace.id}/thumbnail/${fileId}`,
+      uploadedFile
+      // 'thumbnail',
+      // user
     );
 
     const updated = await prisma.file.update({
@@ -54,7 +52,7 @@ export class ThumbnailService {
     return updated;
   }
 
-  async update(
+  static async update(
     uploadedFile: Express.Multer.File,
     fileId: string,
     user: any,
@@ -74,15 +72,15 @@ export class ThumbnailService {
     let result;
     if (!dbFile?.thumbnail) {
       // No previous thumbnail, upload new
-      result = await storageFileService.uploadFile(
+      result = await FileStorageService.uploadFile(
         `${activeWorkspace.workspace.name}/thumbnail/${fileId}`,
-        uploadedFile,
-        'thumbnail',
-        user
+        uploadedFile
+        // 'thumbnail',
+        // user
       );
     } else {
       // Replace old thumbnail
-      result = await storageFileService.replaceFile(
+      result = await FileStorageService.replaceFile(
         dbFile.thumbnail,
         uploadedFile,
         'thumbnail',
@@ -99,7 +97,7 @@ export class ThumbnailService {
   }
 
   // async generate(file: any, fileType: string): Promise<Buffer> {
-  async generate(file: any, fileType: string): Promise<any> {
+  static async generate(file: any, fileType: string): Promise<any> {
     if (!file) throw new Error('No file provided');
     const filename = path.basename(
       file.originalname,
@@ -348,5 +346,57 @@ export class ThumbnailService {
         throw new Error(`Thumbnail generation error: ${error.message}`);
       }
     }
+  }
+
+  static async regenerate(fileType: string, user: any, activeWorkspaceId: any) {
+    const files = await prisma.file.findMany({
+      where: {
+        workspaceId: activeWorkspaceId,
+        // fileType,
+      },
+    });
+
+    if (files.length === 0) throw new Error('No files found for regeneration');
+
+    files.forEach(async (dbFile) => {
+      try {
+        // const fileBuffer = await FileStorageService.downloadFile(dbFile.path);
+
+        // const fileForThumbnail = {
+        //   originalname: path.basename(dbFile.path),
+        //   mimetype: dbFile.mimetype,
+        //   buffer: fileBuffer,
+        // };
+
+        // const thumbnailBuffer = await this.generate(
+        //   fileForThumbnail,
+        //   dbFile.type
+        // );
+
+        // const storageResult = await FileStorageService.replaceFile(
+        //   dbFile.thumbnail!,
+        //   {
+        //     originalname: `thumbnail_${path.basename(
+        //       dbFile.path,
+        //       path.extname(dbFile.path)
+        //     )}.jpeg`,
+        //     mimetype: 'image/jpeg',
+        //     buffer: thumbnailBuffer,
+        //   },
+        //   'thumbnail',
+        //   user
+        // );
+
+        // await prisma.file.update({
+        //   where: { id: dbFile.id },
+        //   data: { thumbnail: storageResult.path },
+        // });
+      } catch (error) {
+        console.error(
+          `Failed to regenerate thumbnail for file ${dbFile.id}:`,
+          error
+        );
+      }
+    });
   }
 }

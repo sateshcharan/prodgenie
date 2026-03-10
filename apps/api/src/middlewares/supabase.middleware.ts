@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
 import { prisma } from '@prodgenie/libs/db';
 import { supabase } from '@prodgenie/libs/supabase';
-
-import jwt from 'jsonwebtoken';
 
 const authenticateSupabaseJWT = async (
   req: Request,
@@ -50,10 +49,15 @@ const authenticateSupabaseJWT = async (
               },
             },
           },
+          where: {
+            status: 'active',
+            workspaceId: activeWorkspaceId,
+          },
         },
       },
     });
     if (!dbUser) return res.status(404).send('User not found in database');
+
     req.user = dbUser;
 
     next();

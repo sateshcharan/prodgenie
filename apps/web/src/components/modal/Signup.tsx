@@ -209,8 +209,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { FaGoogle } from 'react-icons/fa';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from '@prodgenie/libs/ui/button';
 import {
   Card,
   CardContent,
@@ -220,15 +222,13 @@ import {
 } from '@prodgenie/libs/ui/card';
 import { Input } from '@prodgenie/libs/ui/input';
 import { Label } from '@prodgenie/libs/ui/label';
-import { toast } from 'sonner';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import { Button } from '@prodgenie/libs/ui/button';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { useModalStore } from '@prodgenie/libs/store';
-import { apiRoutes } from '@prodgenie/libs/constant';
 
 import api from '../../utils/api';
 import { useOAuth } from '../../hooks/useOAuth';
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -253,16 +253,29 @@ const Signup = () => {
         data
       );
 
-      if (!res.data.success) {
-        toast.error(res.data.message || 'Signup failed');
-        return;
-      }
+      const { session } = res.data;
 
-      toast.success('Signup successful! Logging in...');
-      closeModal();
-      navigate('/dashboard');
+      if (session) {
+        toast.success('Signup successful! Logging in...');
+        closeModal();
+        navigate('/dashboard');
+      } else {
+        toast.success(
+          'Signup successful! Please check your email to verify your account.'
+        );
+        openModal('auth:login');
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Signup failed');
+      const status = err.response?.status;
+
+      toast.error(err.response.data.error);
+      // if (status === 409) {
+      //   toast.error('An account with this email already exists.');
+      // } else if (status === 400) {
+      //   toast.error(err.response.data.message || 'Invalid details provided.');
+      // } else {
+      //   toast.error(err.response?.data?.message || 'Signup failed. Please try again.');
+      // }
     }
   };
 
@@ -320,7 +333,7 @@ const Signup = () => {
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
                   placeholder="********"
-                  className="pr-10" // gives space for the eye icon
+                  className="pr-10"
                 />
                 <Button
                   type="button"

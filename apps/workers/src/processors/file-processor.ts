@@ -9,10 +9,6 @@ import {
   OpenRouterService,
 } from '@prodgenie/libs/server-services';
 
-// const puppeteerService = new PuppeteerService();
-const openRouterService = new OpenRouterService();
-const fileStorageService = new FileStorageService();
-
 export const processDrawingBom = async (job: Job) => {
   const { file } = job.data;
 
@@ -27,13 +23,13 @@ export const processDrawingBom = async (job: Job) => {
     select: { path: true },
   });
 
-  const fileSignedUrl = await fileStorageService.getCachedSignedUrl(
+  const fileSignedUrl = await FileStorageService.getCachedSignedUrl(
     filePath?.path || ''
   );
 
   try {
     // const data = await puppeteerService.extractFromChatGPT(tempFilePath);
-    const data = await openRouterService.extract(fileSignedUrl); // args: signedUrl | tempFilePath
+    const data = await OpenRouterService.extract(fileSignedUrl); // args: signedUrl | tempFilePath
     await fs.unlink(tempFilePath);
     try {
       await prisma.file.update({

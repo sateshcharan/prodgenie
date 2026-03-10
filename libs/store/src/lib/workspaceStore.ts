@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { createClient } from '@supabase/supabase-js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-// import { api } from '@prodgenie/apps/web/src/utils/api';
 
 const supabaseAnon = createClient(
   process.env.VITE_SUPABASE_URL!,
@@ -43,6 +42,9 @@ interface WorkspaceStore {
   activeWorkspace: Workspace | null;
   activeWorkspaceRole: string | null;
   workspaceEvents: any[];
+  workspaceUsage: any[];
+  jobCardStats: any[];
+  totalJobCards: number;
   realtimeChannel: any;
 
   setWorkspaces: (workspaces: Workspace[]) => void;
@@ -50,10 +52,15 @@ interface WorkspaceStore {
   setActiveWorkspace: (workspace: Workspace | null) => void;
   setActiveWorkspaceRole: (role: string | null) => void;
   setWorkspaceEvents: (events: any[]) => void;
+  setJobCardStats: (stats: any[]) => void;
+  setTotalJobCards: (total: number) => void;
+  setWorkspaceUsage: (usage: any[]) => void;
 
   fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
   fetchWorkspaceEvents: (workspaceId: string) => Promise<void>;
   subscribeToEvents: (workspaceId: string) => void;
+
+  reset: () => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
@@ -62,6 +69,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   activeWorkspace: null,
   activeWorkspaceRole: null,
   workspaceEvents: [],
+  workspaceUsage: [],
+  jobCardStats: [],
+  totalJobCards: 0,
   realtimeChannel: null,
 
   setWorkspaces: (workspaces) => set({ workspaces }),
@@ -69,6 +79,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setActiveWorkspaceRole: (activeWorkspaceRole) => set({ activeWorkspaceRole }),
   setWorkspaceEvents: (workspaceEvents) => set({ workspaceEvents }),
+  setJobCardStats: (jobCardStats) => set({ jobCardStats }),
+  setTotalJobCards: (totalJobCards) => set({ totalJobCards }),
+  setWorkspaceUsage: (workspaceUsage) => set({ workspaceUsage }),
 
   // Fetch users via backend API
   fetchWorkspaceUsers: async (workspaceId) => {
@@ -98,7 +111,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
   },
 
-  // subscribe to realtime events
+  // Subscribe to realtime events
   subscribeToEvents: (workspaceId: string) => {
     const prevChannel = get().realtimeChannel;
 
@@ -107,55 +120,86 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
 
     const channel = supabaseAnon
-      .channel(`workspace:${workspaceId}:events`, {
-        config: {
-          private: true,
-        },
+      .channel(`event:${workspaceId}`, { config: { private: true } })
+      .on('broadcast', { event: '*' }, (payload) => {
+        const newEvent = payload.payload?.record;
+        const oldEvent = payload.payload?.old_record;
+        const op = payload.payload?.operation;
+
+        console.log(payload);
+
+        set((state) => {
+          let updated = [...state.workspaceEvents];
+
+          // --- DELETE MUST RUN EVEN IF newEvent IS NULL ---
+          if (op === 'DELETE') {
+            updated = updated.filter((e) => e.id !== oldEvent?.id);
+            return {
+              workspaceEvents: updated,
+              totalJobCards: updated.filter(
+                (e) =>
+                  e.type === 'jobcard_generation' && e.status === 'completed'
+              ).length,
+            };
+          }
+
+          // --- INSERT OR UPDATE  ---
+          if (op === 'INSERT') {
+            updated.unshift(newEvent);
+          } else if (op === 'UPDATE') {
+            updated = updated.map((e) => (e.id === newEvent.id ? newEvent : e));
+          }
+
+          // --- Recompute jobcard count ---
+          const totalJobCards = updated.filter(
+            (e) => e.type === 'jobcard_generation' && e.status === 'completed'
+          ).length;
+
+          // --- UPDATE activeWorkspace.credits ---
+          let activeWorkspace = state.activeWorkspace;
+
+          if (
+            activeWorkspace &&
+            newEvent.workspaceId === activeWorkspace.id &&
+            typeof newEvent.balanceAfter === 'number'
+          ) {
+            activeWorkspace = {
+              ...activeWorkspace,
+              credits: newEvent.balanceAfter,
+            };
+          }
+
+          return {
+            workspaceEvents: updated,
+            totalJobCards,
+            activeWorkspace,
+          };
+        });
       })
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event',
-          // filter: `workspaceId=eq.${workspaceId}`,
-        },
-        (payload) => {
-          console.log('EVENT', payload);
-
-          set((state) => {
-            const { eventType, new: newRow, old: oldRow } = payload;
-
-            // --- DELETE HANDLING ---
-            if (eventType === 'DELETE' && oldRow?.id) {
-              return {
-                workspaceEvents: state.workspaceEvents.filter(
-                  (e) => e.id !== oldRow.id
-                ),
-              };
-            }
-
-            // --- INSERT / UPDATE (but newRow can still be null) ---
-            // if (!newRow?.id) return {};
-
-            // const existingIndex = state.workspaceEvents.findIndex(
-            //   (e) => e.id === newRow.id
-            // );
-
-            // UPDATE
-            // if (existingIndex !== -1) {
-            //   const updatedEvents = [...state.workspaceEvents];
-            //   updatedEvents[existingIndex] = newRow;
-            //   return { workspaceEvents: updatedEvents };
-            // }
-
-            // INSERT
-            return { workspaceEvents: [newRow, ...state.workspaceEvents] };
-          });
-        }
-      )
-      .subscribe();
+      .subscribe((status) => {
+        // console.log('channel status', status);
+      });
 
     set({ realtimeChannel: channel });
+  },
+
+  // Reset store
+  reset: () => {
+    const channel = get().realtimeChannel;
+    if (channel) {
+      supabaseAnon.removeChannel(channel);
+    }
+
+    set({
+      workspaces: [],
+      workspaceUsers: [],
+      activeWorkspace: null,
+      activeWorkspaceRole: null,
+      workspaceEvents: [],
+      workspaceUsage: [],
+      jobCardStats: [],
+      totalJobCards: 0,
+      realtimeChannel: null,
+    });
   },
 }));

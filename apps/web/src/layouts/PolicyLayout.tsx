@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
-const NavButton = ({ to, label, highlight = false }) => (
+const NavButton = ({ to, label, highlight = false }: any) => (
   <NavLink
     to={to}
     end
