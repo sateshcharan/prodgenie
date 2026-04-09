@@ -22,6 +22,8 @@ const sseLibPath = resolve(__dirname, '../../libs/sse/src');
 
 module.exports = {
   externals: {
+    '@prisma/client': 'commonjs @prisma/client',
+    '.prisma/client': 'commonjs .prisma/client',
     puppeteer: 'commonjs puppeteer',
     'puppeteer-extra': 'commonjs puppeteer-extra',
     'puppeteer-extra-plugin-stealth': 'commonjs puppeteer-extra-plugin-stealth',

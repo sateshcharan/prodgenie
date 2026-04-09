@@ -126,7 +126,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         const oldEvent = payload.payload?.old_record;
         const op = payload.payload?.operation;
 
-        console.log(payload);
+        // console.log(payload);
 
         set((state) => {
           let updated = [...state.workspaceEvents];

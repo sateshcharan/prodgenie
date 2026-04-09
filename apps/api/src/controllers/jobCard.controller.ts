@@ -36,4 +36,10 @@ export class JobCardController {
     const { data } = await JobCardService.getJobCardNumber(activeWorkspace);
     res.status(200).json({ success: true, data: data });
   }
+
+  static async aiFillJobCard(req: Request, res: Response) {
+    const { fileId } = req.body;
+    const filledData = await JobCardService.aiFillJobCard(fileId);
+    res.status(200).json({ success: true, data: filledData });
+  }
 }

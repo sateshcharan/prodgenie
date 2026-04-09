@@ -110,6 +110,7 @@ export const apiRoutes = {
     base: '/api/jobCard',
     generate: '/generate',
     getNumber: '/getNumber',
+    aiFill: '/aiFill',
   },
 
   sequence: {

@@ -8,25 +8,85 @@ import { FileStorageService } from '@prodgenie/libs/supabase';
 // import { FileType } from '@prodgenie/libs/prisma';
 
 export class ThumbnailService {
-  static async get(
-    fileId: string,
-    workspaceId: string
-  ): Promise<{ data: any | null; error: string | null }> {
-    const dbFile = await prisma.file.findUnique({
+  static async get(fileId: string, workspaceId: string) {
+    const dbFile = await prisma.file.findFirst({
       where: { id: fileId, workspaceId },
     });
 
-    if (!dbFile) return { data: null, error: 'No file found' };
+    if (!dbFile) throw new Error('No file found');
 
-    const signedUrl = await FileStorageService.getSignedUrl(dbFile.thumbnail!);
+    try {
+      // check if thumbnail already exists
+      if (dbFile.thumbnail) {
+        const signedUrl = await FileStorageService.getSignedUrl(
+          dbFile.thumbnail
+        );
 
-    return {
-      data: {
-        ...dbFile,
-        path: signedUrl,
-      },
-      error: null,
-    };
+        return {
+          data: {
+            ...dbFile,
+            path: signedUrl,
+          },
+          error: null,
+        };
+      }
+
+      // if no thumbnail, generate one // TODO: buggy need to fix
+      // download original file
+      const fileBuffer = await FileStorageService.downloadFile(dbFile.path);
+
+      // console.log('fileBuffer type:', typeof fileBuffer);
+      // console.log('isBuffer:', Buffer.isBuffer(fileBuffer));
+      // console.log(fileBuffer);
+
+      const fileForThumbnail = {
+        originalname: dbFile.name ?? dbFile.path.split('/').pop(),
+        mimetype: dbFile.type,
+        buffer: fileBuffer,
+        data: dbFile.data,
+      };
+
+      // generate thumbnail
+      const thumbnailBuffer = await this.generate(
+        fileForThumbnail,
+        dbFile.type
+      );
+
+      // upload thumbnail buffer directly
+      const storageResult = await FileStorageService.uploadFile(
+        `${workspaceId}/thumbnail/${dbFile.id}.jpeg`,
+        {
+          originalname: `thumbnail_${dbFile.id}.jpeg`,
+          mimetype: 'image/jpeg',
+          buffer: thumbnailBuffer,
+        }
+      );
+
+      // update DB
+      const updated = await prisma.file.update({
+        where: { id: dbFile.id },
+        data: { thumbnail: storageResult.path },
+      });
+
+      const signedUrl = await FileStorageService.getSignedUrl(
+        updated.thumbnail as string
+      );
+
+      return {
+        data: {
+          ...updated,
+          path: signedUrl,
+        },
+        error: null,
+      };
+    } catch (error: any) {
+      console.error('Thumbnail generation failed:', error);
+
+      return {
+        data: dbFile,
+        error: error.message,
+      };
+    }
   }
 
   static async set(
@@ -162,6 +222,58 @@ export class ThumbnailService {
         await browser.close();
       }
     }
+
+    // if (fileType === 'template') {
+    //   const browser = await puppeteer.launch({
+    //     headless: true,
+    //     args: [
+    //       '--no-sandbox',
+    //       '--disable-setuid-sandbox',
+    //       '--disable-dev-shm-usage',
+    //       '--disable-gpu',
+    //       '--single-process',
+    //       '--no-zygote',
+    //     ],
+    //   });
+
+    //   try {
+    //     const page = await browser.newPage();
+
+    //     let htmlContent = '';
+
+    //     // ✅ Case 1: If buffer is valid HTML
+    //     if (Buffer.isBuffer(file.buffer)) {
+    //       htmlContent = file.buffer.toString();
+    //     }
+
+    //     // ✅ Case 2: If buffer is object (your current bug)
+    //     else if (typeof file.buffer === 'object') {
+    //       htmlContent = this.buildTemplatePreviewHTML(file.buffer);
+    //     }
+
+    //     // ✅ Case 3: fallback to DB data
+    //     else if (file.data) {
+    //       htmlContent = this.buildTemplatePreviewHTML(file.data);
+    //     }
+
+    //     // ✅ Final fallback
+    //     else {
+    //       htmlContent = `<html><body><h3>Invalid template</h3></body></html>`;
+    //     }
+
+    //     await page.setContent(htmlContent, {
+    //       // waitUntil: 'networkidle0',
+    //       waitUntil: 'domcontentloaded',
+    //     });
+
+    //     return await page.screenshot({
+    //       type: 'jpeg',
+    //       quality: 80,
+    //     });
+    //   } finally {
+    //     await browser.close();
+    //   }
+    // }
 
     if (fileType === 'config' || fileType === 'sequence') {
       try {
@@ -358,21 +470,18 @@ export class ThumbnailService {
 
     if (files.length === 0) throw new Error('No files found for regeneration');
 
-    files.forEach(async (dbFile) => {
+    files.forEach(async (dbFile: any) => {
       try {
         // const fileBuffer = await FileStorageService.downloadFile(dbFile.path);
-
         // const fileForThumbnail = {
         //   originalname: path.basename(dbFile.path),
         //   mimetype: dbFile.mimetype,
         //   buffer: fileBuffer,
         // };
-
         // const thumbnailBuffer = await this.generate(
         //   fileForThumbnail,
         //   dbFile.type
         // );
-
         // const storageResult = await FileStorageService.replaceFile(
         //   dbFile.thumbnail!,
         //   {
@@ -386,7 +495,6 @@ export class ThumbnailService {
         //   'thumbnail',
         //   user
         // );
-
         // await prisma.file.update({
         //   where: { id: dbFile.id },
         //   data: { thumbnail: storageResult.path },
@@ -399,4 +507,57 @@ export class ThumbnailService {
       }
     });
   }
+
+  // private static buildTemplatePreviewHTML(data: any): string {
+  //   return `
+  //   <html>
+  //     <head>
+  //       <style>
+  //         body {
+  //           font-family: Arial, sans-serif;
+  //           padding: 16px;
+  //           background: #f4f4f4;
+  //         }
+  //         .card {
+  //           background: white;
+  //           border-radius: 8px;
+  //           padding: 12px;
+  //           margin-bottom: 10px;
+  //           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  //         }
+  //         .title {
+  //           font-size: 14px;
+  //           font-weight: bold;
+  //           margin-bottom: 6px;
+  //         }
+  //         .meta {
+  //           font-size: 12px;
+  //           color: #666;
+  //         }
+  //       </style>
+  //     </head>
+  //     <body>
+  //       <h2>Template Preview</h2>
+
+  //       ${(data?.jobCardForm?.sections || [])
+  //         .map(
+  //           (section: any) => `
+  //             <div class="card">
+  //               <div class="title">📦 ${section.name}</div>
+  //               <div class="meta">
+  //                 Fields: ${
+  //                   section?.jobCardForm?.sections?.flatMap(
+  //                     (s: any) => s.fields || []
+  //                   ).length || 0
+  //                 }
+  //               </div>
+  //             </div>
+  //           `
+  //         )
+  //         .join('')}
+
+  //     </body>
+  //   </html>
+  // `;
+  // }
 }

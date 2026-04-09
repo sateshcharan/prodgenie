@@ -1,42 +1,42 @@
-import { ChevronsUpDown, Plus, Trash } from 'lucide-react';
+// import { ChevronsUpDown, Plus, Trash } from 'lucide-react';
 
 import {
   useUserStore,
   useWorkspaceStore,
-  useModalStore,
+  // useModalStore,
 } from '@prodgenie/libs/store';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@prodgenie/libs/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@prodgenie/libs/ui/dropdown-menu';
-import { Button } from '@prodgenie/libs/ui/button';
-import { useSidebar } from '@prodgenie/libs/ui/sidebar';
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuShortcut,
+//   DropdownMenuTrigger,
+// } from '@prodgenie/libs/ui/dropdown-menu';
+// import { Button } from '@prodgenie/libs/ui/button';
+// import { useSidebar } from '@prodgenie/libs/ui/sidebar';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import { apiRoutes, appSidebarItems } from '@prodgenie/libs/constant';
 
 import api from '../utils/api';
 
 export const WorkspaceSwitcher = () => {
-  const { isMobile } = useSidebar();
   const { user } = useUserStore((state) => state);
-  const { openModal, closeModal } = useModalStore((state) => state);
+  // const { isMobile } = useSidebar();
+  // const { openModal, closeModal } = useModalStore((state) => state);
   const {
-    workspaces,
     activeWorkspace,
-    setTotalJobCards,
-    setActiveWorkspace,
+    // workspaces,
+    // setTotalJobCards,
+    // setActiveWorkspace,
     // setWorkspaceUsers,
-    setWorkspaceEvents,
+    // setWorkspaceEvents,
   } = useWorkspaceStore((state) => state);
 
   const userRoleinActiveWorkspace = user?.memberships.find(
@@ -51,40 +51,63 @@ export const WorkspaceSwitcher = () => {
 
   const ActiveLogo = activeWorkspace?.logo || logoFallback;
 
-  const handleSwitchWorkspace = async (workspaceId: string) => {
-    const currentMembership = user?.memberships.find(
-      (m) => m.workspaceId === workspaceId
-    );
-    setTotalJobCards(currentMembership?.workspace.jobCardsCount);
-    setActiveWorkspace(currentMembership.workspace); // for frontend quick switch
-    // queryClient.invalidateQueries(['dashboard-init'])
-    // for backend switch and fetch data
-    const {
-      data: { workspaceEvents },
-      // data: { workspaceUsers, workspaceEvents },
-    } = await api.get(
-      `${apiRoutes.batched.base}${apiRoutes.batched.workspaceChange}`,
-      {
-        params: { workspaceId },
-      }
-    );
-    setWorkspaceEvents(workspaceEvents);
-    // setWorkspaceUsers(workspaceUsers);
-    // initRealtime(workspaceId);
-  };
+  // const handleSwitchWorkspace = async (workspaceId: string) => {
+  //   const currentMembership = user?.memberships.find(
+  //     (m) => m.workspaceId === workspaceId
+  //   );
+  //   setTotalJobCards(currentMembership?.workspace.jobCardsCount);
+  //   setActiveWorkspace(currentMembership.workspace); // for frontend quick switch
+  //   // queryClient.invalidateQueries(['dashboard-init'])
+  //   // for backend switch and fetch data
+  //   const {
+  //     data: { workspaceEvents },
+  //     // data: { workspaceUsers, workspaceEvents },
+  //   } = await api.get(
+  //     `${apiRoutes.batched.base}${apiRoutes.batched.workspaceChange}`,
+  //     {
+  //       params: { workspaceId },
+  //     }
+  //   );
+  //   setWorkspaceEvents(workspaceEvents);
+  //   // setWorkspaceUsers(workspaceUsers);
+  //   // initRealtime(workspaceId);
+  // };
 
-  const handleDeleteWorkspace = (workspaceId: string) => {
-    openModal('workspace:delete', { workspaceId });
-  };
+  // const handleDeleteWorkspace = (workspaceId: string) => {
+  //   openModal('workspace:delete', { workspaceId });
+  // };
 
-  const handleCreateWorkspace = () => {
-    openModal('workspace:create');
-  };
+  // const handleCreateWorkspace = () => {
+  //   openModal('workspace:create');
+  // };
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <SidebarMenuButton
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+            <ActiveLogo className="size-4" />
+          </div>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-medium capitalize">
+              {StringService.camelToNormal(activeWorkspace?.name)}
+            </span>
+            <div className="flex gap-2">
+              <span className="truncate text-xs">
+                {activeWorkspace?.plan?.name || 'No Plan'}
+              </span>
+              <span className="text-xs">
+                {userRoleinActiveWorkspace?.toLowerCase()}
+              </span>
+            </div>
+          </div>
+        </SidebarMenuButton>
+
+        {/* future feature : show all workspaces in multi workspace mode  */}
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
@@ -169,7 +192,7 @@ export const WorkspaceSwitcher = () => {
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </SidebarMenuItem>
     </SidebarMenu>
   );

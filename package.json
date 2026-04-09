@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "vercel-build": "pnpm dlx nx build web --configuration=production"
+    "vercel-build": "pnpm dlx nx build web --configuration=production",
+    "prisma:generate": "prisma generate `--schema=libs/db/prisma/prisma.schema`"
   },
   "prisma": {
-    "schema": "libs/db/prisma/schema.prisma"
+    "schema": "libs/db/prisma/prisma.schema"
+  },
+  "pnpm": {
+    "overrides": {
+      "ioredis": "5.10.0"
+    }
   },
   "private": true,
   "dependencies": {
@@ -15,7 +21,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.0.1",
-    "@prisma/client": "^6.5.0",
+    "@phonepe-pg/pg-sdk-node": "^2.0.5",
+    "@prisma/adapter-pg": "^7.5.0",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.9",
@@ -79,7 +86,6 @@
     "pdf-parse": "^1.1.1",
     "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^3.11.174",
-    "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node.tgz",
     "puppeteer": "^24.16.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
@@ -96,6 +102,7 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "webpack": "^5.105.4",
     "xlsx": "^0.18.5",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
@@ -121,6 +128,7 @@
     "@nx/workspace": "20.7.0",
     "@playwright/test": "^1.36.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
+    "@prisma/client": "^7.5.0",
     "@svgr/webpack": "^8.0.1",
     "@swc-node/register": "~1.9.1",
     "@swc/cli": "~0.3.12",
@@ -163,7 +171,7 @@
     "nx": "20.7.0",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
-    "prisma": "^6.5.0",
+    "prisma": "^7.5.0",
     "react-refresh": "^0.10.0",
     "tailwindcss": "^3.4.6",
     "ts-jest": "^29.1.0",

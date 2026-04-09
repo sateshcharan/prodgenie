@@ -144,4 +144,23 @@ export class StringService {
   static getNameWithoutExtension(text: string): string {
     return text.split('.')[0];
   }
+
+  static validateFileName(fileName: string): string | null {
+    const trimmed = fileName.trim();
+
+    if (trimmed.length === 0) {
+      return 'File name cannot be empty';
+    }
+
+    if (trimmed.length > 100) {
+      return 'File name too long';
+    }
+
+    const invalidChars = /[\\/:*?"<>|]/;
+    if (invalidChars.test(trimmed)) {
+      return 'File name contains invalid characters';
+    }
+
+    return null;
+  }
 }

@@ -7,6 +7,7 @@ import JobCard from './JobCard';
 import api from '../utils/api';
 import { ExcelHTMLViewer } from '../utils/ExcelViewer';
 import { FileDetailsLoaderTypes } from '../loaders/fileDetailsLoader';
+import { Button } from '@prodgenie/libs/ui/button';
 
 const FileDetails = () => {
   const { fileId, fileType, fileData } =

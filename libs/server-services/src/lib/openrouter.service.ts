@@ -24,7 +24,8 @@ interface OpenRouterResponse {
 
 const apiKey = process.env.OPENROUTER_API_KEY || '';
 const baseUrl = 'https://openrouter.ai/api/v1';
-const defaultModel = 'anthropic/claude-3.5-sonnet'; // openai/gpt-5-nano
+// const defaultModel = 'anthropic/claude-3.5-sonnet';
+const defaultModel = 'openai/gpt-oss-120b:free';
 
 export class OpenRouterService {
   // unified extract method for both signed URL and local file
@@ -56,7 +57,7 @@ export class OpenRouterService {
             ],
           },
         ];
-        console.log(messages);
+        // console.log(messages);
       } else if (fs.existsSync(input)) {
         // Handle local file
         const fileBuffer = fs.readFileSync(input);

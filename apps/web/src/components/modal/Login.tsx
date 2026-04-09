@@ -149,7 +149,7 @@ const Login = () => {
               Login
             </Button>
 
-            <Button
+            {/* <Button
               type="button"
               onClick={(e) => {
                 e.preventDefault();
@@ -160,7 +160,7 @@ const Login = () => {
               className="w-full flex items-center justify-center gap-2 mt-2"
             >
               <FaGoogle className="text-lg" /> Continue with Google
-            </Button>
+            </Button> */}
 
             <div className="text-center text-sm text-muted-foreground mt-4">
               Don&apos;t have an account?{' '}

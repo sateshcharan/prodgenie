@@ -11,9 +11,15 @@ router.post(
   apiRoutes.jobCard.generate,
   asyncHandler(JobCardController.generateJobCard)
 );
+
 router.get(
   apiRoutes.jobCard.getNumber,
   asyncHandler(JobCardController.getJobCardNumber)
+);
+
+router.post(
+  apiRoutes.jobCard.aiFill,
+  asyncHandler(JobCardController.aiFillJobCard)
 );
 
 export { router };

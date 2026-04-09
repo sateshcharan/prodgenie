@@ -142,11 +142,11 @@ export class FileService {
         });
 
         // add file to processing queue for data extraction
-        await fileProcessingQueue.add(
-          'process-file',
-          { file },
-          { jobId: file.id }
-        );
+        // await fileProcessingQueue.add(
+        //   'process-file',
+        //   { file },
+        //   { jobId: file.id }
+        // );
       }
     }
 
@@ -405,6 +405,24 @@ export class FileService {
     fileType: string,
     duplicateFileName: string
   ) {
+    // Check if name already exists in workspace
+    // const existing = await prisma.file.findFirst({
+    //   where: {
+    //     type: fileType as fileType,
+    //     name: duplicateFileName,
+    //   },
+    // });
+
+    // console.log(
+    //   'Checking for existing file with name:',
+    //   duplicateFileName,
+    //   existing
+    // );
+
+    // if (existing) {
+    //   throw new Error('File with this name already exists');
+    // }
+
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new Error('File not found');
 

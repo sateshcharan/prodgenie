@@ -146,7 +146,8 @@ export class ThumbnailService {
         const fileUrl = `file://${tempFilePath}`;
 
         await page.goto(fileUrl, {
-          waitUntil: 'networkidle0',
+          // waitUntil: 'networkidle0',
+          waitUntil: 'domcontentloaded',
           timeout: 10000,
         });
 

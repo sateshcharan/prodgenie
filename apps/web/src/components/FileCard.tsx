@@ -57,7 +57,12 @@ const FileCard = ({
     <Card key={card.id} className="shadow-lg rounded-xl p-2 overflow-hidden">
       {/* Action Buttons */}
       <div className="flex justify-end gap-2 mb-2">
-        <Button onClick={() => onEdit(card.id)} variant="secondary" size="icon">
+        <Button
+          onClick={() => onEdit(card.id)}
+          variant="secondary"
+          size="icon"
+          disabled={fileType === 'config'}
+        >
           <Pencil className="w-4 h-4" />
         </Button>
 
@@ -66,6 +71,7 @@ const FileCard = ({
           variant="secondary"
           size="icon"
           title="Duplicate"
+          disabled={fileType === 'config'}
         >
           <Copy className="w-4 h-4" />
         </Button>
@@ -82,6 +88,7 @@ const FileCard = ({
           onClick={() => onDelete(card.id)}
           variant="destructive"
           size="icon"
+          disabled={fileType === 'config'}
         >
           <X className="w-4 h-4" />
         </Button>

@@ -5,7 +5,7 @@ import {
   Env,
   MetaInfo,
   RefundRequest,
-} from 'pg-sdk-node';
+} from '@phonepe-pg/pg-sdk-node';
 
 const clientId = process.env.PHONEPE_CLIENT_ID!;
 const clientSecret = process.env.PHONEPE_CLIENT_SECRET!;

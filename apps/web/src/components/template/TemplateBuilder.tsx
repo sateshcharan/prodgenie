@@ -483,8 +483,6 @@ import api from '../../utils/api';
 import FormBuilder from './FormBuilder';
 import SuggestionInput from '../SuggestionInput';
 
-const stringService = new StringService();
-
 // 🔹 Reusable field row
 const TemplateFieldRow = ({
   label,
@@ -672,7 +670,7 @@ const TemplateBuilder = () => {
       }
     }
 
-    const trimmedJobCardData = stringService.trimKeys(
+    const trimmedJobCardData = StringService.trimKeys(
       UpdatedJobCardData,
       ['name'],
       { toCamelCase: true }

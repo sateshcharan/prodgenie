@@ -362,7 +362,7 @@ const Signup = () => {
         </form>
 
         {/* Social login */}
-        <Button
+        {/* <Button
           type="button"
           className="w-full mt-4"
           onClick={(e) => {
@@ -373,7 +373,7 @@ const Signup = () => {
           size="sm"
         >
           <FaGoogle /> Continue with Google
-        </Button>
+        </Button> */}
 
         {/* Switch to login */}
         <div className="mt-4 text-center text-sm">

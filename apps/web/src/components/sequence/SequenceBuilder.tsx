@@ -109,14 +109,15 @@ const SequenceBuilder = () => {
     const fetchTemplateFiles = async () => {
       try {
         const files = await fetchFilesByType('template');
-        const filesWithThumbnails = await Promise.all(
-          files.map(async (file: any) => ({
-            ...file,
-            thumbnail: await getThumbnail(file.id),
-          }))
-        );
+        // const filesWithThumbnails = await Promise.all(
+        //   files.map(async (file: any) => ({
+        //     ...file,
+        //     thumbnail: await getThumbnail(file.id),
+        //   }))
+        // );
 
-        setTemplateFiles(filesWithThumbnails);
+        // setTemplateFiles(filesWithThumbnails);
+        setTemplateFiles(files);
       } catch (err) {
         console.error('Error fetching template files', err);
       }
@@ -284,11 +285,11 @@ const SequenceBuilder = () => {
                   <p className="font-medium text-sm mb-2 capitalize">
                     {file.name.split('.')[0]}
                   </p>
-                  <img
+                  {/* <img
                     src={file.thumbnail}
                     alt="thumbnail"
                     className="w-full h-auto object-contain"
-                  />
+                  /> */}
                 </div>
               ))}
             </div>

@@ -361,6 +361,14 @@ const JobCard = ({
     }
   };
 
+  const handleAIFill = async () => {
+    const response = await api.post('/api/jobCard/aiFill', { fileId });
+    console.log(response);
+    // const filledData = response.data;
+    // form.setValue('global', filledData.global);
+    // form.setValue('sections', filledData.sections);
+  };
+
   return (
     <Card className="border-none ">
       <CardContent className="p-0">
@@ -386,6 +394,11 @@ const JobCard = ({
                 value="select"
                 className="h-[calc(100vh-200px)] p-4 "
               >
+                {/* TODO: implement AI filling for bom details, title block and printing details */}
+                <Button type="button" onClick={handleAIFill}>
+                  Fill Details with AI
+                </Button>
+
                 <div className="flex flex-col gap-4">
                   <BomTable
                     bom={bom}

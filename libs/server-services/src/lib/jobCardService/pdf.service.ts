@@ -348,7 +348,15 @@ export class PdfService {
     });
     try {
       const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      
+      // await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      await page.setContent(htmlContent, {
+        waitUntil: ['domcontentloaded'],
+        timeout: 0, // disable timeout completely
+      });
+      page.on('requestfailed', (request) => {
+        console.log('Failed request:', request.url());
+      });
 
       await page.pdf({
         path: outputPath,

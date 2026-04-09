@@ -54,7 +54,7 @@ export default function PrimaryNavigationMenu() {
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        <NavigationMenuItem>
+        {/* <NavigationMenuItem>
           <NavigationMenuTrigger>Products</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul
@@ -69,7 +69,7 @@ export default function PrimaryNavigationMenu() {
                      outline-none focus:shadow-md"
                     href="/"
                   >
-                    {/* <Icons.logo className="h-6 w-6" /> */}
+                    <Icons.logo className="h-6 w-6" />
                     <div className="mb-2 mt-4 text-lg font-medium">
                       shadcn/ui
                     </div>
@@ -91,9 +91,9 @@ export default function PrimaryNavigationMenu() {
               </ListItem>
             </ul>
           </NavigationMenuContent>
-        </NavigationMenuItem>
+        </NavigationMenuItem> 
 
-        <NavigationMenuItem>
+         <NavigationMenuItem>
           <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul
@@ -111,7 +111,8 @@ export default function PrimaryNavigationMenu() {
               ))}
             </ul>
           </NavigationMenuContent>
-        </NavigationMenuItem>
+        </NavigationMenuItem> */}
+
         <NavigationMenuItem>
           <Link to="/pricing" className={navigationMenuTriggerStyle()}>
             Pricing

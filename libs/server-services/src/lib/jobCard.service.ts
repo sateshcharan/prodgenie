@@ -17,10 +17,38 @@ import { FileService } from './jobCardService/file.service.js';
 import { ThumbnailService } from './jobCardService/thumbnail.service.js';
 import { WorkspaceService } from './jobCardService/workspace.service.js';
 import { jobCardQueue } from '@prodgenie/libs/redis';
+import { OpenRouterService } from '../index.js';
 
 // const parser = new Parser();
 
 export class JobCardService {
+  static async aiFillJobCard(fileId: string) {
+    const filePath = await prisma.file.findFirst({
+      where: { id: fileId },
+      select: { path: true },
+    });
+
+    if (!filePath) return;
+    const fileSignedUrl = await FileStorageService.getSignedUrl(filePath.path);
+
+    try {
+      // const data = await puppeteerService.extractFromChatGPT(tempFilePath);
+      const data = await OpenRouterService.extract(fileSignedUrl); // args: signedUrl | tempFilePath
+      try {
+        await prisma.file.update({
+          where: { id: fileId },
+          data: { data: data },
+        });
+        console.log('✅ Job card file updated with:', data);
+
+        return data;
+      } catch (error) {
+        console.error('❌ Error updating Job card file:', error);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
   static async generateJobCard(
     {
       bom,
@@ -86,7 +114,10 @@ export class JobCardService {
         `Processing BOM item ${index + 1}/${bom.length}: ${bomItem.description}`
       );
 
-      const productSequence = await JobCardService.identifyProduct(bomItem);
+      const productSequence = await JobCardService.identifyProduct(
+        bomItem,
+        activeWorkspace.workspace.id
+      );
       if (!productSequence?.sequencePath) {
         console.warn(`⚠️ Missing sequence for: ${bomItem.description}`);
         continue;
@@ -97,6 +128,8 @@ export class JobCardService {
         string,
         string
       >;
+
+      console.log(productSequence.sequencePath);
 
       const sequence = await FileHelperService.fetchJsonFromSignedUrl(
         productSequence.sequencePath
@@ -315,7 +348,7 @@ export class JobCardService {
     return configs;
   }
 
-  static async identifyProduct(item: BomItem) {
+  static async identifyProduct(item: BomItem, workspaceId: string) {
     const keyword = StringService.camelCase(item.description); // e.g., "partitionLen"
     const baseKeyword = keyword
       .replace(
@@ -332,6 +365,7 @@ export class JobCardService {
       const exactMatch = await prisma.file.findFirst({
         where: {
           type: 'sequence',
+          workspaceId,
           name: {
             equals: `${keyword}.json`,
             mode: 'insensitive',

@@ -1,5 +1,5 @@
 import {
-  supabaseAdmin,
+  supabase,
   FolderService,
   // FileStorageService,
 } from '@prodgenie/libs/supabase';
@@ -50,12 +50,12 @@ export class WorkspaceService {
     // });
 
     // delete all workspace files
-    const { data: files } = await supabaseAdmin.storage
+    const { data: files } = await supabase.storage
       .from('prodgenie')
       .list(`${workspaceId}/`);
     if (files) {
       const paths = files.map((f) => `${workspaceId}/${f.name}`);
-      await supabaseAdmin.storage.from('prodgenie').remove(paths);
+      await supabase.storage.from('prodgenie').remove(paths);
     }
 
     // delete all workspace activity
@@ -97,7 +97,7 @@ export class WorkspaceService {
     //   // Also create in Supabase Auth (optional but recommended)
     //   try {
     //     const { data: invited, error } =
-    //       await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+    //       await supabase.auth.admin.inviteUserByEmail(email, {
     //         redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
     //       });
     //     if (error) {

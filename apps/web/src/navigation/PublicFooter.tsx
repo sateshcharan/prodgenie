@@ -15,25 +15,25 @@ const FOOTER_SECTIONS = [
   {
     title: 'Product',
     links: [
-      { label: 'Features', href: '/features' },
       { label: 'Pricing', href: '/pricing' },
-      { label: 'Integrations', href: '/integrations' },
+      { label: 'Features', href: '/pricing' },
+      // { label: 'Integrations', href: '/integrations' },
     ],
   },
   {
     title: 'Industries',
     links: [
       { label: 'E-commerce', href: '/industries/ecommerce' },
-      { label: 'Agencies', href: '/industries/agencies' },
       { label: 'Manufacturing', href: '/industries/manufacturing' },
+      // { label: 'Agencies', href: '/industries/agencies' },
     ],
   },
   {
     title: 'Company',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Careers', href: '/careers' },
       { label: 'Contact', href: '/contact' },
+      // { label: 'Careers', href: '/careers' },
     ],
   },
   {

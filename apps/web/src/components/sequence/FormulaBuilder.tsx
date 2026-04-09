@@ -117,7 +117,7 @@ const FormulaBuilder = forwardRef(
             // depField: { ...merged.depField, ...sequenceFormulas.depField },
           };
 
-          console.log('hydrated', hydrated);
+          // console.log('hydrated', hydrated);
 
           reset({
             products: [

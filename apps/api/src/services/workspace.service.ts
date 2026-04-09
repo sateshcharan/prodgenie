@@ -1,7 +1,7 @@
 import { randomUUID, UUID } from 'crypto';
 
 import {
-  supabaseAdmin,
+  supabaseAuth,
   FileStorageService,
   FolderService,
 } from '@prodgenie/libs/supabase';
@@ -130,7 +130,7 @@ export class WorkspaceService {
 
     // delete Supabase auth user
     try {
-      await supabaseAdmin.auth.admin.deleteUser(userId);
+      await supabaseAuth.auth.admin.deleteUser(userId);
     } catch (err) {
       console.error('Failed to delete auth user:', err);
     }

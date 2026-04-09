@@ -98,7 +98,10 @@ export class SequenceService {
     }
   }
 
-  static async getJobCardDataFromSequence(sequence: string) {
+  static async getJobCardDataFromSequence(
+    sequence: string,
+    workspaceId: string
+  ) {
     // Normalize input: lowercase + remove spaces, underscores, and dashes
     const normalizedSeq = sequence
       .toLowerCase()
@@ -107,7 +110,7 @@ export class SequenceService {
 
     // Fetch all sequence files
     const files = await prisma.file.findMany({
-      where: { type: 'sequence' },
+      where: { type: 'sequence', workspaceId },
       select: { name: true, path: true },
     });
 

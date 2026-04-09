@@ -12,7 +12,7 @@ import {
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
-import { toast } from 'sonner'
+import { toast } from 'sonner';
 import api from '../../utils/api';
 
 type ColumnType = 'text' | 'number';
@@ -137,6 +137,7 @@ export default function TableBuilder<T extends Record<string, any>>({
   };
 
   const handleSave = async () => {
+    console.log('Saving table with data:', { fileName, rows, tableColumns });
     try {
       // Convert payload into JSON blob
       const jsonString = JSON.stringify(
@@ -226,13 +227,31 @@ export default function TableBuilder<T extends Record<string, any>>({
         {/* File name input */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium">File Name:</label>
-          <Input
+          {/* <Input
             type="text"
             value={fileName.split('.json')[0]}
             onChange={(e) => setFileName(e.target.value)}
             placeholder="Enter file name"
             className="flex-1"
-          />
+          /> */}
+
+          {id === null ? (
+            <Input
+              type="text"
+              value={fileName.split('.json')[0]}
+              onChange={(e) => setFileName(e.target.value)}
+              autoFocus
+              placeholder="Enter file Name"
+              className="w-full max-w-sm"
+            />
+          ) : (
+            <h3
+              className="text-lg font-semibold capitalize"
+              title="Click to edit"
+            >
+              {fileName.split('.json')[0]}
+            </h3>
+          )}
         </div>
 
         {/* Table */}

@@ -88,7 +88,8 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     const getTables = async () => {
       try {
         const res = await api.get(`${apiRoutes.files.base}/table/list`);
-        const tables = res.data?.data || [];
+        // const tables = res.data?.data || [];
+        const tables = res.data.files || [];
         setAvailableTables(tables);
       } catch (err) {
         console.error('Error fetching tables:', err);
@@ -119,8 +120,6 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     );
 
     setSchema(merged);
-
-    // console.log(watchedSections);
   }, [watchedSections]);
 
   useEffect(() => {
@@ -133,8 +132,6 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     }));
 
     replace(updatedSections);
-
-    // console.log(watchedSections);
   }, [
     watchedSections.length,
     watchedSections.map((s) => s.fields.length).join(','),
@@ -147,6 +144,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
           const tableUrl = availableTables.find(
             (t) => t.name === field.dataSource.table
           )?.path;
+
 
           if (!tableUrl) return;
 
@@ -317,7 +315,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
           ? Object.keys(res.data.rows[0]).map((key) => ({ key, label: key }))
           : []);
 
-      console.log(cols); // check this
+      // console.log(cols); // check this
 
       setTableColumns((prev) => ({
         ...prev,
@@ -476,7 +474,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                               }}
                             >
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select table" />
+                                <SelectValue placeholder="Table Select" />
                               </SelectTrigger>
                               <SelectContent>
                                 {availableTables.map((table) => (
@@ -498,7 +496,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                                   val
                                 );
 
-                                console.log(val);
+                                // console.log(val);
 
                                 // Fetch rows for this table to populate options
                                 const tableUrl = availableTables.find(
@@ -510,9 +508,9 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                                     const res = await axios.get(tableUrl);
                                     const rows = res.data.rows || [];
 
-                                    console.log('API response:', res.data);
-                                    console.log('Rows:', rows);
-                                    console.log('Selected column:', val);
+                                    // console.log('API response:', res.data);
+                                    // console.log('Rows:', rows);
+                                    // console.log('Selected column:', val);
 
                                     const columnOptions = rows
                                       .map((row: any) => row[val.toLowerCase()])
@@ -526,10 +524,10 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                                         shouldDirty: true,
                                       }
                                     );
-                                    console.log(
-                                      'Final options:',
-                                      columnOptions
-                                    );
+                                    // console.log(
+                                    //   'Final options:',
+                                    //   columnOptions
+                                    // );
                                   } catch (err) {
                                     console.error('Error fetching rows:', err);
                                   }
@@ -537,7 +535,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                               }}
                             >
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select column" />
+                                <SelectValue placeholder="Column Select" />
                               </SelectTrigger>
                               <SelectContent>
                                 {
@@ -589,282 +587,5 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
     </div>
   );
 });
-
-// const PreviewForm = ({
-//   sections,
-//   form,
-//   handleSaveTemplate,
-//   availableTables,
-// }: {
-//   sections: any[];
-//   form: any;
-//   handleSaveTemplate: any;
-//   availableTables: any;
-// }) => {
-//   const { register, handleSubmit, control } = form;
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit(handleSaveTemplate)}
-//       className="grid grid-cols-12 gap-4 p-4 border rounded-md"
-//     >
-//       {sections.map((section, i) => (
-//         <div key={i} className="col-span-12 mb-4">
-//           <h4 className="text-md font-semibold mb-2 ">{section.name}</h4>
-//           <div className="grid grid-cols-12 gap-4">
-//             {section.fields.map((field: any, j: number) => (
-//               <div key={j} className={`col-span-3`}>
-//                 <Label>{field.label}</Label>
-
-//                 {field.type === 'text' && (
-//                   <Input
-//                     disabled
-//                     id={field.name}
-//                     {...register(field.name)}
-//                     placeholder={field.placeholder}
-//                   />
-//                 )}
-
-//                 {field.type === 'number' && (
-//                   <Input
-//                     disabled
-//                     type="number"
-//                     id={field.name}
-//                     {...register(field.name, { valueAsNumber: true })}
-//                     placeholder={field.placeholder}
-//                   />
-//                 )}
-//                 {/* {field.type === 'select' && (
-//                   <Controller
-//                     control={form.control}
-//                     name={`${field.name}`}
-//                     render={({ field: controllerField }) => (
-//                       <Select {...controllerField}>
-//                         {(field.options || []).map((opt: any, idx: number) => (
-//                           <SelectItem key={idx} value={opt}>
-//                             {opt}
-//                           </SelectItem>
-//                         ))}
-//                       </Select>
-//                     )}
-//                   />
-//                 )} */}
-
-//                 {field.type === 'select' && (
-//                   <Controller
-//                     control={form.control}
-//                     name={`${field.name}`}
-//                     render={({ field: controllerField }) => (
-//                       <DynamicSelect
-//                         field={field}
-//                         controllerField={controllerField}
-//                         availableTables={availableTables}
-//                       />
-//                     )}
-//                   />
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       ))}
-//     </form>
-//   );
-// };
-
-// const PreviewForm = ({
-//   sections,
-//   form,
-//   handleSaveTemplate,
-//   availableTables,
-// }: {
-//   sections: any[];
-//   form: any;
-//   handleSaveTemplate: any;
-//   availableTables: any;
-// }) => {
-//   const { register, handleSubmit } = form;
-
-//   return (
-//     <FormProvider {...form}>
-//       <form
-//         onSubmit={handleSubmit(handleSaveTemplate)}
-//         className="grid grid-cols-12 gap-4 p-4 border rounded-md"
-//       >
-//         {sections.map((section, i) => (
-//           <div key={i} className="col-span-12 mb-4">
-//             <h4 className="text-md font-semibold mb-2 ">{section.name}</h4>
-//             <div className="grid grid-cols-12 gap-4">
-//               {section.fields.map((field: any, j: number) => (
-//                 <div key={j} className={`col-span-3`}>
-//                   <Label>{field.label}</Label>
-
-//                   {field.type === 'text' && (
-//                     <Input
-//                       disabled
-//                       id={field.name}
-//                       {...register(field.name)}
-//                       placeholder={field.placeholder}
-//                     />
-//                   )}
-
-//                   {field.type === 'number' && (
-//                     <Input
-//                       disabled
-//                       type="number"
-//                       id={field.name}
-//                       {...register(field.name, { valueAsNumber: true })}
-//                       placeholder={field.placeholder}
-//                     />
-//                   )}
-
-//                   {field.type === 'select' && (
-//                     <Controller
-//                       control={form.control}
-//                       name={`${field.name}`}
-//                       render={({ field: controllerField }) => (
-//                         <DynamicSelect
-//                           field={field}
-//                           form={form}
-//                           controllerField={controllerField}
-//                           availableTables={availableTables}
-//                         />
-//                       )}
-//                     />
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         ))}
-//       </form>
-//     </FormProvider>
-//   );
-// };
-
-// const DynamicSelect = ({
-//   field,
-//   controllerField,
-//   availableTables,
-// }: {
-//   field: any;
-//   controllerField: any;
-//   availableTables: any[];
-// }) => {
-//   const [options, setOptions] = useState<string[]>([]);
-//   const { setValue } = useFormContext();
-
-//   useEffect(() => {
-//     const fetchOptions = async () => {
-//       try {
-//         let resolved: string[] = [];
-
-//         if (field.dataSource?.table && field.dataSource?.column) {
-//           // find table url from availableTables
-//           const tableUrl = availableTables.find(
-//             (t) => t.name === field.dataSource.table
-//           )?.path;
-
-//           if (!tableUrl) return;
-
-//           const res = await axios.get(tableUrl);
-//           const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
-
-//           resolved = rows.map(
-//             (row: any) =>
-//               row[field.dataSource.column] ??
-//               row[field.dataSource.column.toLowerCase()]
-//           );
-//         } else {
-//           resolved = field.options || [];
-//         }
-
-//         setOptions(resolved);
-
-//         setValue(`${controllerField.name}.options`, resolved, {
-//           shouldDirty: true,
-//           shouldValidate: false,
-//         });
-//       } catch (err) {
-//         console.error('Error fetching select options:', err);
-//         setOptions([]);
-//       }
-//     };
-
-//     fetchOptions();
-//   }, [field.dataSource?.table, field.dataSource?.column, availableTables]);
-
-//   return (
-//     <Select
-//       value={controllerField.value}
-//       onValueChange={controllerField.onChange}
-//     >
-//       <SelectTrigger className="w-full">
-//         <SelectValue placeholder="Select option" />
-//       </SelectTrigger>
-//       <SelectContent>
-//         {options.map((opt, idx) => (
-//           <SelectItem key={opt} value={opt}>
-//             {opt}
-//           </SelectItem>
-//         ))}
-//       </SelectContent>
-//     </Select>
-//   );
-// };
-
-// const ColumnSelect = ({
-//   availableTables,
-//   tableName,
-//   value,
-//   onChange,
-// }: {
-//   availableTables: any[];
-//   tableName?: string;
-//   value: string;
-//   onChange: (val: string) => void;
-// }) => {
-//   const [columns, setColumns] = useState<string[]>([]);
-
-//   useEffect(() => {
-//     const fetchColumns = async () => {
-//       if (!tableName) {
-//         setColumns([]);
-//         return;
-//       }
-
-//       const tableUrl = availableTables.find((t) => t.name === tableName)?.path;
-//       try {
-//         const res = await axios.get(tableUrl); // 🔑 fetch directly from availableTables.url
-//         const columnLabels = res.data.columns.map((col: any) => col.label);
-//         if (columnLabels.length > 0) {
-//           setColumns(columnLabels); // first row → keys
-//         } else {
-//           setColumns([]);
-//         }
-//       } catch (err) {
-//         console.error('Error fetching columns:', err);
-//         setColumns([]);
-//       }
-//     };
-
-//     fetchColumns();
-//   }, [tableName]);
-
-//   return (
-//     <Select value={value} onValueChange={onChange}>
-//       <SelectTrigger className="w-full col-span-4">
-//         <SelectValue placeholder="Select column" />
-//       </SelectTrigger>
-//       <SelectContent>
-//         {columns.map((col) => (
-//           <SelectItem key={col} value={col}>
-//             {col}
-//           </SelectItem>
-//         ))}
-//       </SelectContent>
-//     </Select>
-//   );
-// };
 
 export default FormBuilder;

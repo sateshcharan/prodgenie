@@ -142,17 +142,17 @@ const Files = () => {
     console.log(res);
   };
 
-  const handleRegenerateThumbnails = async () => {
-    toast.info('🌟 Regenerating thumbnails...');
-    try {
-      await api.post(`${apiRoutes.thumbnail.base}/regenerate/${fileType}`);
-      toast.success('✅ Thumbnails regenerated successfully!');
-      fetchFiles();
-    } catch (err) {
-      console.error('Error regenerating thumbnails:', err);
-      toast.error('❌ Failed to regenerate thumbnails.');
-    }
-  };
+  // const handleRegenerateThumbnails = async () => {
+  //   toast.info('🌟 Regenerating thumbnails...');
+  //   try {
+  //     await api.post(`${apiRoutes.thumbnail.base}/regenerate/${fileType}`);
+  //     toast.success('✅ Thumbnails regenerated successfully!');
+  //     fetchFiles();
+  //   } catch (err) {
+  //     console.error('Error regenerating thumbnails:', err);
+  //     toast.error('❌ Failed to regenerate thumbnails.');
+  //   }
+  // };
 
   return (
     <div className="p-4 flex flex-col gap-4 ">
@@ -164,14 +164,14 @@ const Files = () => {
       />
 
       <div className="flex gap-2">
-        <Button
+        {/* <Button
           variant={'outline'}
           onClick={handleRegenerateThumbnails}
           className="flex items-center gap-2 px-4 py-2 rounded disabled:opacity-50"
         >
           <ImagePlus size={16} />
           Regenerate All Thumbnails
-        </Button>
+        </Button> */}
 
         {fileType === 'sequence' && (
           <Button
@@ -201,41 +201,43 @@ const Files = () => {
             />
           ))}
           {/* Add File Card */}
-          <Card className="shadow-lg rounded-xl flex flex-col cursor-pointer bg-background min-h-[250px]">
-            {fileType === 'template' ||
-            fileType === 'sequence' ||
-            fileType === 'table' ? (
-              // Dual Action Internals
-              <div className="flex flex-col flex-1 divide-y divide-gray-200">
-                {/* Upload File */}
-                <div
+          {fileType !== 'config' && (
+            <Card className="shadow-lg rounded-xl flex flex-col cursor-pointer bg-background min-h-[250px]">
+              {fileType === 'template' ||
+              fileType === 'sequence' ||
+              fileType === 'table' ? (
+                // Dual Action Internals
+                <div className="flex flex-col flex-1 divide-y divide-gray-200">
+                  {/* Upload File */}
+                  <div
+                    onClick={handleAddFileClick}
+                    className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
+                  >
+                    <Upload size={20} className="text-gray-500" />
+                    <p className="mt-2 text-gray-600 text-sm">Upload File</p>
+                  </div>
+
+                  {/* Create New */}
+                  <div
+                    onClick={handleCreateNewClick}
+                    className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
+                  >
+                    <Plus size={20} className="text-gray-500" />
+                    <p className="mt-2 text-gray-600 text-sm">Create New</p>
+                  </div>
+                </div>
+              ) : (
+                // Single Action Internals
+                <CardContent
                   onClick={handleAddFileClick}
-                  className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
+                  className="flex flex-col items-center justify-center h-full"
                 >
                   <Upload size={20} className="text-gray-500" />
                   <p className="mt-2 text-gray-600 text-sm">Upload File</p>
-                </div>
-
-                {/* Create New */}
-                <div
-                  onClick={handleCreateNewClick}
-                  className="flex flex-col items-center justify-center flex-1 py-6 transition hover:bg-gray-50"
-                >
-                  <Plus size={20} className="text-gray-500" />
-                  <p className="mt-2 text-gray-600 text-sm">Create New</p>
-                </div>
-              </div>
-            ) : (
-              // Single Action Internals
-              <CardContent
-                onClick={handleAddFileClick}
-                className="flex flex-col items-center justify-center h-full"
-              >
-                <Upload size={20} className="text-gray-500" />
-                <p className="mt-2 text-gray-600 text-sm">Upload File</p>
-              </CardContent>
-            )}
-          </Card>
+                </CardContent>
+              )}
+            </Card>
+          )}
         </div>
       </div>
     </div>

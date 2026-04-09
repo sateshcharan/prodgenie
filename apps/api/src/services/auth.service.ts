@@ -12,8 +12,8 @@ import { prisma } from '@prodgenie/libs/db';
 import { signupSchema } from '@prodgenie/libs/schema';
 import { StringService } from '@prodgenie/libs/shared-utils';
 import {
-  supabase,
-  supabaseAdmin,
+  // supabase,
+  supabaseAuth,
   FolderService,
 } from '@prodgenie/libs/supabase';
 import { CustomError } from '@prodgenie/libs/server-services/lib/error.service.js';
@@ -51,7 +51,7 @@ export class AuthService {
     //   );
 
     // Sign up user in Supabase Auth
-    const { data, error } = await supabaseAdmin.auth.signUp({
+    const { data, error } = await supabaseAuth.auth.signUp({
       email,
       password,
       options: {
@@ -79,7 +79,7 @@ export class AuthService {
         await FolderService.scaffoldFolder(workspace.id);
       });
     } catch (err: any) {
-      await supabaseAdmin.auth.admin.deleteUser(supabaseUser.id);
+      await supabaseAuth.auth.admin.deleteUser(supabaseUser.id);
       throw new Error(err);
     }
 
@@ -96,7 +96,7 @@ export class AuthService {
     if (!existingUser)
       throw new CustomError('No user found with this email', 404);
 
-    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({
       email,
       password,
     });
@@ -112,7 +112,7 @@ export class AuthService {
   }
 
   static async continueWithProvider(provider: string) {
-    const { data, error } = await supabaseAdmin.auth.signInWithOAuth({
+    const { data, error } = await supabaseAuth.auth.signInWithOAuth({
       provider: provider as 'google',
       options: {
         redirectTo: `${process.env.VITE_API_URL}${apiRoutes.callback.base}${apiRoutes.callback.OAuth}`,
@@ -131,7 +131,7 @@ export class AuthService {
 
     // First, check Supabase auth for existing user (listUsers + find)
     const { data: listData, error: listError } =
-      await supabaseAdmin.auth.admin.listUsers({
+      await supabaseAuth.auth.admin.listUsers({
         page: 1,
         perPage: 1000,
       });
@@ -159,7 +159,7 @@ export class AuthService {
 
     // Otherwise, send invite (admin.inviteUserByEmail)
     const { data: invited, error: inviteError } =
-      await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      await supabaseAuth.auth.admin.inviteUserByEmail(email, {
         redirectTo: `${process.env.VITE_API_URL}/auth/callback`,
       });
 
@@ -193,7 +193,7 @@ export class AuthService {
   static async resetPassword(email: string) {
     // Use supabase admin to ensure user exists and is email provider
     const { data: listData, error: listError } =
-      await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      await supabaseAuth.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
     if (listError) throw new Error(listError.message);
 
@@ -210,7 +210,7 @@ export class AuthService {
       );
     }
 
-    const { data, error } = await supabaseAdmin.auth.resetPasswordForEmail(
+    const { data, error } = await supabaseAuth.auth.resetPasswordForEmail(
       email
     );
     if (error) throw new Error(error.message);
@@ -235,7 +235,7 @@ export class AuthService {
       const {
         data: { user },
         error,
-      } = await supabase.auth.getUser();
+      } = await supabaseAuth.auth.getUser();
 
       if (error) throw new Error('Unable to fetch user session.');
       if (!user) throw new Error('User not found.');
@@ -250,7 +250,7 @@ export class AuthService {
     }
 
     // Now perform the password update only for email-based users
-    const { data, error } = await supabase.auth.updateUser({
+    const { data, error } = await supabaseAuth.auth.updateUser({
       password,
     });
 
@@ -261,7 +261,7 @@ export class AuthService {
   static async updatePasswordForUserId(userId: string, newPassword: string) {
     if (!userId) throw new Error('userId required');
     // Use admin API to update password
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+    const { data, error } = await supabaseAuth.auth.admin.updateUserById(
       userId,
       {
         password: newPassword,
@@ -276,7 +276,7 @@ export class AuthService {
     const code = req.query.code as string;
     if (!code) return res.status(400).send('Missing code');
 
-    const { data, error } = await supabaseAdmin.auth.exchangeCodeForSession(
+    const { data, error } = await supabaseAuth.auth.exchangeCodeForSession(
       code
     );
     if (error) return res.status(401).json({ error: error.message });
@@ -317,7 +317,7 @@ export class AuthService {
           await FolderService.scaffoldFolder(workspace.id);
         });
       } catch (err: any) {
-        await supabaseAdmin.auth.admin.deleteUser(supabaseUser.id);
+        await supabaseAuth.auth.admin.deleteUser(supabaseUser.id);
         throw new Error(err);
       }
     }
@@ -329,7 +329,7 @@ export class AuthService {
     const code = req.query.code;
     if (!code) return res.status(400).send('Missing code');
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabaseAuth.auth.exchangeCodeForSession(code);
     if (error) return res.status(400).json({ error: error.message });
 
     const { session } = data;
@@ -381,7 +381,7 @@ export class AuthService {
   // }
 
   //   static async reactivateAccount(email: string) {
-  //   const { error } = await supabaseAdmin.auth.signInWithOtp({
+  //   const { error } = await supabaseAuth.auth.signInWithOtp({
   //     email,
   //     options: {
   //       emailRedirectTo: `${process.env.FRONTEND_URL}/auth/reactivate`,

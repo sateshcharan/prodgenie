@@ -1,10 +1,10 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 //
@@ -116,7 +116,7 @@ model workspaceUsage {
 model plan {
   id             String    @id @default(uuid()) @db.Uuid
   name           String    @unique
-  maxMembers     Int
+  maxWorkspaces  Int       @default(1)
   maxStorage     Int       @default(340)
   monthlyCredits Int       @default(0)
   features       Json      @default("{}")

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore } from '@prodgenie/libs/store';
 import api from '../../utils/api';
+
+import { StringService } from '@prodgenie/libs/shared-utils';
 
 export default function DuplicateFile({
   title,
@@ -27,19 +29,18 @@ export default function DuplicateFile({
   const { closeModal } = useModalStore();
 
   const duplicateFile = async () => {
-    if (!duplicateFileName.trim()) {
-      toast.error('Please enter a name for the duplicate file.');
+    const error = StringService.validateFileName(duplicateFileName);
+    if (error) {
+      toast.error(error);
       return;
     }
 
     try {
       setLoading(true);
-      // Example API call
-      const { data } = await api.post(submitUrl, {
+      await api.post(submitUrl, {
         fileId,
         duplicateFileName,
       });
-      console.log(data);
       onUploadSuccess?.();
       toast.success('File duplicated successfully!');
       closeModal();

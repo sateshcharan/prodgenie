@@ -1,20 +1,20 @@
 import { cache } from '@prodgenie/libs/redis';
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 
-// import { supabaseAdmin } from './supabase.js';
+import { supabase } from './supabase.js';
 
 const BUCKET = process.env.BUCKET!;
-const supabaseUrl = process.env.SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// const supabaseUrl = process.env.SUPABASE_URL!;
+// const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey); // only seperate client here works for upload without error
+// const supabase = createClient(supabaseUrl, serviceRoleKey); // only seperate client here works for upload without error
 
 export class FileStorageService {
   static async uploadFile(uploadPath: string, file: any) {
     if (!file || !file.buffer || !Buffer.isBuffer(file.buffer))
       throw new Error('Invalid file provided for upload');
 
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .upload(uploadPath, file.buffer, {
         upsert: true,
@@ -25,10 +25,28 @@ export class FileStorageService {
     return data;
   }
 
+  static async downloadFile(
+    filePath: string
+  ): Promise<{ data: Buffer; contentType: string }> {
+    if (!filePath) throw new Error('File path not provided');
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .download(filePath);
+
+    if (error) throw new Error(`Download failed: ${error.message}`);
+    if (!data) throw new Error('No data received from download');
+
+    const contentType = data.type || 'application/octet-stream';
+    const buffer = Buffer.from(await data.arrayBuffer());
+
+    return { data: buffer, contentType };
+  }
+
   static async getSignedUrl(filePath: string): Promise<string> {
     if (!filePath) throw new Error('File path not provided');
 
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .createSignedUrl(filePath, 60 * 60);
 
@@ -50,7 +68,7 @@ export class FileStorageService {
     fileType?: string,
     user?: any
   ): Promise<any> {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .remove([filePath]);
 
@@ -60,7 +78,7 @@ export class FileStorageService {
   }
 
   static async listFiles(workspaceId: string): Promise<any> {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .list(`${workspaceId}/`);
 
@@ -73,7 +91,7 @@ export class FileStorageService {
     oldPath: string,
     newPath: string
   ): Promise<{ data: any; error: any }> {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .move(oldPath, newPath);
 
@@ -100,7 +118,7 @@ export class FileStorageService {
     fileType: string,
     newPath: string
   ): Promise<{ data: any; error: any }> {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .copy(oldPath, newPath);
 
