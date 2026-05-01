@@ -11,7 +11,7 @@ const faqs = [
     answer: (
       <>
         <p>
-          Parseur offers both monthly and yearly self-service plans based on
+          Prodgenie offers both monthly and yearly self-service plans based on
           your usage volume. Each plan includes a set number of credits, where{' '}
           <strong>1 credit equals 1 page processed</strong>. Unused credits
           expire at the end of each billing period.
@@ -19,7 +19,7 @@ const faqs = [
         <p>
           For more information, visit our{' '}
           <a
-            href="https://help.parseur.com/en/articles/4237000-credits-subscription-and-pricing-faq"
+            href="/"
             className="text-primary hover:underline"
           >
             pricing support page
@@ -71,7 +71,7 @@ const faqs = [
     question: 'How does the Template parsing engine work?',
     answer: (
       <p>
-        You create templates for each document layout. Parseur matches incoming
+        You create templates for each document layout. Prodgenie matches incoming
         documents to the correct template automatically for precise data
         extraction.
       </p>

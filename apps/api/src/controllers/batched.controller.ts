@@ -7,6 +7,7 @@ import { NotificationService } from '../services/notification.service';
 export class BatchedController {
   static async init(req: Request, res: Response) {
     const user = req.user;
+
     // const userId = user?.id;
     const activeWorkspaceId = user.activeWorkspaceId; // from user preference in db
 

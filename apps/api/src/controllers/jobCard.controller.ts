@@ -29,17 +29,25 @@ export class JobCardController {
   static async getJobCardNumber(req: Request, res: Response) {
     const user = req.user;
     const activeWorkspaceId = req.activeWorkspaceId!;
-    const activeWorkspace = user.memberships.find(
-      (m) => m.workspace.id === activeWorkspaceId
-    );
+    // const activeWorkspace = user.memberships.find(
+    //   (m) => m.workspace.id === activeWorkspaceId
+    // );
 
-    const { data } = await JobCardService.getJobCardNumber(activeWorkspace);
+    const { data } = await JobCardService.getJobCardNumber(activeWorkspaceId);
     res.status(200).json({ success: true, data: data });
   }
 
   static async aiFillJobCard(req: Request, res: Response) {
-    const { fileId } = req.body;
-    const filledData = await JobCardService.aiFillJobCard(fileId);
+    const { fileId, signedUrl } = req.body;
+    const user = req.user;
+    const activeWorkspaceId = req.activeWorkspaceId!;
+
+    const filledData = await JobCardService.aiFillJobCard(
+      user,
+      fileId,
+      signedUrl,
+      activeWorkspaceId
+    );
     res.status(200).json({ success: true, data: filledData });
   }
 }

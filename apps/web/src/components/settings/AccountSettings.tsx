@@ -18,6 +18,7 @@ import {
 
 import api from '../../utils/api';
 import { EditableField } from '../EditableField';
+import { Heading } from 'lucide-react';
 
 const AccountSettings = () => {
   const { user } = useUserStore();
@@ -86,7 +87,7 @@ const AccountSettings = () => {
             }
             onSave={handleUpdateUserProfile}
           />
-          <EditableField
+          {/* <EditableField
             label="Email"
             value={user?.email || ''}
             type="email"
@@ -94,6 +95,13 @@ const AccountSettings = () => {
               setEditedValues((prev) => ({ ...prev, email: val }))
             }
             onSave={handleUpdateUserProfile}
+          /> */}
+          <label className="text-sm font-medium">Email</label>
+          <Input
+            type={'email'}
+            value={user?.email}
+            readOnly={true}
+            className={'bg-muted cursor-default'}
           />
         </CardContent>
       </Card>
@@ -129,14 +137,16 @@ const AccountSettings = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Delete Account & Workspace</p>
+                {/* <p className="font-medium">Delete Account & Workspace</p> */}
+                <p className="font-medium">Delete Account</p>
                 <p className="text-sm text-muted-foreground">
                   Permanently remove your account and all associated data. This
                   action cannot be undone.
                 </p>
               </div>
               <Button variant="destructive" onClick={handleDeleteAccount}>
-                Delete My Account & All Workspaces
+                {/* Delete My Account & All Workspaces */}
+                Delete My Account
               </Button>
             </div>
           </CardContent>

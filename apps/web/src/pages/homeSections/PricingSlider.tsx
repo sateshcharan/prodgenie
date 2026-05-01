@@ -59,8 +59,8 @@ const PricingSlider = () => {
 
   const getPlanByPages = (pageCount: number) => {
     if (!plans.length) return null;
-    if (pageCount <= 50) return plans.find((p) => p.name === 'free');
-    if (pageCount <= 500) return plans.find((p) => p.name === 'starter');
+    if (pageCount <= 50) return plans.find((p) => p.name === 'starter');
+    if (pageCount <= 500) return plans.find((p) => p.name === 'pro');
     return plans.find((p) => p.name === 'enterprise');
   };
 
@@ -123,8 +123,8 @@ const PricingSlider = () => {
           id="plan-slider"
           type="range"
           min="0"
-          max="1200"
-          step="300"
+          max="500"
+          step="100"
           value={pages}
           onChange={(e) => setPages(Number(e.target.value))}
           className="w-full accent-primary"

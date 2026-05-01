@@ -17,6 +17,11 @@ router.post(
   PaymentController.handleStripeWebhook
 );
 
+router.post(
+  apiRoutes.payment.registerManualQRPayment,
+  PaymentController.registerManualQRPayment
+);
+
 // PhonePe
 router.post(
   apiRoutes.payment.phonepeCreate,

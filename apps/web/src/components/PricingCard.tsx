@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { cn } from '@prodgenie/libs/utils';
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useAuthStore } from '@prodgenie/libs/store';
+import {
+  useAuthStore,
+  useUserStore,
+  useModalStore,
+} from '@prodgenie/libs/store';
 import { PricingCard as PricingCardUI } from '@prodgenie/libs/ui/components/pricing-card';
 
 import api from '../utils/api';
@@ -15,7 +20,10 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
     'monthly'
   );
 
+  const navigate = useNavigate();
   const { setAuthType } = useAuthStore();
+  const { closeModal } = useModalStore();
+
   const handleClick = () => setAuthType('signup');
 
   useEffect(() => {
@@ -84,7 +92,7 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
         </h2>
 
         {/* Billing Cycle Toggle */}
-        <div className="inline-flex rounded-full bg-white p-1 mb-8 outline outline-1 outline-gray-200">
+        <div className="inline-flex rounded-full bg-background p-1 mb-8 outline outline-1 outline-gray-200">
           {(['monthly', 'annual'] as const).map((cycle) => (
             <Button
               key={cycle}
@@ -106,23 +114,24 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
               price={computePrice(plan.price)}
               cycle={billingCycle}
               features={plan.features}
-              onClick={
-                plan.price === 0
-                  ? handleClick
-                  : () =>
-                      handleCheckout({
-                        gateway: 'stripe',
-                        planId: plan.id,
-                        amount: computePrice(plan.price),
-                        billingCycle,
-                      })
+              onClick={() =>
+                // plan.price === 0
+                //   ? handleClick
+                //   : () =>
+                //       handleCheckout({
+                //         gateway: 'stripe',
+                //         planId: plan.id,
+                //         amount: computePrice(plan.price),
+                //         billingCycle,
+                //       })
+                navigate(`/dashboard/qr-payment/${plan.price}/credit_topup`)
               }
             />
           ))}
         </div>
 
         {/* ➕ Credit Top-Up Option */}
-        <div className="bg-white rounded-lg shadow p-6 w-full mx-auto my-4">
+        <div className="bg-background rounded-lg shadow p-6 w-full mx-auto my-4">
           <h3
             className={cn(
               'font-bold mb-2',
@@ -132,18 +141,24 @@ const PricingCard = ({ variant = 'page' }: { variant?: 'page' | 'modal' }) => {
             Need only credits?
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Purchase extra credits anytime valid throughout your billing cycle.
+            Credits are used to generate new job cards and AI Interactions.
+            <br />
+            Credits will reset at the end of each billing cycle.
           </p>
           <div className="flex justify-center gap-4">
-            {[50, 500, 1000].map((credits) => (
+            {[200, 500, 1000].map((credits) => (
               <Button
                 key={credits}
                 onClick={() =>
-                  handleCheckout({
-                    gateway: 'phonepe',
-                    type: 'credits',
-                    amount: credits,
-                  })
+                  // handleCheckout({
+                  //   gateway: 'phonepe',
+                  //   type: 'credits',
+                  //   amount: credits,
+                  // })
+                  {
+                    closeModal();
+                    navigate(`/dashboard/qr-payment/${credits}/credit_topup`);
+                  }
                 }
                 className="rounded-full"
               >

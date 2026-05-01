@@ -20,14 +20,20 @@ import {
   useUserStore,
   useModalStore,
 } from '@prodgenie/libs/store';
+import { toast } from 'sonner';
+import { apiRoutes } from '@prodgenie/libs/constant';
+import { useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 
 const BillingSettings = () => {
   const { activeWorkspace } = useWorkspaceStore();
   const { openModal } = useModalStore();
   const { user } = useUserStore();
 
-  const handleChangePlan = () => {
-    openModal('workspace:pricing');
+  const navigate = useNavigate();
+
+  const handleRenew = async () => {
+    navigate(`/dashboard/qr-payment/4999/subscription`);
   };
 
   return (
@@ -66,38 +72,85 @@ const BillingSettings = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <img
+                      {/* <img
                         src={membership.workspace.thumbnail}
                         alt={membership.workspace.name}
                         className="w-30 h-30 rounded-sm object-cover"
-                      />
-                      <p className="font-medium">
+                      /> */}
+                      <p className="font-medium capitalize">
                         {membership.workspace?.plan?.name} Plan
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        ${membership.workspace?.plan?.monthlyCredits}/month
-                      </p>
+                      <div className="flex gap-4 items-center">
+                        <p className="text-sm text-muted-foreground">
+                          ${membership.workspace?.plan?.monthlyCredits}/month
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Expires on:{' '}
+                          {membership.workspace?.planExpiry
+                            ? new Date(
+                                membership.workspace.planExpiry
+                              ).toLocaleDateString()
+                            : 'N/A'}
+                        </p>
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleChangePlan}>
-                      Change Plan
+                    <Button variant="outline" onClick={handleRenew}>
+                      Renew
                     </Button>
                   </div>
 
-                  <div>
-                    <p className="text-sm font-medium">Credits</p>
+                  {/* <div>
+                    <p className="text-sm font-medium">Plan Usage</p>
                     <Progress value={60} className="h-2 mt-1" />
                     <p className="text-xs text-muted-foreground mt-1">
-                      600 / 1000 used
+                      {Math.ceil(
+                        (new Date(membership.workspace.planExpiry).getTime() -
+                          Date.now()) /
+                          (1000 * 60 * 60 * 24)
+                      )}
+                      / 30 Days left
                     </p>
-                  </div>
+                  </div> */}
+                  {(() => {
+                    const totalDays = 30;
+                    const remainingDays = Math.max(
+                      0,
+                      Math.ceil(
+                        (new Date(membership.workspace.planExpiry).getTime() -
+                          Date.now()) /
+                          (1000 * 60 * 60 * 24)
+                      )
+                    );
 
-                  <div>
+                    const usedDays = totalDays - remainingDays;
+                    const progressValue = Math.min(
+                      100,
+                      Math.max(0, (usedDays / totalDays) * 100)
+                    );
+
+                    return (
+                      <div>
+                        <p className="text-sm font-medium">Plan Usage</p>
+                        <Progress value={progressValue} className="h-2 mt-1" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {remainingDays > 0
+                            ? `${remainingDays} day${
+                                remainingDays > 1 ? 's' : ''
+                              } left`
+                            : 'Expired'}{' '}
+                          / {totalDays} days
+                        </p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* <div>
                     <p className="text-sm font-medium">Members</p>
                     <Progress value={40} className="h-2 mt-1" />
                     <p className="text-xs text-muted-foreground mt-1">
                       8 / 20 used
                     </p>
-                  </div>
+                  </div> */}
                 </TabsContent>
               ))}
             </Tabs>
@@ -106,7 +159,7 @@ const BillingSettings = () => {
       )}
 
       {/* Payment Method */}
-      <Card className="rounded-2xl shadow-sm">
+      {/* <Card className="rounded-2xl shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center space-x-2">
             <Wallet className="h-5 w-5 text-muted-foreground" />
@@ -120,10 +173,10 @@ const BillingSettings = () => {
             Visa ending in 4242 — Expires 12/26
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Invoices */}
-      <Card className="rounded-2xl shadow-sm">
+      {/* <Card className="rounded-2xl shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center space-x-2">
             <FileText className="h-5 w-5 text-muted-foreground" />
@@ -145,7 +198,7 @@ const BillingSettings = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };

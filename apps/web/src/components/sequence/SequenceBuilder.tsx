@@ -69,7 +69,7 @@ const SortableItem = ({
           >
             <Trash size={16} />
           </button>
-          <p className="font-medium text-sm">{file.name.split('.')[0]}</p>
+          <p className="font-medium text-sm text-black">{file.name.split('.')[0]}</p>
 
           {/* ✅ Drag handle only */}
           <div
@@ -268,8 +268,8 @@ const SequenceBuilder = () => {
     <div className="flex flex-col md:flex-row h-[calc(100vh-3rem)] gap-4 p-4 overflow-hidden">
       {/* Left Panel: Templates */}
       <div className="w-full md:w-[300px] flex-shrink-0 h-[20vh] md:h-full">
-        <div className="bg-white border rounded shadow p-2 h-full">
-          <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-white ">
+        <div className="bg-background border rounded shadow p-2 h-full">
+          <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-background ">
             Templates
           </h2>
 
@@ -280,7 +280,7 @@ const SequenceBuilder = () => {
                   key={file.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, file)}
-                  className="cursor-move border p-2 rounded bg-gray-50 hover:bg-gray-100 min-w-[150px] md:min-w-0"
+                  className="cursor-move border p-2 rounded min-w-[150px] md:min-w-0"
                 >
                   <p className="font-medium text-sm mb-2 capitalize">
                     {file.name.split('.')[0]}
@@ -300,7 +300,7 @@ const SequenceBuilder = () => {
       {/* Right Panel: Sequence + Formula */}
       <div className="flex flex-col flex-1 overflow-hidden gap-4">
         {/* Sequence Builder Panel */}
-        <div className="h-[600px] flex flex-col bg-white border rounded shadow p-2">
+        <div className="h-[600px] flex flex-col bg-background border rounded shadow p-2">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4">
             {!id ? (
               <Input

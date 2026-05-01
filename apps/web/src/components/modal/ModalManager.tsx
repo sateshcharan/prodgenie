@@ -17,6 +17,7 @@ import PricingCard from '../PricingCard';
 import LeaveWorkspace from './LeaveWorkspace';
 import DeleteAccount from './DeleteAccount';
 import ReactivateAccount from './ReactivateAccount';
+import AiFill from './AIFill';
 
 import { useModalStore } from '@prodgenie/libs/store';
 
@@ -200,6 +201,13 @@ const ModalManager = () => {
             presets={modalProps?.presets}
             onDeleteSuccess={modalProps?.onDeleteSuccess}
           />
+        </Modal>
+      );
+
+    case 'drawing:aiFill':
+      return (
+        <Modal title="Ai Fill" description="Ai Fill">
+          <AiFill fileId={modalProps?.fileId} signedUrl={modalProps?.signedUrl} />
         </Modal>
       );
 

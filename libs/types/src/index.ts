@@ -28,7 +28,7 @@ export const eventType = {
   jobCompleted: 'job_completed',
   jobFailed: 'job_failed',
   planChanged: 'plan_changed',
-  manualTopup: 'manual_topup',
+  creditTopup: 'credit_topup',
   description: 'subscription',
 };
 

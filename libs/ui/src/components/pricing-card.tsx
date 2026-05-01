@@ -7,6 +7,7 @@ import {
   CardDescription,
 } from '../card';
 import { Button } from '../button';
+// import { useUserStore } from '@prodgenie/libs/store/lib/user';
 
 type PricingCardProps = {
   title: string;
@@ -24,6 +25,10 @@ const PricingCard = ({
   onClick,
 }: PricingCardProps) => {
   const cycleLabel = cycle === 'annual' ? '/year' : '/month';
+
+  // const { user } = useUserStore();
+  // const currentPlan =
+  //   user?.memberships?.[0]?.workspace?.plan?.name.toLowerCase();
 
   return (
     <Card className="w-[350px] border border-gray-200 shadow-md flex flex-col justify-between">
@@ -53,6 +58,8 @@ const PricingCard = ({
         <Button
           className="w-full rounded-full"
           type="button"
+          // disabled={currentPlan === title.toLowerCase()}
+          disabled
           onClick={(e) => {
             e.preventDefault();
             onClick?.();

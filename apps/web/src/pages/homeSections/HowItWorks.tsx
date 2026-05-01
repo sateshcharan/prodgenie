@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 
 import {
   Accordion,
@@ -6,17 +7,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@prodgenie/libs/ui/accordion';
-
 import { Button } from '@prodgenie/libs/ui/button';
+import { useModalStore } from '@prodgenie/libs/store/lib/modalStore';
 
 import integrations from '../../assets/integrations.webp';
 import selectProjectType from '../../assets/selectProjectType.webp';
 import supportedDocumentFormats from '../../assets/supportedDocumentFormats.webp';
 import aiParsingEngine from '../../assets/aiParsingEngine.mp4';
-import { ChevronRight } from 'lucide-react';
 
 const HowItWorks = () => {
   const navigate = useNavigate();
+  const { openModal } = useModalStore();
+
+  const handleSignupClick = () => {
+    openModal('auth:signup');
+  };
 
   return (
     <section className="relative z-10 px-6 py-12  max-w-7xl mx-auto">
@@ -36,7 +41,7 @@ const HowItWorks = () => {
                 1. Choose what to extract
               </h2>
               <p className="mt-4 text-lg leading-8 text-gray-700">
-                Upload your first document. Parseur analyzes your document and
+                Upload your first document. Prodgenie analyzes your document and
                 suggests fields to extract.
                 <br />
                 <br />
@@ -63,7 +68,7 @@ const HowItWorks = () => {
                 2. Automate imports
               </h2>
               <p className="mt-4 text-lg leading-8 text-gray-700">
-                Parseur supports{' '}
+                Prodgenie supports{' '}
                 <mark>
                   emails, PDFs (native and scanned), spreadsheets, text files,
                   HTML pages
@@ -78,7 +83,7 @@ const HowItWorks = () => {
                 API, or through Zapier, Make, or Power Automate.
               </p>
 
-              <div className="mx-auto my-4 max-w-md sm:my-8 sm:flex sm:justify-center">
+              {/* <div className="mx-auto my-4 max-w-md sm:my-8 sm:flex sm:justify-center">
                 <a
                   href="https://app.parseur.com/signup"
                   className="flex items-center justify-center rounded-xl border border-transparent bg-primary px-4 py-2 text-base font-medium text-white shadow-md hover:bg-amber-700 md:px-10 md:py-4 md:text-lg"
@@ -93,7 +98,7 @@ const HowItWorks = () => {
                     <path d="M505 273c9.4-9.4 9.4-24.6 0-33.9L337 71c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l127 127H24c-13.3 0-24 10.7-24 24s10.7 24 24 24h406l-127 127c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l168-168z" />
                   </svg>
                 </a>
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="flex items-center justify-center lg:order-first">
@@ -108,7 +113,7 @@ const HowItWorks = () => {
         </div>
 
         {/* Step 3 (simplified accordion removed for React) */}
-        <div className="overflow-hidden lg:grid lg:grid-cols-1">
+        {/* <div className="overflow-hidden lg:grid lg:grid-cols-1">
           <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
             <div className="lg:self-center">
               <h2 className="text-xl font-semibold sm:text-2xl lg:text-3xl">
@@ -235,7 +240,124 @@ const HowItWorks = () => {
               </Accordion>
             </div>
           </div>
-        </div>
+        </div> */}
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          defaultValue="item-1"
+        >
+          {/* Product Information */}
+          <AccordionItem value="item-1" className="border rounded px-4 mt-4">
+            <AccordionTrigger className="text-xl font-semibold hover:no-underline hover:text-blue">
+              Product Information
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="text-gray-700">
+                  <p>
+                    Automatically extract product details like part name,
+                    material, specifications, and dimensions directly from your
+                    drawings or PDFs.
+                  </p>
+                  <p className="mt-4">
+                    Our AI understands engineering layouts, so even if your
+                    drawings vary in format, it reliably captures structured
+                    data for BOM generation.
+                  </p>
+                  <p className="mt-4">
+                    You can review and edit extracted fields before generating
+                    the final job card.
+                  </p>
+                </div>
+
+                <video
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                  className="rounded-lg border border-gray-300 lg:h-96 w-full object-cover"
+                >
+                  <source src={aiParsingEngine} type="video/mp4" />
+                </video>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* BOM Extraction */}
+          <AccordionItem value="item-2" className="border rounded px-4 mt-4">
+            <AccordionTrigger className="text-xl font-semibold hover:no-underline hover:text-blue">
+              BOM Extraction
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="text-gray-700">
+                  <p>
+                    Extract complete Bill of Materials (BOM) including
+                    quantities, dimensions, and material types with a single
+                    click.
+                  </p>
+                  <p className="mt-4">
+                    The system detects tabular data from drawings and converts
+                    it into an editable format, saving hours of manual entry.
+                  </p>
+                  <p className="mt-4">
+                    You can add, edit, or remove rows before proceeding to job
+                    card generation.
+                  </p>
+                </div>
+
+                <video
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                  className="rounded-lg border border-gray-300 lg:h-96 w-full object-cover"
+                >
+                  <source src="/videos/bom-extraction.mp4" type="video/mp4" />
+                </video>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Job Card Generation */}
+          <AccordionItem value="item-3" className="border rounded px-4 mt-4">
+            <AccordionTrigger className="text-xl font-semibold hover:no-underline hover:text-blue">
+              Job Card Generation
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="text-gray-700">
+                  <p>
+                    Generate detailed job cards instantly using extracted data
+                    and predefined templates.
+                  </p>
+                  <p className="mt-4">
+                    Customize parameters like process steps, machine details,
+                    and production instructions to match your workflow.
+                  </p>
+                  <p className="mt-4">
+                    Export job cards as PDF or Excel, ready for shop floor
+                    execution.
+                  </p>
+                </div>
+
+                <video
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                  className="rounded-lg border border-gray-300 lg:h-96 w-full object-cover"
+                >
+                  <source
+                    src="/videos/jobcard-generation.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {/* Step 4 */}
         <div className="overflow-hidden lg:grid lg:grid-cols-2">
@@ -269,20 +391,14 @@ const HowItWorks = () => {
 
         {/* CTA */}
         <div className="mx-auto max-w-md sm:flex sm:justify-center">
-          <button
-            onClick={() => navigate('/signup')}
-            className="flex w-full items-center justify-center rounded-xl border border-transparent bg-primary px-4 py-2 text-base font-medium text-white shadow-md hover:bg-amber-700 md:px-10 md:py-4 md:text-lg"
+          <Button
+            onClick={handleSignupClick}
+            variant="default"
+            className="flex w-full items-center justify-center rounded-xl border border-transparent bg-primary px-4 py-2 text-base font-medium text-white shadow-md md:px-10 md:py-4 md:text-lg"
           >
             Try Prodgneie for free
-            <svg
-              className="ml-2 h-4 w-4"
-              fill="currentColor"
-              viewBox="0 0 512 512"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M505 273c9.4-9.4 9.4-24.6 0-33.9L337 71c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l127 127H24c-13.3 0-24 10.7-24 24s10.7 24 24 24h406l-127 127c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l168-168z" />
-            </svg>
-          </button>
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </div>
     </section>

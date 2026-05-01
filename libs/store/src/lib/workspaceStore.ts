@@ -46,6 +46,7 @@ interface WorkspaceStore {
   jobCardStats: any[];
   totalJobCards: number;
   realtimeChannel: any;
+  currentEvent: any;
 
   setWorkspaces: (workspaces: Workspace[]) => void;
   setWorkspaceUsers: (users: User[]) => void;
@@ -55,6 +56,7 @@ interface WorkspaceStore {
   setJobCardStats: (stats: any[]) => void;
   setTotalJobCards: (total: number) => void;
   setWorkspaceUsage: (usage: any[]) => void;
+  setCurrentEvent: (event: any) => void;
 
   fetchWorkspaceUsers: (workspaceId: string) => Promise<void>;
   fetchWorkspaceEvents: (workspaceId: string) => Promise<void>;
@@ -73,6 +75,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   jobCardStats: [],
   totalJobCards: 0,
   realtimeChannel: null,
+  currentEvent: null,
 
   setWorkspaces: (workspaces) => set({ workspaces }),
   setWorkspaceUsers: (workspaceUsers) => set({ workspaceUsers }),
@@ -82,6 +85,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   setJobCardStats: (jobCardStats) => set({ jobCardStats }),
   setTotalJobCards: (totalJobCards) => set({ totalJobCards }),
   setWorkspaceUsage: (workspaceUsage) => set({ workspaceUsage }),
+  setCurrentEvent: (currentEvent) => set({ currentEvent }),
 
   // Fetch users via backend API
   fetchWorkspaceUsers: async (workspaceId) => {
@@ -111,13 +115,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
   },
 
-  // Subscribe to realtime events
-  subscribeToEvents: (workspaceId: string) => {
+  subscribeToEvents: async (workspaceId: string) => {
     const prevChannel = get().realtimeChannel;
 
-    if (prevChannel) {
-      supabaseAnon.removeChannel(prevChannel);
-    }
+    if (prevChannel) await supabaseAnon.removeChannel(prevChannel);
 
     const channel = supabaseAnon
       .channel(`event:${workspaceId}`, { config: { private: true } })
@@ -126,7 +127,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         const oldEvent = payload.payload?.old_record;
         const op = payload.payload?.operation;
 
-        // console.log(payload);
+        // console.log(payload); // debug
 
         set((state) => {
           let updated = [...state.workspaceEvents];
@@ -150,14 +151,13 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
             updated = updated.map((e) => (e.id === newEvent.id ? newEvent : e));
           }
 
-          // --- Recompute jobcard count ---
+          // recompute job card count
           const totalJobCards = updated.filter(
             (e) => e.type === 'jobcard_generation' && e.status === 'completed'
           ).length;
 
-          // --- UPDATE activeWorkspace.credits ---
+          // recompute workspace credits
           let activeWorkspace = state.activeWorkspace;
-
           if (
             activeWorkspace &&
             newEvent.workspaceId === activeWorkspace.id &&
@@ -176,18 +176,109 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
           };
         });
       })
+
       .subscribe((status) => {
-        // console.log('channel status', status);
+        console.log('Realtime status:', status);
+
+        // if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+        //   console.log('Reconnecting...');
+        //   setTimeout(() => {
+        //     get().subscribeToEvents(workspaceId);
+        //   }, 1000);
+        // }
       });
 
     set({ realtimeChannel: channel });
   },
 
+  // subscribeToEvents: async (workspaceId: string) => {
+  //   const currentChannel = get().realtimeChannel;
+
+  //   // ✅ Prevent duplicate subscription
+  //   if (currentChannel?.topic === `event:${workspaceId}`) {
+  //     console.log('⚠️ Already subscribed to this workspace');
+  //     return;
+  //   }
+
+  //   // ✅ Clean previous channel properly
+  //   if (currentChannel) {
+  //     console.log('🧹 Removing previous channel...');
+  //     await supabaseAnon.removeChannel(currentChannel);
+  //   }
+
+  //   console.log('🚀 Subscribing to workspace:', workspaceId);
+
+  //   const channel = supabaseAnon
+  //     // .channel(`event:${workspaceId}`, { config: { private: true } })
+  //     .channel(`event:${workspaceId}`)
+
+  //     .on('broadcast', { event: '*' }, (payload) => {
+  //       const newEvent = payload.payload?.record;
+  //       const oldEvent = payload.payload?.old_record;
+  //       const op = payload.payload?.operation;
+
+  //       set((state) => {
+  //         let updated = [...state.workspaceEvents];
+
+  //         if (op === 'DELETE') {
+  //           updated = updated.filter((e) => e.id !== oldEvent?.id);
+  //         } else if (op === 'INSERT') {
+  //           updated = [newEvent, ...updated];
+  //         } else if (op === 'UPDATE') {
+  //           updated = updated.map((e) => (e.id === newEvent.id ? newEvent : e));
+  //         }
+
+  //         const totalJobCards = updated.filter(
+  //           (e) => e.type === 'jobcard_generation' && e.status === 'completed'
+  //         ).length;
+
+  //         let activeWorkspace = state.activeWorkspace;
+
+  //         if (
+  //           activeWorkspace &&
+  //           newEvent?.workspaceId === activeWorkspace.id &&
+  //           typeof newEvent?.balanceAfter === 'number'
+  //         ) {
+  //           activeWorkspace = {
+  //             ...activeWorkspace,
+  //             credits: newEvent.balanceAfter,
+  //           };
+  //         }
+
+  //         return {
+  //           workspaceEvents: updated,
+  //           totalJobCards,
+  //           activeWorkspace,
+  //         };
+  //       });
+  //     })
+
+  //     .subscribe((status) => {
+  //       console.log('📶 Realtime status:', status);
+
+  //       if (status === 'SUBSCRIBED') {
+  //         console.log('✅ Successfully subscribed to realtime');
+  //       }
+
+  //       if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+  //         console.log('⚠️ Channel closed/error → reconnecting...');
+
+  //         setTimeout(() => {
+  //           get().subscribeToEvents(workspaceId);
+  //         }, 1000);
+  //       }
+  //     });
+
+  //   set({ realtimeChannel: channel });
+  // },
+
   // Reset store
-  reset: () => {
+  reset: async () => {
     const channel = get().realtimeChannel;
+
     if (channel) {
-      supabaseAnon.removeChannel(channel);
+      console.log('🧹 Cleaning up realtime channel...');
+      await supabaseAnon.removeChannel(channel);
     }
 
     set({

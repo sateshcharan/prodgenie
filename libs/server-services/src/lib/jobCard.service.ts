@@ -12,43 +12,140 @@ import { jobCardRequest, BomItem, fileType } from '@prodgenie/libs/types';
 import { TemplateService } from '@prodgenie/libs/server-services/lib/template.service.js';
 import { FileHelperService } from '@prodgenie/libs/server-services/lib/fileHelper.service.js';
 
+import { jobCardQueue } from '@prodgenie/libs/redis';
+// import { InsufficientCreditsError } from './error.service.js';
 import { PdfService } from './jobCardService/pdf.service.js';
 import { FileService } from './jobCardService/file.service.js';
 import { ThumbnailService } from './jobCardService/thumbnail.service.js';
 import { WorkspaceService } from './jobCardService/workspace.service.js';
-import { jobCardQueue } from '@prodgenie/libs/redis';
-import { OpenRouterService } from '../index.js';
+import { GeminiService } from './gemini.service.js';
+// import { OpenRouterService } from '../index.js';
 
 // const parser = new Parser();
 
 export class JobCardService {
-  static async aiFillJobCard(fileId: string) {
-    const filePath = await prisma.file.findFirst({
-      where: { id: fileId },
-      select: { path: true },
+  static async aiFillJobCard(
+    user: any,
+    fileId: string,
+    signedUrl: string,
+    workspaceId: string
+  ) {
+    // const filePath = await prisma.file.findFirst({
+    //   where: { id: fileId },
+    //   select: { path: true },
+    // });
+
+    // if (!filePath) return;
+
+    // console.log(user, fileId, signedUrl, workspaceId);
+
+    const workspace = await prisma.workspace.findFirst({
+      where: { id: workspaceId },
+      select: { credits: true },
     });
 
-    if (!filePath) return;
-    const fileSignedUrl = await FileStorageService.getSignedUrl(filePath.path);
+    if (!workspace) return;
+
+    const { credits: workspaceCredits } = workspace;
+
+    // // 🔥 TEMP: Dummy data
+    // const dummyData = {
+    //   bom: [
+    //     {
+    //       qty: '1',
+    //       slNo: '1',
+    //       width: '480.00',
+    //       height: '330.00',
+    //       length: '840.00',
+    //       material: '5 Ply',
+    //       strength: '250 Imported',
+    //       description: 'RSC',
+    //       specification: '150/150/150/150',
+    //     },
+    //   ],
+    //   titleBlock: {
+    //     dwgNo: 'ADW-04-25-607',
+    //     customerName: 'Fuji Electric',
+    //     productDetail: 'SA42047304',
+    //   },
+    //   printingDetails: [
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Black',
+    //       printingDetail: 'Top',
+    //       printingLocation: 'Length Top',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Black',
+    //       printingDetail: 'Part No',
+    //       printingLocation: 'Length Bottom',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Black',
+    //       printingDetail: 'Weight',
+    //       printingLocation: 'Width',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Black',
+    //       printingDetail: 'Fragile',
+    //       printingLocation: 'Length, Width',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Blue',
+    //       printingDetail: 'Logo',
+    //       printingLocation: 'Length, Width',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Blue',
+    //       printingDetail: 'Length Strip',
+    //       printingLocation: 'Length',
+    //     },
+    //     {
+    //       printingPart: 'RSC',
+    //       printingColour: 'Blue',
+    //       printingDetail: 'Width Strip',
+    //       printingLocation: 'Width',
+    //     },
+    //   ],
+    // };
+    //   const data = dummyData;
 
     try {
-      // const data = await puppeteerService.extractFromChatGPT(tempFilePath);
-      const data = await OpenRouterService.extract(fileSignedUrl); // args: signedUrl | tempFilePath
-      try {
-        await prisma.file.update({
-          where: { id: fileId },
-          data: { data: data },
-        });
-        console.log('✅ Job card file updated with:', data);
+      const data = await GeminiService.extract(signedUrl);
+      //     const data = await puppeteerService.extractFromChatGPT(tempFilePath);
+      //     const data = await OpenRouterService.extract(fileSignedUrl); // args: signedUrl | tempFilePath
 
-        return data;
-      } catch (error) {
-        console.error('❌ Error updating Job card file:', error);
-      }
+      await prisma.file.update({
+        where: { id: fileId },
+        data: { data },
+      });
+
+      console.log('✅ Job card file updated with  data');
+
+      await EventService.record({
+        id: randomUUID(),
+        userId: user?.id,
+        workspaceId,
+        balanceAfter: workspaceCredits,
+        progress: 100,
+        creditChange: -10,
+        type: 'jobcard_generation',
+        status: 'completed',
+        description: 'Job card generated using AI',
+      });
+
+      return data;
     } catch (error) {
+      console.error('❌ Error updating Job card file:', error);
       throw error;
     }
   }
+
   static async generateJobCard(
     {
       bom,
@@ -68,7 +165,7 @@ export class JobCardService {
     const {
       // name: workspaceName,
       id: workspaceId,
-      credits: workspaceCredits,
+      // credits: workspaceCredits,
     } = activeWorkspace?.workspace || {};
 
     const next = async (status: status, message: string) => {
@@ -86,9 +183,12 @@ export class JobCardService {
 
     if (!bom.length) return console.warn('bom is empty');
 
-    if (workspaceCredits < 10) {
-      throw new Error('Not enough credits'); // check org credits
-    }
+    // if (workspaceCredits <= 10) {
+    //   await next('failed', 'Not enough credits to use AI features');
+    //   throw new InsufficientCreditsError(
+    //     'Not enough credits to use AI features'
+    //   );
+    // }
 
     // STEP 2 - Fetch workspace data
     await next('processing', 'Loading workspace configurations...');
@@ -129,7 +229,7 @@ export class JobCardService {
         string
       >;
 
-      console.log(productSequence.sequencePath);
+      // console.log(productSequence.sequencePath);
 
       const sequence = await FileHelperService.fetchJsonFromSignedUrl(
         productSequence.sequencePath
@@ -273,15 +373,6 @@ export class JobCardService {
     // if (!usage) {
     //   throw new Error('No active billing period found');
     // }
-
-    await prisma.workspace.update({
-      where: {
-        id: workspaceId,
-      },
-      data: {
-        jobCardsCount: { increment: 1 },
-      },
-    });
 
     return jobCardUrl;
   }
@@ -469,18 +560,21 @@ export class JobCardService {
     };
   }
 
-  static async getJobCardNumber(workspace: {
-    workspace: { id: string; name: string };
-  }) {
-    const latest = await prisma.file.findFirst({
-      where: { workspaceId: workspace.workspace.id, type: 'jobCard' },
+  static async getJobCardNumber(workspaceId: string) {
+    const prevNumber = await prisma.file.findFirst({
+      where: { workspaceId, type: 'jobCard' },
       orderBy: { name: 'desc' },
       select: { name: true },
     });
 
-    const prefix = `${workspace.workspace.name.slice(0, 3).toUpperCase()}-JC-`;
+    const workspaceName = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { name: true },
+    });
+
+    const prefix = `${workspaceName?.name.slice(0, 3).toUpperCase()}-JC-`;
     const lastNumber = parseInt(
-      latest?.name?.split('.')[0].split('-')[2] || '0',
+      prevNumber?.name?.split('.')[0].split('-')[2] || '0',
       10
     );
     const nextNumber = (lastNumber + 1).toString().padStart(4, '0');

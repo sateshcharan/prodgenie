@@ -86,10 +86,9 @@ const PublicFooter = () => {
   };
 
   return (
-    <footer className="bg-foreground border-t border-border">
+    <footer className="bg-background border-t border-border ">
       {/* Upper Section */}
       <div className="max-w-7xl mx-auto px-0 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10">
-        {/* Newsletter Section */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-2">
           <img
             src={logo}
@@ -98,7 +97,8 @@ const PublicFooter = () => {
             onClick={() => navigate('/')}
           />
 
-          <h3 className="text-sm font-semibold mb-2 text-background">
+          {/* Newsletter Section */}
+          {/* <h3 className="text-sm font-semibold mb-2 text-background">
             Subscribe to our newsletter
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
@@ -120,7 +120,7 @@ const PublicFooter = () => {
             >
               {loading ? 'Subscribing...' : 'Subscribe'}
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Footer link sections */}
@@ -146,7 +146,7 @@ const PublicFooter = () => {
       </div>
 
       {/* Lower Footer Bar */}
-      <div className="bg-gray-950 text-white px-6 py-6">
+      <div className=" text-white px-6 py-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between space-y-6 sm:space-y-0">
           <p className="text-sm text-gray-400">
             © {new Date().getFullYear()} Prodgenie. All rights reserved.

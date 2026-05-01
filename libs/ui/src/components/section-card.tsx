@@ -1,4 +1,6 @@
 import React from 'react';
+import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+
 import {
   Card,
   CardHeader,
@@ -7,7 +9,6 @@ import {
   CardFooter,
 } from '../card';
 import { Badge } from '../badge';
-import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 
 type SectionCardProps = {
   title: string;

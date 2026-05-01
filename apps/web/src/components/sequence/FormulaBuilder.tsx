@@ -183,7 +183,7 @@ const FormulaBuilder = forwardRef(
       : [];
 
     return (
-      <div className="bg-white border rounded shadow p-2  h-[400px] flex flex-col">
+      <div className="bg-background border rounded shadow p-2  h-[400px] flex flex-col">
         <h2 className="text-lg font-semibold ">Formula Builder</h2>
 
         <h3

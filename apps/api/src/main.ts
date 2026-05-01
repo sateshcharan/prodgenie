@@ -10,6 +10,7 @@ import compression from 'compression';
 import { apiRoutes } from '@prodgenie/libs/constant';
 
 import { router as authRoutes } from './routes/auth.routes';
+import { router as adminRoutes } from './routes/admin.routes';
 import { router as userRoutes } from './routes/user.routes';
 import { router as fileRoutes } from './routes/file.routes';
 import { router as pdfRoutes } from './routes/pdf.routes';
@@ -113,6 +114,12 @@ app.use(
   // authenticatePassportJWT,
   authenticateSupabaseJWT,
   sequenceRoutes
+);
+app.use(
+  apiRoutes.admin.base,
+  // authenticatePassportJWT,
+  authenticateSupabaseJWT,
+  adminRoutes
 );
 // === future feature ===
 // app.use(

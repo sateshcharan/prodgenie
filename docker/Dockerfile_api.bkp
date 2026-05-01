@@ -1,0 +1,47 @@
+FROM node:20
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ghostscript \
+    graphicsmagick \
+    chromium \
+    --no-install-recommends && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Puppeteer config
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Set working directory
+WORKDIR /app
+
+# Setup pnpm
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="${PNPM_HOME}:${PATH}"
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 🔥 IMPORTANT: Fix pnpm + Prisma resolution
+RUN pnpm config set node-linker=hoisted
+
+# Copy only package files first (better caching)
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy full project
+COPY . .
+
+# Prisma
+RUN pnpm add @prisma/client prisma
+RUN npx prisma generate --schema=libs/db/prisma/schema.prisma
+
+# Build Nx app
+RUN pnpm nx build api
+
+# Expose port
+EXPOSE 3000
+
+# Start app
+CMD ["node", "apps/api/dist/main.js"]

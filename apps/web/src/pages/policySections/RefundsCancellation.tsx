@@ -26,7 +26,7 @@ const RefundCancellationPolicy = () => {
         </li>
 
         <li className="pl-2">
-          <strong> Non-Cancellable Perishable Items:</strong> Metzap does not
+          <strong> Non-Cancellable Perishable Items:</strong> Prodgenie does not
           accept cancellations for perishable goods such as flowers, food items,
           or similar products. Refunds or replacements may still be considered
           if you can establish that the delivered product was of poor quality.
@@ -56,7 +56,7 @@ const RefundCancellationPolicy = () => {
 
         <li className="pl-2">
           <strong> Refund Processing Time:</strong> If a refund is approved by
-          Metzap, the amount will be processed within <strong>7 days </strong>
+          Prodgenie, the amount will be processed within <strong>7 days </strong>
           from the date of approval.
         </li>
       </ul>

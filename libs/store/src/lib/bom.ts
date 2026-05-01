@@ -3,9 +3,12 @@ import { create } from 'zustand';
 interface BomState {
   bom: any[];
   titleBlock: any;
+  printingDetails: any[];
   selectedItems: any[];
   setBom: (bom: any[]) => void;
   setTitleBlock: (titleBlock: any) => void;
+  setPrintingDetails: (printingDetails: any[]) => void;
+
   setSelectedItems: (items: any[] | ((prev: any[]) => any[])) => void;
   toggleSelectedItem: (slNo: string) => void;
 }
@@ -13,9 +16,12 @@ interface BomState {
 const useBomStore = create<BomState>((set, get) => ({
   bom: [],
   titleBlock: {},
+  printingDetails: [],
   selectedItems: [],
   setBom: (bom) => set({ bom }),
   setTitleBlock: (titleBlock) => set({ titleBlock }),
+  setPrintingDetails: (printingDetails) => set({ printingDetails }),
+
   setSelectedItems: (itemsOrFn) =>
     set((state) => ({
       selectedItems:

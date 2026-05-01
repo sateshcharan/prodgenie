@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Pencil, Check, Plus } from 'lucide-react';
+import { Pencil, Check, Plus, Trash2 } from 'lucide-react';
 
 import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
@@ -8,7 +8,7 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 import api from '../utils/api';
 
 interface TitleBlockProps {
-  titleBlock?: Record<string, string | number> | null;
+  titleBlock: Record<string, string | number>;
   fileId: string;
 }
 
@@ -21,7 +21,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
     []
   );
 
-  // 🔁 Update state when prop changes
+  // Update local editable state when prop changes
   useEffect(() => {
     if (titleBlock && typeof titleBlock === 'object') {
       setEditableBlock(titleBlock);
@@ -52,6 +52,18 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
     []
   );
 
+  const handleDeleteField = useCallback((index: number) => {
+    setNewFields((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleDeleteExistingField = useCallback((key: string) => {
+    setEditableBlock((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  }, []);
+
   const handleConfirm = useCallback(async () => {
     const validNewFields = newFields.filter((f) => f.key.trim());
     const updatedData = {
@@ -73,6 +85,12 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
     setIsEditing(false);
   }, [editableBlock, newFields, fileId]);
 
+  const handleCancel = () => {
+    setEditableBlock(titleBlock);
+    setNewFields([]);
+    setIsEditing(false);
+  };
+
   if (!titleBlock) {
     return (
       <div className="text-sm text-gray-500 italic">
@@ -85,6 +103,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
     <div>
       <div className="flex items-center gap-2 mb-3">
         <Button
+          type="button"
           size="icon"
           variant="ghost"
           onClick={() => setIsEditing((prev) => !prev)}
@@ -94,6 +113,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
         <h2 className="text-lg font-semibold">Title Block Details</h2>
         {isEditing && (
           <Button
+            type="button"
             variant="outline"
             size="sm"
             className="ml-2 flex items-center gap-1"
@@ -104,7 +124,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
         )}
       </div>
 
-      <div className="space-y-2 text-sm text-gray-700">
+      <div className="space-y-2 text-sm">
         {Object.entries(editableBlock).map(([key, value]) => (
           <div key={key} className="flex items-center gap-2">
             <strong className="capitalize min-w-[120px]">{key}:</strong>
@@ -116,6 +136,15 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
               />
             ) : (
               <span>{value}</span>
+            )}
+            {isEditing && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => handleDeleteExistingField(key)}
+              >
+                <Trash2 size={16} />
+              </Button>
             )}
           </div>
         ))}
@@ -137,14 +166,29 @@ const TitleBlock: React.FC<TitleBlockProps> = ({ titleBlock, fileId }) => {
                   handleNewFieldChange(index, 'value', e.target.value)
                 }
               />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => handleDeleteField(index)}
+              >
+                <Trash2 size={16} />
+              </Button>
             </div>
           ))}
       </div>
 
       {isEditing && (
-        <div className="mt-4">
+        <div className="mt-4 flex gap-2 items-center">
           <Button onClick={handleConfirm} className="flex items-center gap-2">
             <Check size={16} /> Confirm
+          </Button>
+
+          <Button
+            onClick={handleCancel}
+            className="flex items-center gap-2 ml-0 my-4"
+            variant="outline"
+          >
+            <Trash2 size={16} /> Cancel
           </Button>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { randomUUID, UUID } from 'crypto';
 
+import { prisma } from '@prodgenie/libs/db';
 import { EventService } from '@prodgenie/libs/db';
-import { prisma } from '@prodgenie/libs/db/lib/prismaClient';
 import { PhonePeService } from '@prodgenie/libs/server-services/lib/payment/phonepe.service';
 
 export class PaymentService {
@@ -92,7 +92,7 @@ export class PaymentService {
           createdAt: new Date(),
           updatedAt: new Date(),
           creditChange: +db.amount / 100,
-          type: 'manual_topup',
+          type: 'credit_topup',
           balanceAfter: +db.amount / 100,
           progress: 100,
           errorData: {},
@@ -128,5 +128,44 @@ export class PaymentService {
     // Verify & finalize (idempotent)
     const updated = await this.verifyAndFinalize(merchantOrderId);
     return updated;
+  }
+
+  static async registerManualQRPayment(
+    workspaceId: string,
+    userId: string,
+    amount: number,
+    transactionId: string,
+    purpose: string
+  ) {
+    return prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.create({
+        data: {
+          workspaceId,
+          userId,
+          amount: amount * 100, // convert to paise
+          provider: 'manual_qr',
+          status: 'update_credits_manually',
+          providerOrderId: transactionId,
+          transactionAt: new Date(),
+          meta: { manual: true, purpose },
+        },
+      });
+
+      await EventService.recordTx(tx, {
+        workspaceId,
+        userId,
+        status: 'update_credits_manually',
+        id: randomUUID(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        creditChange: +payment.amount / 100,
+        type: purpose,
+        description: `${transactionId} will be verified and credits will be updated`,
+        // balanceAfter: +payment.amount / 100, // amount shown as automatically updated
+        progress: 50,
+        errorData: {},
+        fileId: null,
+      });
+    });
   }
 }

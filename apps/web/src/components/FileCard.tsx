@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Download, Pencil, Copy, Briefcase, Calculator } from 'lucide-react';
+import { X, Download, Image, Copy, Briefcase, Calculator } from 'lucide-react';
 
 import { Button } from '@prodgenie/libs/ui/button';
 import { useWorkspaceStore } from '@prodgenie/libs/store';
@@ -63,7 +63,7 @@ const FileCard = ({
           size="icon"
           disabled={fileType === 'config'}
         >
-          <Pencil className="w-4 h-4" />
+          <Image className="w-4 h-4" />
         </Button>
 
         <Button

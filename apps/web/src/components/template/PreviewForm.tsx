@@ -80,7 +80,7 @@ const PreviewForm = ({
     <FormProvider {...form}>
       <form
         onSubmit={handleSubmit(handleSaveTemplate)}
-        className="space-y-8 p-6 border rounded-lg bg-white shadow-sm"
+        className="space-y-8 p-6 border rounded-lg bg-background shadow-sm"
       >
         {sections.map((section, i) => (
           <div key={i} className="space-y-4">
@@ -116,11 +116,19 @@ const PreviewForm = ({
 
                     {field.type === 'number' && (
                       <Input
-                        disabled
                         type="number"
                         id={field.name}
                         {...register(field.name, { valueAsNumber: true })}
                         placeholder={field.placeholder}
+                        className="w-full"
+                      />
+                    )}
+
+                    {field.type === 'time' && (
+                      <Input
+                        type="time"
+                        id={field.name}
+                        {...register(field.name)}
                         className="w-full"
                       />
                     )}

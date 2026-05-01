@@ -19,6 +19,7 @@ type ModalType =
   | 'workspace:leaveWorkspace'
   | 'workspace:replacePassword'
   | 'workspace:deletePreset'
+  | 'drawing:aiFill'
   | null;
 
 interface ModalStore {

@@ -1,5 +1,5 @@
-import { Pencil, Check, Plus } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import { Pencil, Check, Plus, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@prodgenie/libs/ui/button';
 import { apiRoutes } from '@prodgenie/libs/constant';
@@ -25,6 +25,15 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
   const [editableDetails, setEditableDetails] =
     useState<PrintingDetailItem[]>(printingDetails);
 
+  // Update local editable state when prop changes
+  useEffect(() => {
+    if (Array.isArray(printingDetails)) {
+      setEditableDetails(printingDetails);
+    } else {
+      setEditableDetails([]);
+    }
+  }, [printingDetails]);
+
   const handleChange = (
     index: number,
     key: keyof PrintingDetailItem,
@@ -44,6 +53,10 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
     setEditableDetails((prev) => [...prev, newRow]);
   };
 
+  const handleDeleteRow = (index: number) => {
+    setEditableDetails((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleConfirm = useCallback(async () => {
     const updatedData = { printingDetails: editableDetails };
 
@@ -55,10 +68,24 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
     setIsEditing(false);
   }, [editableDetails, fileId]);
 
+  const handleCancel = () => {
+    setEditableDetails(printingDetails);
+    setIsEditing(false);
+  };
+
+  if (!printingDetails) {
+    return (
+      <div className="text-sm text-gray-500 italic">
+        Loading printing details...
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
         <Button
+          type="button"
           size="icon"
           variant="ghost"
           onClick={() => setIsEditing(!isEditing)}
@@ -70,19 +97,33 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
 
         {isEditing && (
           <Button
+            type="button"
             variant="outline"
             size="sm"
             className="ml-2 flex items-center gap-1"
             onClick={handleAddRow}
           >
-            <Plus size={14} /> Add Row
+            <Plus size={14} /> Add Block
           </Button>
         )}
       </div>
 
       <div className="space-y-3">
         {editableDetails.map((item, index) => (
-          <div key={index} className="text-sm text-gray-700 space-y-1">
+          <div
+            key={index}
+            className="text-sm space-y-1 border p-3 rounded-md relative"
+          >
+            {/* 🗑 Delete button */}
+            {isEditing && (
+              <button
+                onClick={() => handleDeleteRow(index)}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+
             {Object.entries(item).map(([key, value]) => (
               <div key={key}>
                 <strong className="capitalize">{key}:</strong>{' '}
@@ -97,7 +138,7 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
                         e.target.value
                       )
                     }
-                    className="border border-gray-300 rounded px-2 py-0.5 text-sm"
+                    className="border border-gray-300 rounded px-2 py-0.5 text-sm bg-background"
                   />
                 ) : (
                   <span>{value}</span>
@@ -109,9 +150,22 @@ const PrintingDetail: React.FC<PrintingDetailProps> = ({
       </div>
 
       {isEditing && (
-        <div className="mt-4">
-          <Button onClick={handleConfirm} className="flex items-center gap-2">
+        <div className="mt-4 flex gap-2 items-center">
+          <Button
+            type="button"
+            onClick={handleConfirm}
+            className="flex items-center gap-2"
+          >
             <Check size={16} /> Confirm
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleCancel}
+            className="flex items-center gap-2 ml-0 my-4"
+            variant="outline"
+          >
+            <Trash2 size={16} /> Cancel
           </Button>
         </div>
       )}

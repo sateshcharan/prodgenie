@@ -9,14 +9,14 @@ export class SubscribeService {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'care.metzap@gmail.com',
+        user: 'prodgenie.metzap@gmail.com',
         pass: process.env.GMAIL_APP_PASSWORD,
       },
     });
 
     await transporter.sendMail({
-      from: 'Prodgenie Newsletter <care.metzap@gmail.com>',
-      to: 'care.metzap@gmail.com',
+      from: 'Prodgenie Newsletter <prodgenie.metzap@gmail.com>',
+      to: 'prodgenie.metzap@gmail.com',
       subject: 'New Newsletter Subscriber',
       text: `New subscriber: ${email}`,
     });

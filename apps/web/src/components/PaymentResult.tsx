@@ -50,7 +50,7 @@ export default function PaymentResult() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white shadow-lg rounded-2xl p-8 text-center">
+      <div className="max-w-md w-full bg-background shadow-lg rounded-2xl p-8 text-center">
         {status === 'success' ? (
           <>
             <CheckCircle className="mx-auto h-16 w-16 text-green-600" />

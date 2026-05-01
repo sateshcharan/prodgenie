@@ -6,8 +6,14 @@ import {
   type workspace,
 } from '@prisma/client';
 
+type ExtendedWorkspace = workspace & {
+  plan: {
+    name: string;
+  } | null;
+};
+
 type ExtendedUser = user & {
-  memberships: (workspaceMember & { workspace: workspace })[];
+  memberships: (workspaceMember & { workspace: ExtendedWorkspace })[];
 };
 
 interface UserStore {

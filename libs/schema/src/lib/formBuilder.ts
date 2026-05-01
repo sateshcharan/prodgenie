@@ -5,7 +5,7 @@ export const fieldSchema = z.object({
   label: z.string().min(1, 'Field label is required'),
   placeholder: z.union([z.string(), z.number()]).optional(),
   defaultValue: z.union([z.string(), z.number()]).optional(),
-  type: z.enum(['text', 'number', 'select']),
+  type: z.enum(['text', 'number', 'time', 'select']),
   dataSource: z
     .object({
       table: z.string(),

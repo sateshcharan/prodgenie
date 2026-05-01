@@ -3,6 +3,12 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@prodgenie/libs/db';
 // import { prisma, workspacePlan } from '@prodgenie/libs/db';
 import { workspaceRoleHierarchy } from '@prodgenie/libs/types';
+import {
+  InsufficientCreditsError,
+  NotFoundError,
+  PlanExpiredError,
+  UnauthorizedError,
+} from '@prodgenie/libs/server-services/lib/error.service';
 
 // const PLAN_LIMITS: Record<workspacePlan, Record<string, number>> = {
 const PLAN_LIMITS: any = {
@@ -16,17 +22,78 @@ const PLAN_LIMITS: any = {
     MAX_FILES: 200,
     MAX_STORAGE_MB: 5000,
   },
-  ENTERPRISE: {
-    MAX_MEMBERS: 999,
-    MAX_FILES: 9999,
-    MAX_STORAGE_MB: 999999,
-  },
+  // ENTERPRISE: {
+  //   MAX_MEMBERS: 999,
+  //   MAX_FILES: 9999,
+  //   MAX_STORAGE_MB: 999999,
+  // },
 };
 
 /**
  * Middleware to validate workspace plan limits and permissions.
  * Optionally accepts a `check` parameter to define which limit to check.
  */
+
+export const validatePlanExpiry = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user as any;
+  const activeWorkspaceId = (req as any).activeWorkspaceId;
+
+  if (!user || !activeWorkspaceId) {
+    throw new UnauthorizedError('User or workspace not found in request.');
+  }
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: activeWorkspaceId },
+    select: { planId: true, planExpiry: true },
+  });
+
+  if (!workspace) {
+    throw new NotFoundError('Workspace not found.');
+  }
+
+  const planExpiry = workspace.planExpiry;
+
+  if (planExpiry < new Date()) {
+    throw new PlanExpiredError('Plan expired. Please recharge immediately.');
+  }
+
+  return next();
+};
+
+export const validateCredits = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user as any;
+  const activeWorkspaceId = (req as any).activeWorkspaceId;
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: activeWorkspaceId },
+    select: { credits: true },
+  });
+
+  if (!user || !activeWorkspaceId) {
+    throw new UnauthorizedError('User or workspace not found in request.');
+  }
+
+  if (!workspace) {
+    throw new NotFoundError('Workspace not found.');
+  }
+
+  if (workspace.credits < 10) {
+    throw new InsufficientCreditsError(
+      'Not enough credits. Add more credits to continue.'
+    );
+  }
+
+  return next();
+};
+
 const validatePlan =
   (check?: keyof (typeof PLAN_LIMITS)['FREE']) =>
   async (req: Request, res: Response, next: NextFunction) => {
@@ -44,7 +111,7 @@ const validatePlan =
       // Step 1: Fetch workspace & plan
       const workspace = await prisma.workspace.findUnique({
         where: { id: activeWorkspaceId },
-        select: { id: true, plan: true },
+        select: { id: true, plan: true, planExpiry: true },
       });
 
       if (!workspace) {

@@ -223,7 +223,7 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
 
     return (
       <div
-        className="w-full border rounded p-2 flex flex-wrap gap-2 bg-white min-h-[40px]"
+        className="w-full border rounded p-2 flex flex-wrap gap-2 bg-background min-h-[40px]"
         ref={ref}
       >
         {/* {tokens.map((token, index) => (
@@ -274,7 +274,7 @@ const SuggestionInput = forwardRef<HTMLInputElement, SuggestionInputProps>(
             <PopoverTrigger asChild>
               <Button
                 type="button"
-                className="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-gray-700"
+                className="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
               >
                 + Add
               </Button>

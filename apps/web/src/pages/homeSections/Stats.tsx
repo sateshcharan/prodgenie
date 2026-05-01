@@ -3,14 +3,14 @@ const Stats = () => {
     {
       value: '95%',
       label: 'Time Reduction',
-      description: 'in job card creation',
+      description: 'against manual process',
     },
     {
       value: '99.8%',
       label: 'Accuracy Rate',
       description: 'in drawing analysis',
     },
-    { value: '500+', label: 'Manufacturers', description: 'trust ProdGenie' },
+    { value: '50+', label: 'Manufacturers', description: 'trust ProdGenie' },
   ];
 
   return (

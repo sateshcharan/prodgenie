@@ -5,9 +5,9 @@ const PrivacyPolicy = () => {
 
       <h2 className="text-xl font-semibold mt-8 mb-4">Introduction</h2>
       <p className="mb-4">
-        This Privacy Policy describes how metzap and its affiliates (“metzap”,
-        “we”, “our”, “us”) collect, use, share, protect, or otherwise process
-        your information and personal data through our website
+        This Privacy Policy describes how Prodgenie and its affiliates
+        (“Metzap”, “we”, “our”, “us”) collect, use, share, protect, or otherwise
+        process your information and personal data through our website
         prodgenie.vercel.app (“Platform”). You may browse certain sections of
         the Platform without registering with us. We do not offer any product or
         service outside India through this Platform, and your data will
@@ -62,7 +62,7 @@ const PrivacyPolicy = () => {
       </p>
 
       <p className="mb-4">
-        If you ever receive a communication claiming to be from metzap asking
+        If you ever receive a communication claiming to be from Prodgenie asking
         for sensitive information (like card PINs or banking passwords), do not
         provide such details. If you have already shared them, contact law
         enforcement immediately.
@@ -196,10 +196,10 @@ const PrivacyPolicy = () => {
       {/* <p className="mb-1">Insert Name of the Officer:</p> */}
       {/* <p className="mb-1">Designation:</p> */}
       <p className="mb-1">
-        Metzap , 35 Jegannathapuram, Medavakkam, Chennai, IN
+        Prodgenie , 35 Jegannathapuram, Medavakkam, Chennai, IN
       </p>
       <p className="mb-1">
-        <strong>Email:</strong> care.metzap@gmail.com
+        <strong>Email:</strong> prodgenie.metzap@gmail.com
       </p>
       <p className="mb-6">
         <strong>Time:</strong> Monday – Friday (9:00 – 18:00)

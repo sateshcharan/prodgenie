@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@prodgenie/libs/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '@prodgenie/libs/ui/avatar';
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -43,13 +44,13 @@ export const WorkspaceSwitcher = () => {
     (m) => m.workspaceId === activeWorkspace?.id
   )?.role;
 
-  // Get a random logo fallback if no logo is set for the workspace
-  const logoFallback =
-    appSidebarItems.workspaceLogos[
-      Math.floor(Math.random() * appSidebarItems.workspaceLogos.length)
-    ];
+  // // Get a random logo fallback if no logo is set for the workspace
+  // const logoFallback =
+  //   appSidebarItems.workspaceLogos[
+  //     Math.floor(Math.random() * appSidebarItems.workspaceLogos.length)
+  //   ];
 
-  const ActiveLogo = activeWorkspace?.logo || logoFallback;
+  // const ActiveLogo = activeWorkspace?.logo || logoFallback;
 
   // const handleSwitchWorkspace = async (workspaceId: string) => {
   //   const currentMembership = user?.memberships.find(
@@ -89,7 +90,13 @@ export const WorkspaceSwitcher = () => {
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-            <ActiveLogo className="size-4" />
+            {/* <ActiveLogo className="size-4" /> */}
+            <Avatar className="h-8 w-8 rounded-lg grayscale">
+              <AvatarImage src={activeWorkspace?.logo} alt={"workspace logo"} />
+              <AvatarFallback className="rounded-lg text-foreground">
+                {activeWorkspace?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium capitalize">

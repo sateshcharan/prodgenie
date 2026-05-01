@@ -21,6 +21,13 @@ export const apiRoutes = {
     updatePassword: '/updatePassword',
   },
 
+  admin: {
+    base: '/api/admin',
+    getEventDetails: '/getEventDetails',
+    approveEvent: '/approveEvent',
+    rejectEvent: '/rejectEvent',
+  },
+
   subscribe: {
     base: '/api/subscribe',
     newsletter: '/newsletter',
@@ -54,6 +61,7 @@ export const apiRoutes = {
 
   workspace: {
     base: '/api/workspace',
+    renew: '/renew',
     check: '/check',
     createWorkspace: '/createWorkspace',
     deleteWorkspace: '/deleteWorkspace',
@@ -122,6 +130,7 @@ export const apiRoutes = {
 
   payment: {
     base: '/api/payment',
+    registerManualQRPayment: '/registerManualQRPayment',
     stripeSession: '/stripe/session',
     stripeWebhook: '/stripe/webhook',
     phonepeCreate: '/phonepe/create',

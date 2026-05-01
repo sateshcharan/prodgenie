@@ -4,7 +4,7 @@ import { CheckCheck } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormProvider, useForm, useWatch } from 'react-hook-form';
+import { FormProvider, set, useForm, useWatch } from 'react-hook-form';
 
 import {
   Tabs,
@@ -22,6 +22,7 @@ import {
 } from '@prodgenie/libs/ui/form';
 import { BomItem } from '@prodgenie/libs/types';
 import { Button } from '@prodgenie/libs/ui/button';
+import { useModalStore } from '@prodgenie/libs/store';
 import { Separator } from '@prodgenie/libs/ui/separator';
 import { Card, CardContent } from '@prodgenie/libs/ui/card';
 import { StringService } from '@prodgenie/libs/shared-utils';
@@ -29,6 +30,7 @@ import { useJobCardStore, useBomStore } from '@prodgenie/libs/store';
 import { ScrollArea, ScrollBar } from '@prodgenie/libs/ui/scroll-area';
 import { jobCardSchema, jobCardFormValues } from '@prodgenie/libs/schema';
 import { apiRoutes, jobCardFields, COLORS } from '@prodgenie/libs/constant';
+import { useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
 import BomTable from './BomTable';
@@ -37,6 +39,7 @@ import RenderField from './RenderField';
 import PrintingDetail from './PrintingDetail';
 import PresetSelector from './PresetSelector';
 import { wakeWorkers } from '../utils/wakeup';
+import { withCreditDeduction } from '../utils/credits';
 
 function getColorForItem(key: string) {
   const hash = key
@@ -47,34 +50,45 @@ function getColorForItem(key: string) {
 }
 
 const JobCard = ({
-  tables,
+  // tables,
   fileId,
   signedUrl,
   setJobCardUrl,
 }: {
-  tables: {
-    data?: {
-      bom: BomItem[];
-      titleBlock: any;
-      printingDetails?: any;
-    };
-  };
+  // tables: {
+  //   data?: {
+  //     bom: BomItem[];
+  //     titleBlock: any;
+  //     printingDetails?: any;
+  //   };
+  // };
   fileId: string;
   signedUrl: string;
   setJobCardUrl: (url: string) => void;
 }) => {
-  const { setBom, setTitleBlock, setSelectedItems, selectedItems } =
-    useBomStore();
+  const {
+    setBom,
+    setTitleBlock,
+    setPrintingDetails,
+    setSelectedItems,
+    bom,
+    titleBlock,
+    printingDetails,
+    selectedItems,
+  } = useBomStore();
+
+  const { openModal } = useModalStore();
 
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('select');
   // const [isLoading, setIsLoading] = useState(true);
   const { jobCardData, setJobCardData } = useJobCardStore();
+  const { activeWorkspace, setActiveWorkspace } = useWorkspaceStore.getState();
 
-  const bom = tables?.data?.bom;
-  const titleBlock = tables?.data?.titleBlock;
-  const printingDetails = tables?.data?.printingDetails;
+  // const bom = tables?.data?.bom;
+  // const titleBlock = tables?.data?.titleBlock;
+  // const printingDetails = tables?.data?.printingDetails;
 
   const generateJobCard = async ({
     file,
@@ -104,19 +118,99 @@ const JobCard = ({
     });
   };
 
+  // const generateJobCard = async ({
+  //   file,
+  //   bom,
+  //   titleBlock,
+  //   jobCardForm,
+  //   signedUrl,
+  //   printingDetails,
+  // }: {
+  //   file: { id: string };
+  //   bom: BomItem[];
+  //   titleBlock: any;
+  //   jobCardForm: jobCardFormValues;
+  //   signedUrl: string;
+  //   printingDetails: {
+  //     detail: string;
+  //     color: string;
+  //   }[];
+  // }) => {
+  //   return withCreditDeduction({
+  //     workspace: activeWorkspace,
+  //     setWorkspace: setActiveWorkspace,
+  //     cost: 10, // 🔥 change if different cost later
+
+  //     action: async () => {
+  //       return api.post('/api/jobCard/generate', {
+  //         bom,
+  //         file,
+  //         jobCardForm,
+  //         titleBlock,
+  //         signedUrl,
+  //         printingDetails,
+  //       });
+  //     },
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   // if (!bom.length) {
+  //   //   setSelectedItems([]);
+  //   //   return;
+  //   // }
+
+  //   // setBom(bom);
+  //   // setTitleBlock(titleBlock);
+  //   // setPrintingDetails(printingDetails);
+  //   // setSelectedItems(bom.map((item) => item.slNo));
+
+  //   const getTemplateFieldsFromSequence = async () => {
+  //     try {
+  //       const sequences = bom.map((b) => b.description);
+  //       const responses = await Promise.all(
+  //         sequences.map(async (sequence) => {
+  //           const { data } = await api.get(
+  //             `${apiRoutes.sequence.base}/getJobCardDataFromSequence/${sequence}`
+  //           );
+  //           return { data, sequence };
+  //         })
+  //       );
+  //       setJobCardData(responses);
+  //     } catch (err) {
+  //       if (err.response?.status === 404) {
+  //         toast.error(
+  //           'No matching sequence found for one or more BOM items. Please ensure the sequence files are uploaded / created and named correctly.'
+  //         );
+  //       }
+  //     }
+  //   };
+
+  //   getTemplateFieldsFromSequence();
+  // }, [
+  //   bom,
+  //   setJobCardData,
+  //   // titleBlock,
+  //   // printingDetails,
+  //   // setBom,
+  //   // setTitleBlock,
+  //   // setPrintingDetails,
+  //   // setSelectedItems,
+  // ]);
   useEffect(() => {
-    if (!bom.length) {
-      setSelectedItems([]);
-      return;
-    }
-
-    setBom(bom);
-    setTitleBlock(titleBlock);
-    setSelectedItems(bom.map((item) => item.slNo));
-
     const getTemplateFieldsFromSequence = async () => {
       try {
-        const sequences = bom.map((b) => b.description);
+        const filteredBom = bom.filter((item) =>
+          selectedItems.includes(item.slNo)
+        );
+
+        if (!filteredBom.length) {
+          setJobCardData([]);
+          return;
+        }
+
+        const sequences = filteredBom.map((b) => b.description);
+
         const responses = await Promise.all(
           sequences.map(async (sequence) => {
             const { data } = await api.get(
@@ -125,21 +219,17 @@ const JobCard = ({
             return { data, sequence };
           })
         );
+
         setJobCardData(responses);
       } catch (err) {
-        console.error('Error fetching job card data:', err);
+        if (err.response?.status === 404) {
+          toast.error('No matching sequence found for one or more BOM items.');
+        }
       }
     };
 
     getTemplateFieldsFromSequence();
-  }, [
-    bom,
-    titleBlock,
-    setBom,
-    setTitleBlock,
-    setSelectedItems,
-    setJobCardData,
-  ]);
+  }, [bom, selectedItems, setJobCardData]);
 
   useEffect(() => {
     const fetchJobCardNo = async () => {
@@ -186,12 +276,18 @@ const JobCard = ({
                     return undefined;
                   return Number(val);
                 }, z.number().min(1));
-              } else if (f.type === 'string') {
+              } else if (f.type === 'text') {
                 fieldShape[f.name] = z.string().min(1);
               } else if (f.type === 'select') {
                 fieldShape[f.name] = z.string().min(1);
               } else if (f.type === 'boolean') {
                 fieldShape[f.name] = z.boolean();
+              } else if (f.type === 'time') {
+                fieldShape[f.name] = z.string().regex(
+                  // /^(0?[1-9]|1[0-2]):[0-5][0-9](:[0-5][0-9])?\s?(AM|PM)$/i,
+                  /^([01]\d|2[0-3]):[0-5]\d$/,
+                  'Invalid time format (HH:mm)'
+                );
               } else {
                 fieldShape[f.name] = z.any();
               }
@@ -246,6 +342,9 @@ const JobCard = ({
                 f.defaultValue !== undefined && f.defaultValue !== null
                   ? Number(f.defaultValue)
                   : undefined;
+            } else if (f.type === 'time') {
+              defaults[groupName][subSection.name][f.name] =
+                f.defaultValue ?? '';
             } else {
               defaults[groupName][subSection.name][f.name] =
                 f.defaultValue !== undefined ? f.defaultValue : '';
@@ -356,17 +455,18 @@ const JobCard = ({
       // setActiveTab('form');
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
-      toast.error('Failed to generate Job Card. Please try again.');
+      console.log(err);
+      toast.error(`Failed to generate Job Card.  ${err.response.data.message}`);
     }
   };
 
-  const handleAIFill = async () => {
-    const response = await api.post('/api/jobCard/aiFill', { fileId });
-    console.log(response);
-    // const filledData = response.data;
-    // form.setValue('global', filledData.global);
-    // form.setValue('sections', filledData.sections);
+  const handleAIFill = async (fileId: string) => {
+    // window.alert('AI fill feature is not available yet.');
+
+    // if (bom.length > 0 || titleBlock.length > 0 || printingDetails.length > 0) {
+    openModal('drawing:aiFill', { signedUrl, fileId });
+    // return;
+    // }
   };
 
   return (
@@ -394,9 +494,16 @@ const JobCard = ({
                 value="select"
                 className="h-[calc(100vh-200px)] p-4 "
               >
-                {/* TODO: implement AI filling for bom details, title block and printing details */}
-                <Button type="button" onClick={handleAIFill}>
-                  Fill Details with AI
+                {/* AI filling button */}
+                <Button
+                  type="button"
+                  className="relative inline-flex h-12 w-full overflow-hidden rounded-sm p-[2px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+                  onClick={() => handleAIFill(fileId)}
+                >
+                  <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                  <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-sm bg-slate-950 px-3 py-1 text-sm font-medium text-primary  bg-background dark:bg-black backdrop-blur-3xl">
+                    ✨ Fill Details with AI
+                  </span>
                 </Button>
 
                 <div className="flex flex-col gap-4">
@@ -443,11 +550,11 @@ const JobCard = ({
                   <ScrollArea className="h-[calc(100vh-200px)]">
                     <ScrollBar orientation="horizontal" />
                     {/* static job card fields */}
-                    <h3 className="text-md font-semibold mb-2 ">
+                    <h3 className="text-md font-semibold text-foreground mb-2 ">
                       JobCard Fields
                     </h3>
                     <div className="space-y-2 ml-2 border-l-2 pl-2">
-                      <h3 className="text-md font-semibold capitalize">
+                      <h3 className="text-md font-semibold capitalize text-foreground">
                         Global Fields
                       </h3>
                       {jobCardFields.map((item) => (
@@ -488,14 +595,14 @@ const JobCard = ({
                           )}`}
                           key={idx}
                         >
-                          <h3 className="text-lg font-semibold capitalize">
+                          <h3 className="text-lg font-semibold capitalize text-black">
                             {sequence}
                           </h3>
 
                           {data.map((group, gi) => (
                             <div key={gi}>
                               {group.name && (
-                                <FormLabel className="text-lg font-semibold capitalize">
+                                <FormLabel className="text-lg font-semibold capitalize text-black">
                                   {group.name}
                                 </FormLabel>
                               )}
@@ -506,7 +613,7 @@ const JobCard = ({
                                   className="space-y-2 border-l-2 pl-4 ml-2"
                                 >
                                   {subSection.name && (
-                                    <FormLabel className="text-lg font-semibold capitalize ">
+                                    <FormLabel className="text-lg font-semibold capitalize text-black">
                                       {subSection.name}
                                     </FormLabel>
                                   )}
@@ -523,7 +630,7 @@ const JobCard = ({
                                       render={({ field: rhfField }) => (
                                         <FormItem>
                                           <div className="flex items-center gap-2">
-                                            <FormLabel className="flex gap-2 items-center ">
+                                            <FormLabel className="flex gap-2 items-center text-black">
                                               <CheckCheck width={16} />
                                               <span className="whitespace-nowrap">
                                                 {field.label}

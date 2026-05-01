@@ -28,13 +28,9 @@ interface ParsedPdf {
 }
 
 export class PdfService {
-  private static fileHelperService = new FileHelperService();
-  private static stringService = new StringService();
-  private static puppeteerService = new PuppeteerService();
-
   static async extractPdfData(signedUrl: string, user: any): Promise<any> {
     const config = await this.loadOrgConfig(user);
-    const drawingFile = await this.fileHelperService.downloadToTemp(
+    const drawingFile = await FileHelperService.downloadToTemp(
       signedUrl,
       'drawing.pdf'
     );
@@ -44,7 +40,7 @@ export class PdfService {
     // return this.processParsedPdf(parsedData, config);
 
     // llm stratergy
-    return await this.puppeteerService.extractFromChatGPT(drawingFile);
+    return await PuppeteerService.extractFromChatGPT(drawingFile);
   }
 
   // local setup
@@ -94,10 +90,9 @@ export class PdfService {
     // const fileHelperService = new FileHelperService();
     const setupConfig: Record<string, any> = {};
 
-    const onboardingConfig =
-      await this.fileHelperService.fetchJsonFromSignedUrl(
-        `${user?.org?.name}/config/onboarding.json`
-      );
+    const onboardingConfig = await FileHelperService.fetchJsonFromSignedUrl(
+      `${user?.org?.name}/config/onboarding.json`
+    );
 
     Object.entries(onboardingConfig.setup).forEach(([key, value]) => {
       setupConfig[`${key}Config`] = value;
@@ -179,14 +174,14 @@ export class PdfService {
         }
 
         const normalizedHeaders = row[0].map((title: string) =>
-          this.stringService.camelCase(title)
+          StringService.camelCase(title)
         );
 
         let matchCount = 0;
 
         requiredHeaders.forEach((required: string) => {
           const scores = normalizedHeaders.map((cell: string) =>
-            this.stringService.similarityScore(required, cell)
+            StringService.similarityScore(required, cell)
           );
           const maxScore = Math.max(...scores);
           if (maxScore >= MATCH_THRESHOLD) matchCount++;
@@ -244,9 +239,8 @@ export class PdfService {
 
     // Match each header against flattened rows
     for (const header of expectedHeaders) {
-      const normalizedHeader = this.stringService
-        .camelToNormal(header)
-        .toLowerCase();
+      const normalizedHeader =
+        StringService.camelToNormal(header).toLowerCase();
 
       const matchedRow = temp.find(
         (row) =>

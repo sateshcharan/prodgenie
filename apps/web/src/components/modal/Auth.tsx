@@ -21,7 +21,7 @@ export default function Auth({
       </div>
 
       {/* Right side: Form */}
-      <div className="flex flex-col justify-center items-center p-6 sm:p-8 ">
+      <div className="flex flex-col bg-background justify-center items-center p-6 sm:p-8 ">
         {children}
       </div>
     </div>

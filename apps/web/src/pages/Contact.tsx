@@ -66,22 +66,14 @@ const Contact = () => {
           <div className="flex flex-col gap-2 text-pretty rounded-md bg-blue-50 p-4 text-sm text-gray-800">
             <p>
               We’re a <b>self-service platform</b>, allowing you to explore and
-              use it at your own pace. You can get started by{' '}
+              use it at your own pace. You can get started by creating a free
+              account . If you have any questions after your trial, feel free to
+              reach out via the contact form below, or call us at
               <a
-                href="https://app.parseur.com/signup"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="tel:+18880000000"
                 className="underline decoration-blue-500 decoration-[3px] hover:bg-blue-600 hover:text-white px-1 rounded"
               >
-                creating a free account
-              </a>
-              . If you have any questions after your trial, feel free to reach
-              out via the contact form below, or call us at{' '}
-              <a
-                href="tel:+18884861987"
-                className="underline decoration-blue-500 decoration-[3px] hover:bg-blue-600 hover:text-white px-1 rounded"
-              >
-                +1 888 486 1987
+                +1 888 000 0000
               </a>
               .
             </p>

@@ -34,7 +34,7 @@ const SectionCards = () => {
         trendDirection="down"
         description="Faster jobcard creation"
         subtext="Enhanced form automation"
-      /> */}
+      />*/}
       <SectionCard
         title="Available Credits"
         value={`${activeWorkspace?.credits} ₹`}

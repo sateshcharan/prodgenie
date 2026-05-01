@@ -105,7 +105,7 @@ export const HistoryTable: React.FC<Props> = ({ history }) => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center p-4 border-t bg-white">
+        <div className="flex justify-between items-center p-4 border-t bg-background">
           <Button
             variant="outline"
             size="sm"

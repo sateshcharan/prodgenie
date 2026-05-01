@@ -1,16 +1,21 @@
 import { loadStripe } from '@stripe/stripe-js';
 
 import { apiRoutes } from '@prodgenie/libs/constant';
-import { useUserStore, useWorkspaceStore } from '@prodgenie/libs/store';
+import {
+  useUserStore,
+  useWorkspaceStore,
+  useModalStore,
+} from '@prodgenie/libs/store';
 
 import api from '../utils/api';
 
 type CheckoutOptions = {
-  gateway?: 'stripe' | 'phonepe';
+  gateway?: 'stripe' | 'phonepe' | 'manual_qr';
   planId?: string;
   billingCycle?: 'monthly' | 'annual';
   type?: 'subscription' | 'credits';
   amount?: number;
+  navigate?: (path: string) => void;
 };
 
 const handleCheckout = async ({
@@ -27,9 +32,13 @@ const handleCheckout = async ({
   const workspaceId = activeWorkspace?.id;
   const priceId = import.meta.env.VITE_STRIPE_PRICE_ID!;
 
-  console.log(priceId);
+  const { closeModal } = useModalStore.getState();
+
+  // console.log(priceId);
 
   try {
+    closeModal();
+
     // Stripe checkout
     if (gateway === 'stripe') {
       if (!planId) throw new Error('planId required for Stripe checkout');
@@ -89,6 +98,9 @@ const handleCheckout = async ({
       }
       return;
     }
+
+    // manual qr code
+    // if (gateway === 'manual_qr') {}
   } catch (error) {
     console.error(`${gateway} checkout error:`, error);
   }

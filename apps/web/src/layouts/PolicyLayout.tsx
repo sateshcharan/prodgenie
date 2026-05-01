@@ -9,8 +9,8 @@ const NavButton = ({ to, label, highlight = false }: any) => (
         isActive
           ? 'bg-blue-200 border-blue-400 text-blue-800'
           : highlight
-          ? 'bg-blue-50 border-blue-300 hover:bg-white'
-          : 'bg-gray-100 border-gray-300 hover:bg-white'
+          ? 'bg-blue-50 border-blue-300 hover:bg-background'
+          : 'bg-gray-100 border-gray-300 hover:bg-background'
       }`
     }
   >

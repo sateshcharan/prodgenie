@@ -6,6 +6,7 @@ import { FileStorageService } from '@prodgenie/libs/supabase';
 import { FileHelperService } from '@prodgenie/libs/server-services';
 
 import { FileService } from './file.service';
+import { NotFoundError } from '@prodgenie/libs/server-services/lib/error.service';
 
 export class SequenceService {
   static async syncAll(workspaceId: string, user: any) {
@@ -126,7 +127,7 @@ export class SequenceService {
     });
 
     if (!matchedFile) {
-      throw new Error(`Sequence file not found for: ${sequence}`);
+      throw new NotFoundError(`Sequence file not found for: ${sequence}`);
     }
 
     // Fetch JSON content from the file

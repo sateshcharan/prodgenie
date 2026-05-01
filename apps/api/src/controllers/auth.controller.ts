@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 
 import { AuthService } from '../services/auth.service';
 
+import { supabase } from '@prodgenie/libs/supabase';
+
 export class AuthController {
   static async signupEmail(req: Request, res: Response) {
     const { name, email, password } = req.body;
@@ -88,6 +90,7 @@ export class AuthController {
   static async logout(req: Request, res: Response) {
     res.clearCookie('sb-access-token');
     res.clearCookie('sb-refresh-token');
+    await supabase.auth.signOut();
     res.status(200).json({ success: true });
   }
 

@@ -126,7 +126,7 @@ const ChartAreaInteractive = () => {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData}>
+          {/* <AreaChart data={filteredData}>
             <defs>
               <linearGradient id="fillCount" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -179,6 +179,55 @@ const ChartAreaInteractive = () => {
               fill="url(#fillCount)"
               stroke="var(--color-desktop)"
               stackId="a"
+            />
+          </AreaChart> */}
+          <AreaChart data={filteredData}>
+            <defs>
+              <linearGradient id="fillCount" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid strokeOpacity={0.2} vertical={false} />
+
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={32}
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                })
+              }
+            />
+
+            <ChartTooltip
+              cursor={{ stroke: '#7c3aed', strokeWidth: 1 }}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(value) =>
+                    new Date(value).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  }
+                  indicator="dot"
+                />
+              }
+            />
+
+            <Area
+              dataKey="count"
+              type="natural"
+              fill="url(#fillCount)"
+              stroke="#7c3aed"
+              strokeWidth={2}
+              dot={{ r: 3, fill: '#7c3aed', stroke: '#fff', strokeWidth: 1 }}
+              activeDot={{ r: 5, fill: '#7c3aed' }}
             />
           </AreaChart>
         </ChartContainer>

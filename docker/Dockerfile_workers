@@ -37,6 +37,7 @@ RUN pnpm install --frozen-lockfile
 
 # Ensure prisma schema is valid & Build backend
 # RUN pnpm exec prisma validate
+RUN pnpm add @prisma/client prisma @prisma/client-runtime-utils
 RUN pnpm prisma generate
 RUN pnpm nx build workers
 

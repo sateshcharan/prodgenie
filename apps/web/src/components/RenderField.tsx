@@ -44,6 +44,18 @@ const RenderField = ({ fieldConfig, rhfField }: any) => {
         />
       );
 
+    case 'time':
+      return (
+        <Input
+          type="time"
+          step="60"
+          name={rhfField.name}
+          ref={rhfField.ref}
+          value={rhfField.value || ''}
+          onChange={(e) => rhfField.onChange(e.target.value)}
+        />
+      );
+
     case 'date':
       return (
         <Input

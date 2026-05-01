@@ -28,7 +28,7 @@ export default function Modal({
       <DialogOverlay className="fixed inset-0 bg-black/10 backdrop-blur-md z-50" />
       <DialogContent
         className={cn(
-          'max-w-3xl p-0 overflow-hidden bg-white shadow-xl rounded-lg z-50',
+          'max-w-3xl p-0 overflow-hidden bg-background shadow-xl rounded-lg z-50',
           className
         )}
       >

@@ -16,11 +16,14 @@ import { apiRoutes } from '@prodgenie/libs/constant';
 import { useModalStore, useWorkspaceStore } from '@prodgenie/libs/store';
 
 import api from '../utils/api';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Header = () => {
   const navigate = useNavigate();
   const { openModal } = useModalStore();
   const { reset } = useWorkspaceStore();
+
+  const queryClient = useQueryClient();
 
   const handleChangePlan = () => {
     openModal('workspace:pricing');
@@ -31,6 +34,7 @@ const Header = () => {
       await api.post(`${apiRoutes.auth.base}${apiRoutes.auth.logout}`);
     } finally {
       // cleanup always runs
+      queryClient.clear();
       reset();
       navigate('/', { replace: true });
     }
@@ -51,8 +55,8 @@ const Header = () => {
           <SelectContent>
             <SelectGroup>
               <SelectItem value="english">English</SelectItem>
-              <SelectItem value="deutsch">Deutsch</SelectItem>
-              <SelectItem value="indonesia">Indonesia</SelectItem>
+              {/* <SelectItem value="deutsch">Deutsch</SelectItem>
+              <SelectItem value="indonesia">Indonesia</SelectItem> */}
             </SelectGroup>
           </SelectContent>
         </Select>

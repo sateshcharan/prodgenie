@@ -13,20 +13,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        run: corepack enable && corepack prepare pnpm@latest --activate
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Deploy API Service
+        run: railway up --service api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-      - name: Deploy API Service to Railway
-        uses: railwayapp/action@v2
-        with:
-          service: api
-          token: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Deploy Workers Service to Railway
-        uses: railwayapp/action@v2
-        with:
-          service: workers
-          token: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy Workers Service
+        run: railway up --service workers
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

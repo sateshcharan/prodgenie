@@ -19,11 +19,13 @@ const requireRole = (minRole: workspaceRole) => {
     }
     return res.status(403).json({
       error: 'You do not have permission to perform this action.',
-      action: 'CONTACT_OWNER',
+      action: 'CONTACT_ADMIN',
       message:
         'You do not have permission to perform this action. Please contact the workspace Owner or Admin if you need access.',
     });
   };
 };
+
+const requireAdmin = requireRole('admin');
 
 export { requireRole };

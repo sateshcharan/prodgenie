@@ -91,10 +91,16 @@ export default function PrimaryNavigationMenu() {
               </ListItem>
             </ul>
           </NavigationMenuContent>
-        </NavigationMenuItem> 
+        </NavigationMenuItem> */}
 
-         <NavigationMenuItem>
-          <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
+        <NavigationMenuItem>
+          <Link to="/pricing" className={navigationMenuTriggerStyle()}>
+            Pricing
+          </Link>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Docs</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul
               className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 
@@ -111,12 +117,6 @@ export default function PrimaryNavigationMenu() {
               ))}
             </ul>
           </NavigationMenuContent>
-        </NavigationMenuItem> */}
-
-        <NavigationMenuItem>
-          <Link to="/pricing" className={navigationMenuTriggerStyle()}>
-            Pricing
-          </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

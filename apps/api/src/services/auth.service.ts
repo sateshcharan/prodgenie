@@ -329,7 +329,9 @@ export class AuthService {
     const code = req.query.code;
     if (!code) return res.status(400).send('Missing code');
 
-    const { data, error } = await supabaseAuth.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabaseAuth.auth.exchangeCodeForSession(
+      code
+    );
     if (error) return res.status(400).json({ error: error.message });
 
     const { session } = data;

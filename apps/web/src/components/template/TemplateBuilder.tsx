@@ -240,8 +240,8 @@
 //     //     )}
 
 //     //   {/* Right: Template Builder */}
-//     //   <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[calc(100vh-200px)]">
-//     //     <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-10 bg-white pb-2">
+//     //   <div className="bg-background border rounded shadow p-2 overflow-auto max-h-[calc(100vh-200px)]">
+//     //     <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-10 bg-background pb-2">
 //     //       {id === null ? (
 //     //         <Input
 //     //           type="text"
@@ -271,7 +271,7 @@
 
 //     //     {templateFile ? (
 //     //       <div className="border-t pt-4">
-//     //         <h3 className="text-md font-semibold mb-2 sticky top-12 bg-white z-10">
+//     //         <h3 className="text-md font-semibold mb-2 sticky top-12 bg-background z-10">
 //     //           Preview
 //     //         </h3>
 //     //         {/* <div className="w-full h-[500px] border rounded overflow-hidden"> */}
@@ -293,8 +293,8 @@
 
 //     //   {/* Bottom: Template Builder */}
 //     //   <div className=" col-span-2">
-//     //     <div className="bg-white border rounded shadow p-2 overflow-auto max-h-[60vh] sm:max-h-[400px]">
-//     //       <div className="sticky top-0 bg-white pb-2">
+//     //     <div className="bg-background border rounded shadow p-2 overflow-auto max-h-[60vh] sm:max-h-[400px]">
+//     //       <div className="sticky top-0 bg-background pb-2">
 //     //         <h2 className="text-lg font-semibold mb-4">Template Fields</h2>
 //     //       </div>
 
@@ -356,9 +356,9 @@
 //         )}
 
 //       {/* Right: Preview & File Upload */}
-//       <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[calc(100vh-200px)]">
+//       <div className="bg-background border rounded shadow p-4 overflow-auto max-h-[calc(100vh-200px)]">
 //         {/* Top bar: Name + Save */}
-//         <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-white pb-2 border-b">
+//         <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-background pb-2 border-b">
 //           {id === null ? (
 //             <Input
 //               type="text"
@@ -390,7 +390,7 @@
 //         {/* Preview or File Drop */}
 //         {templateFile ? (
 //           <div className="border-t pt-4">
-//             <h3 className="text-md font-semibold mb-2 sticky top-14 z-10 bg-white">
+//             <h3 className="text-md font-semibold mb-2 sticky top-14 z-10 bg-background">
 //               Preview
 //             </h3>
 //             <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] border rounded overflow-hidden">
@@ -412,8 +412,8 @@
 //       {templateFile && (
 //         /* Bottom: Template Fields */
 //         <div className="col-span-full">
-//           <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
-//             <div className="sticky top-0 bg-white z-10 pb-2 border-b mb-4">
+//           <div className="bg-background border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
+//             <div className="sticky top-0 bg-background z-10 pb-2 border-b mb-4">
 //               <h2 className="text-lg font-semibold">Template Fields</h2>
 //             </div>
 
@@ -491,7 +491,7 @@ const TemplateFieldRow = ({
   onChange,
   templateName,
 }) => (
-  <div className="flex items-center justify-between gap-2 border p-2 rounded bg-gray-50">
+  <div className="flex items-center justify-between gap-2 border p-2 rounded">
     <label className="font-medium text-sm flex-shrink-0 min-w-[100px]">
       {label}:
     </label>
@@ -507,10 +507,10 @@ const TemplateFieldRow = ({
 // 🔹 Memoized preview panel
 const TemplatePreview = memo(({ templateFile }) => (
   <div className="border-t pt-4">
-    <h3 className="text-md font-semibold mb-2 sticky top-14 z-10 bg-white">
+    <h3 className="text-md font-semibold mb-2 sticky top-14 z-10 bg-background">
       Preview
     </h3>
-    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] border rounded overflow-hidden">
+    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] border rounded overflow-hidden bg-white">
       <iframe
         title="Template Preview"
         srcDoc={templateFile}
@@ -727,7 +727,7 @@ const TemplateBuilder = () => {
     >
       {/* Left: Template Builder Form */}
       {hasTemplateFields && hasTemplateFile && (
-        <div className="w-full max-w-full lg:max-w-[400px]  rounded shadow bg-white flex flex-col min-h-0">
+        <div className="w-full max-w-full lg:max-w-[400px]  rounded shadow bg-background flex flex-col min-h-0">
           <ScrollArea className="flex-1 p-4">
             <FormBuilder
               ref={formBuilderRef}
@@ -739,8 +739,8 @@ const TemplateBuilder = () => {
       )}
 
       {/* Right: Preview & File Upload */}
-      <div className="bg-white border rounded shadow p-4 overflow-auto ">
-        <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-white pb-2 border-b">
+      <div className="bg-background border rounded shadow p-4 overflow-auto ">
+        <div className="flex justify-between items-center mb-4 gap-4 sticky top-0 z-20 bg-background pb-2 border-b">
           {id === null ? (
             <Input
               type="text"
@@ -782,8 +782,8 @@ const TemplateBuilder = () => {
       {/* Bottom: Template Fields */}
       {hasTemplateFile && (
         <div className="col-span-full">
-          <div className="bg-white border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
-            <div className="sticky top-0 bg-white z-10 pb-2 border-b mb-4">
+          <div className="bg-background border rounded shadow p-4 overflow-auto max-h-[60vh] sm:max-h-[400px]">
+            <div className="sticky top-0 bg-background z-10 pb-2 border-b mb-4">
               <h2 className="text-lg font-semibold">Template Fields</h2>
             </div>
 

@@ -28,6 +28,7 @@ export const wakeWorkers = async () => {
       }
     } catch (_) {
       // ignore, keep trying
+      console.log('Worker is down contact admin');
     }
 
     // Timeout

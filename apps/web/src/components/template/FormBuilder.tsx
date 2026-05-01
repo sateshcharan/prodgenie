@@ -29,8 +29,6 @@ import { StringService } from '@prodgenie/libs/shared-utils';
 import api from '../../utils/api';
 import PreviewForm from './PreviewForm';
 
-const stringService = new StringService();
-
 export type FormBuilderSchema = z.infer<typeof formBuilderSchema>;
 
 const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
@@ -145,7 +143,6 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
             (t) => t.name === field.dataSource.table
           )?.path;
 
-
           if (!tableUrl) return;
 
           try {
@@ -191,6 +188,8 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
 
     const getZodType = (type: string) => {
       if (type === 'number') return 'z.number().min(1)';
+      if (type === 'time')
+        return 'z.string().regex(/^([01]\\d|2[0-3]):([0-5]\\d)(:[0-5]\\d)?$/)';
       if (type === 'text') return 'z.string().min(1)';
       return 'z.any()';
     };
@@ -342,7 +341,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
   };
 
   return (
-    <div className="bg-white  rounded shadow  overflow-auto ">
+    <div className="bg-background  rounded shadow  overflow-auto ">
       <div className="flex justify-between items-center  gap-4">
         <h3 className="text-md font-semibold">Job Card Form Sections</h3>
         <div className="flex flex-row gap-2 p-2">
@@ -449,6 +448,7 @@ const FormBuilder = forwardRef(({ jobCardData, onFormSubmit }: any, ref) => {
                           <SelectContent>
                             <SelectItem value="text">Text</SelectItem>
                             <SelectItem value="number">Number</SelectItem>
+                            <SelectItem value="time">Time</SelectItem>
                             <SelectItem value="select">Select</SelectItem>
                           </SelectContent>
                         </Select>

@@ -14,6 +14,7 @@ import { Button } from '@prodgenie/libs/ui/button';
 import { Input } from '@prodgenie/libs/ui/input';
 import { toast } from 'sonner';
 import api from '../../utils/api';
+import { GripVertical, Trash } from 'lucide-react';
 
 type ColumnType = 'text' | 'number';
 
@@ -223,7 +224,7 @@ export default function TableBuilder<T extends Record<string, any>>({
 
   return (
     <div className="w-full mt-[200px] flex justify-center items-center">
-      <div className="max-w-4xl mx-auto p-4 bg-white border rounded shadow space-y-4">
+      <div className="max-w-4xl mx-auto p-4 bg-background border rounded shadow space-y-4">
         {/* File name input */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium">File Name:</label>
@@ -300,13 +301,24 @@ export default function TableBuilder<T extends Record<string, any>>({
                         }
                         className="h-7 px-2 py-0.5 text-xs"
                       />
-                      <button
+                      <Button
                         onClick={() => removeColumn(colIndex)}
-                        className="text-red-500 hover:text-red-700 text-xs"
+                        className=" p-1"
+                        variant="ghost"
+                        size="icon"
                         disabled={tableColumns.length <= 1}
                       >
-                        ✕
-                      </button>
+                        <Trash size={16} />
+                      </Button>
+                      <Button
+                        onClick={() => removeColumn(colIndex)}
+                        className=" p-1"
+                        variant="ghost"
+                        size="icon"
+                        disabled={tableColumns.length <= 1}
+                      >
+                        <GripVertical size={16} />
+                      </Button>
                     </div>
                   </TableHead>
                 ))}
@@ -337,13 +349,15 @@ export default function TableBuilder<T extends Record<string, any>>({
                     </TableCell>
                   ))}
                   <TableCell className="text-center">
-                    <button
+                    <Button
                       onClick={() => removeRow(rowIndex)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className=" p-1"
+                      variant="ghost"
+                      size="icon"
                       disabled={rows.length === 1}
                     >
-                      ✕
-                    </button>
+                      <Trash size={16} />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

@@ -13,11 +13,11 @@ import { SiteHeader } from '@prodgenie/libs/ui/components/site-header';
 import { SidebarInset, SidebarProvider } from '@prodgenie/libs/ui/sidebar';
 
 import api from '../utils/api';
-// import { useSSE } from '../hooks/useSSE';
 import PrivateHeader from '../navigation/PrivateHeader';
 import ChatWidget from '../components/ChatWidget';
 import AppSidebar from '../components/AppSidebar';
 import ModalManager from '../components/modal/ModalManager';
+// import { useSSE } from '../hooks/useSSE';
 // import { subscribeToEvents } from '../components/SubscribeToEvents';
 
 const PrivateLayout = () => {
@@ -34,6 +34,7 @@ const PrivateLayout = () => {
     setTotalJobCards,
   } = useWorkspaceStore((state) => state);
   const setUser = useUserStore((state) => state.setUser);
+  const { user } = useUserStore((state) => state);
   // const setNotifications = useNotificationStore(
   //   (state) => state.setNotifications
   // );
@@ -71,7 +72,6 @@ const PrivateLayout = () => {
   // useSSE(workspaceId, onMessage);
 
   // determine title for SiteHeader
-
   const getPageTitle = () => {
     if (fileType) return fileType;
     if (location.pathname.includes('settings')) return 'Settings';
@@ -84,60 +84,62 @@ const PrivateLayout = () => {
 
   //batched init
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['dashboard-init'], // need to update with workspaceId
+    queryKey: ['dashboard-init', user?.id || 'anonymous'], // need to update with workspaceId
     queryFn: () =>
       api
         .get(`${apiRoutes.batched.base}${apiRoutes.batched.init}`)
         .then((r) => r.data),
     enabled: true,
-    staleTime: Infinity,
+    // staleTime: 0,
+    // refetchOnMount: 'always',
+    // staleTime: Infinity,
     // refetchOnMount: false,
     // refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
-    if (data) {
-      const totalJobCards = data.user.memberships.find(
-        (m: any) => m.workspaceId === data.user.activeWorkspaceId
-      ).workspace.jobCardsCount;
+    if (!data) return;
+    const totalJobCards = data.user.memberships.find(
+      (m: any) => m.workspaceId === data.user.activeWorkspaceId
+    ).workspace.jobCardsCount;
 
-      setUser(data.user);
-      setWorkspaceEvents(data.workspaceEvents);
-      setJobCardStats(data.jobCardStats);
-      setWorkspaceUsage(data.workspaceUsage);
-      setTotalJobCards(totalJobCards);
-      // setNotifications(data.notifications);
-      // setWorkspaceUsers(data.workspaceUsers);
+    setUser(data.user);
+    setWorkspaceEvents(data.workspaceEvents);
+    setJobCardStats(data.jobCardStats);
+    setWorkspaceUsage(data.workspaceUsage);
+    setTotalJobCards(totalJobCards);
+    // setNotifications(data.notifications);
+    // setWorkspaceUsers(data.workspaceUsers);
 
-      const workspaces = data.user.memberships.map((m) => m.workspace);
-      // all memberships
-      setWorkspaces(workspaces);
+    const workspaces = data.user.memberships.map((m) => m.workspace);
+    // all memberships
+    setWorkspaces(workspaces);
 
-      // find and set active workspace
-      const activeMembership = data.user.memberships.find(
-        (m: any) => m.workspaceId === data.user.activeWorkspaceId
-      );
-      setActiveWorkspace(activeMembership?.workspace || null);
-      setActiveWorkspaceRole(activeMembership?.role || null);
-    }
-  }, [data]);
+    // find and set active workspace
+    const activeMembership = data.user.memberships.find(
+      (m: any) => m.workspaceId === data.user.activeWorkspaceId
+    );
 
-  useEffect(() => {
-    if (data) {
-      subscribeToEvents(data.user.activeWorkspaceId);
-    }
-
-    return () => {
-      // cleanup on unmount or workspace change
-      useWorkspaceStore.getState().reset();
-    };
+    setActiveWorkspace(activeMembership?.workspace || null);
+    setActiveWorkspaceRole(activeMembership?.role || null);
   }, [data]);
 
   // useEffect(() => {
-  //   if (activeWorkspace?.id) {
-  //     subscribeToEvents(activeWorkspace.id);
+  //   if (data) {
+  //     subscribeToEvents(data.user.activeWorkspaceId);
   //   }
-  // }, [activeWorkspace?.id]);
+
+  //   // cleanup on unmount or workspace change
+  //   return () => {
+  //     useWorkspaceStore.getState().reset();
+  //   };
+  // }, [data]);
+
+  useEffect(() => {
+    if (activeWorkspace?.id) {
+      subscribeToEvents(activeWorkspace.id);
+    }
+  }, [activeWorkspace?.id]);
 
   return (
     <>

@@ -17,9 +17,12 @@ import Dashboard from '../pages/Dashboard';
 import PrivateRoute from './PrivateRoute';
 import PrivateLayout from '../layouts/PrivateLayout';
 import PaymentResult from '../components/PaymentResult';
+import QRPayment from '../pages/QRPayment';
+import EventDetailsPage from '../pages/EventDetail';
 
 export const privateRoutes = [
   { path: 'phonepe/result', element: <PaymentResult /> },
+
   {
     path: 'dashboard',
     element: (
@@ -32,6 +35,7 @@ export const privateRoutes = [
         index: true,
         element: <Dashboard />,
       },
+      // { path: 'events/:eventId', element: <EventDetailsPage /> },
       {
         path: ':fileType',
         element: <Files />,
@@ -51,11 +55,15 @@ export const privateRoutes = [
         path: 'settings/:tab',
         element: <Settings />,
         loader: settingsLoader,
-      }
+      },
       // {
       //   path: 'notifications',
       //   element: <UserNotifications />,
       // },
+      {
+        path: 'qr-payment/:credits/:purpose',
+        element: <QRPayment />,
+      },
     ],
   },
 ];

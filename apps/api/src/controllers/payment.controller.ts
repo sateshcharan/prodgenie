@@ -116,4 +116,27 @@ export const PaymentController = {
       next(err);
     }
   },
+
+  async registerManualQRPayment(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { amount, transactionId, workspaceId, purpose } = req.body;
+      const userId = req.user?.id;
+
+      const payment = await PaymentService.registerManualQRPayment(
+        workspaceId,
+        userId,
+        amount,
+        transactionId,
+        purpose
+      );
+
+      return res.status(200).json({ success: true, payment });
+    } catch (err) {
+      next(err);
+    }
+  },
 };

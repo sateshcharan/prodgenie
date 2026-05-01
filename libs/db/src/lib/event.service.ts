@@ -106,8 +106,6 @@ export class EventService {
     if (status === 'completed' && event.type === 'jobcard_generation') {
       const now = new Date();
 
-      console.log(workspaceId)
-
       await prisma.workspace.update({
         where: {
           id: workspaceId,

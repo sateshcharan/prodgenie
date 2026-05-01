@@ -1,4 +1,5 @@
 import axios from 'axios';
+// import QRCode from 'qrcode';
 
 export class ImageService {
   async generatePreview(signedUrl: string) {
